@@ -156,14 +156,6 @@ contract RentalProperty {
         uint256 _rentalPrice,
         uint256 _leaseDuration
     ) public 
-    validLocation(_location)
-    validPostalCode(_postalCode)
-    validUnitNumber(_unitNumber)
-    validPropertyType(_propertyType)
-    validDescription(_description)
-    validNumOfTenants(_numOfTenants)
-    validRentalPrice(_rentalPrice)
-    validLeaseDuration(_leaseDuration)
     returns (uint256) { 
         // New Rental Property object
         rentalProperty memory newRentalProperty = rentalProperty(
