@@ -20,7 +20,6 @@ contract RentalProperty {
         uint256 numOfTenants; // number of tenants in the property
         uint256 rentalPrice; // rental price in LeaseToken
         uint256 leaseDuration; // lease duration in months
-        uint256 creationValue; // value sent to create the rental property
         address landlord; // address of the landlord owner
     }
 
@@ -40,7 +39,6 @@ contract RentalProperty {
         uint256 numOfTenants,
         uint256 rentalPrice,
         uint256 leaseDuration,
-        uint256 creationValue,
         address landlord
     );
 
@@ -54,7 +52,6 @@ contract RentalProperty {
         uint256 numOfTenants,
         uint256 rentalPrice,
         uint256 leaseDuration,
-        uint256 creationValue,
         address landlord
     );
 
@@ -119,7 +116,6 @@ contract RentalProperty {
             _numOfTenants,
             _rentalPrice,
             _leaseDuration,
-            msg.value, // value sent to create the rental property
             msg.sender // landlord is the sender
         );
 
@@ -210,15 +206,6 @@ contract RentalProperty {
         return rentalProperties[rentalPropertyId].leaseDuration;
     }
 
-    //Function to get the creation value of a rental property
-    function getCreationValue(uint256 rentalPropertyId)
-        public
-        view
-        validRentalPropertyId(rentalPropertyId)
-        returns (uint256)
-    {
-        return rentalProperties[rentalPropertyId].creationValue;
-    }
 
     //Function to get the landlord of a rental property
     function getLandlord(uint256 rentalPropertyId)
@@ -305,8 +292,7 @@ contract RentalProperty {
         validRentalPropertyId(rentalPropertyId)
     {
         delete rentalProperties[rentalPropertyId];
-        delete rentalProperties[rentalPropertyId];
-        msg.sender.transfer(rentalProperties[rentalPropertyId].creationValue);
+        emit RentalPropertyDeleted(rentalPropertyId);
     }
 
 }
