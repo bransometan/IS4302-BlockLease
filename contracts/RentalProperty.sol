@@ -86,44 +86,19 @@ contract RentalProperty {
 
     //Modifier to ensure a function is callable only by its landlord owner
     modifier ownerOnly(uint256 rentalPropertyId) {
-        require(rentalProperties[rentalPropertyId].landlord == msg.sender, "Only the landlord can call this function");
+        require(
+            rentalProperties[rentalPropertyId].landlord == msg.sender,
+            "Only the landlord can call this function"
+        );
         _;
     }
 
     //Modifier to ensure a function is accessible only if the rental property id is valid
     modifier validRentalPropertyId(uint256 rentalPropertyId) {
-        require(rentalPropertyId < numRentalProperty, "Invalid rental property id");
-        _;
-    }
-
-    modifier validLocation(string memory location) {
-        require(bytes(location).length > 0, "Location must not be empty");
-        _;
-    }
-
-    modifier validPostalCode(string memory postalCode) {
-        require(bytes(postalCode).length > 0, "Postal Code must not be empty");
-        _;
-    }
-
-    modifier validUnitNumber(string memory unitNumber) {
-        require(bytes(unitNumber).length > 0, "Unit Number must not be empty");
-        _;
-    }
-
-    modifier validPropertyType(PropertyType propertyType) {
         require(
-            propertyType == PropertyType.HDB ||
-                propertyType == PropertyType.Condo ||
-                propertyType == PropertyType.Landed ||
-                propertyType == PropertyType.Other,
-            "Invalid property type"
+            rentalPropertyId < numRentalProperty,
+            "Invalid rental property id"
         );
-        _;
-    }
-
-    modifier validDescription(string memory description) {
-        require(bytes(description).length > 0, "Description must not be empty");
         _;
     }
 
@@ -142,7 +117,6 @@ contract RentalProperty {
         _;
     }
 
-
     // ################################################### CREATE METHOD ################################################### //
 
     // Function for landlord to create a new Rental Property, and add to 'rentalProperties' map. requires at least 0.01ETH to create
@@ -155,8 +129,13 @@ contract RentalProperty {
         uint256 _numOfTenants,
         uint256 _rentalPrice,
         uint256 _leaseDuration
-    ) public 
-    returns (uint256) { 
+    )
+        public
+        validNumOfTenants(_numOfTenants)
+        validRentalPrice(_rentalPrice)
+        validLeaseDuration(_leaseDuration)
+        returns (uint256)
+    {
         // New Rental Property object
         rentalProperty memory newRentalProperty = rentalProperty(
             _location,
@@ -280,6 +259,91 @@ contract RentalProperty {
 
     // ################################################### SETTER METHODS ################################################### //
 
+    //Function to update the location of a rental property
+    function updateLocation(
+        uint256 rentalPropertyId,
+        string memory newLocation
+    )
+        public
+        ownerOnly(rentalPropertyId)
+        validRentalPropertyId(rentalPropertyId)
+    {
+        rentalProperties[rentalPropertyId].location = newLocation;
+        emit RentalPropertyUpdateLocation(rentalPropertyId, newLocation);
+    }
+
+    //Function to update the postal code of a rental property
+    function updatePostalCode(
+        uint256 rentalPropertyId,
+        string memory newPostalCode
+    )
+        public
+        ownerOnly(rentalPropertyId)
+        validRentalPropertyId(rentalPropertyId)
+    {
+        rentalProperties[rentalPropertyId].postalCode = newPostalCode;
+        emit RentalPropertyUpdatePostalCode(rentalPropertyId, newPostalCode);
+    }
+
+    //Function to update the unit number of a rental property
+    function updateUnitNumber(
+        uint256 rentalPropertyId,
+        string memory newUnitNumber
+    )
+        public
+        ownerOnly(rentalPropertyId)
+        validRentalPropertyId(rentalPropertyId)
+    {
+        rentalProperties[rentalPropertyId].unitNumber = newUnitNumber;
+        emit RentalPropertyUpdateUnitNumber(rentalPropertyId, newUnitNumber);
+    }
+
+    //Function to update the property type of a rental property
+    function updatePropertyType(
+        uint256 rentalPropertyId,
+        PropertyType newPropertyType
+    )
+        public
+        ownerOnly(rentalPropertyId)
+        validRentalPropertyId(rentalPropertyId)
+    {
+        rentalProperties[rentalPropertyId].propertyType = newPropertyType;
+        emit RentalPropertyUpdatePropertyType(
+            rentalPropertyId,
+            newPropertyType
+        );
+    }
+
+    //Function to update the description of a rental property
+    function updateDescription(
+        uint256 rentalPropertyId,
+        string memory newDescription
+    )
+        public
+        ownerOnly(rentalPropertyId)
+        validRentalPropertyId(rentalPropertyId)
+    {
+        rentalProperties[rentalPropertyId].description = newDescription;
+        emit RentalPropertyUpdateDescription(rentalPropertyId, newDescription);
+    }
+
+    //Function to update the number of tenants in a rental property
+    function updateNumOfTenants(
+        uint256 rentalPropertyId,
+        uint256 newNumOfTenants
+    )
+        public
+        ownerOnly(rentalPropertyId)
+        validRentalPropertyId(rentalPropertyId)
+        validNumOfTenants(newNumOfTenants)
+    {
+        rentalProperties[rentalPropertyId].numOfTenants = newNumOfTenants;
+        emit RentalPropertyUpdateNumOfTenants(
+            rentalPropertyId,
+            newNumOfTenants
+        );
+    }
+
     //Function to update the rental price of a rental property
     function updateRentalPrice(
         uint256 rentalPropertyId,
@@ -305,91 +369,10 @@ contract RentalProperty {
         validLeaseDuration(newLeaseDuration)
     {
         rentalProperties[rentalPropertyId].leaseDuration = newLeaseDuration;
-        emit RentalPropertyUpdateLeaseDuration(rentalPropertyId, newLeaseDuration);
-    }
-
-    //Function to update the description of a rental property
-    function updateDescription(
-        uint256 rentalPropertyId,
-        string memory newDescription
-    )
-        public
-        ownerOnly(rentalPropertyId)
-        validRentalPropertyId(rentalPropertyId)
-        validDescription(newDescription)
-    {
-        rentalProperties[rentalPropertyId].description = newDescription;
-        emit RentalPropertyUpdateDescription(rentalPropertyId, newDescription);
-    }
-
-    //Function to update the number of tenants in a rental property
-    function updateNumOfTenants(
-        uint256 rentalPropertyId,
-        uint256 newNumOfTenants
-    )
-        public
-        ownerOnly(rentalPropertyId)
-        validRentalPropertyId(rentalPropertyId)
-        validNumOfTenants(newNumOfTenants)
-    {
-        rentalProperties[rentalPropertyId].numOfTenants = newNumOfTenants;
-        emit RentalPropertyUpdateNumOfTenants(rentalPropertyId, newNumOfTenants);
-    }
-
-    //Function to update the location of a rental property
-    function updateLocation(
-        uint256 rentalPropertyId,
-        string memory newLocation
-    )
-        public
-        ownerOnly(rentalPropertyId)
-        validRentalPropertyId(rentalPropertyId)
-        validLocation(newLocation)
-    {
-        rentalProperties[rentalPropertyId].location = newLocation;
-        emit RentalPropertyUpdateLocation(rentalPropertyId, newLocation);
-    }
-
-    //Function to update the postal code of a rental property
-    function updatePostalCode(
-        uint256 rentalPropertyId,
-        string memory newPostalCode
-    )
-        public
-        ownerOnly(rentalPropertyId)
-        validRentalPropertyId(rentalPropertyId)
-        validPostalCode(newPostalCode)
-    {
-        rentalProperties[rentalPropertyId].postalCode = newPostalCode;
-        emit RentalPropertyUpdatePostalCode(rentalPropertyId, newPostalCode);
-    }
-
-    //Function to update the unit number of a rental property
-    function updateUnitNumber(
-        uint256 rentalPropertyId,
-        string memory newUnitNumber
-    )
-        public
-        ownerOnly(rentalPropertyId)
-        validRentalPropertyId(rentalPropertyId)
-        validUnitNumber(newUnitNumber)
-    {
-        rentalProperties[rentalPropertyId].unitNumber = newUnitNumber;
-        emit RentalPropertyUpdateUnitNumber(rentalPropertyId, newUnitNumber);
-    }
-
-    //Function to update the property type of a rental property
-    function updatePropertyType(
-        uint256 rentalPropertyId,
-        PropertyType newPropertyType
-    )
-        public
-        ownerOnly(rentalPropertyId)
-        validRentalPropertyId(rentalPropertyId)
-        validPropertyType(newPropertyType)
-    {
-        rentalProperties[rentalPropertyId].propertyType = newPropertyType;
-        emit RentalPropertyUpdatePropertyType(rentalPropertyId, newPropertyType);
+        emit RentalPropertyUpdateLeaseDuration(
+            rentalPropertyId,
+            newLeaseDuration
+        );
     }
 
     // ################################################### DELETE METHOD ################################################### //
