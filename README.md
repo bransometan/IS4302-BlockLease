@@ -1,1 +1,2 @@
-# is4302-G13-project
+# IS4302 Group 13 Project : BlockLease - Decentralized Rental Ecosystem
+BlockLease is a decentralized rental ecosystem built on blockchain technology, revolutionizing the traditional rental industry with transparency, security, and efficiency. Our platform facilitates seamless interactions between landlords and tenants, streamlining processes such as property listings, rental applications, agreements, payments, and dispute resolution. Real Estate Validators (a.k.a Experts or Gurus), can assess disputes and vote on resolutions, ensuring impartiality and fairness.
