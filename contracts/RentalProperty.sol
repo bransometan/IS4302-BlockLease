@@ -108,7 +108,7 @@ contract RentalProperty {
         uint256 _numOfTenants,
         uint256 _rentalPrice,
         uint256 _leaseDuration
-    ) public payable returns (uint256) {
+    ) public returns (uint256) {
         require(bytes(_location).length > 0, "Location must not be empty");
         require(bytes(_postalCode).length > 0, "Postal Code must not be empty");
         require(bytes(_unitNumber).length > 0, "Unit Number must not be empty");
@@ -126,11 +126,7 @@ contract RentalProperty {
         require(_numOfTenants > 0, "Number of tenants must be greater than 0");
         require(_rentalPrice > 0, "Rental Price must be greater than 0");
         require(_leaseDuration > 0, "Lease Duration must be greater than 0");
-        require(
-            msg.value > 0.01 ether,
-            "at least 0.01 ETH is needed to create a new rental property"
-        );
-
+        
         // New Rental Property object
         rentalProperty memory newRentalProperty = rentalProperty(
             _location,
