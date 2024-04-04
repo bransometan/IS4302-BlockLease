@@ -86,15 +86,62 @@ contract RentalProperty {
 
     //Modifier to ensure a function is callable only by its landlord owner
     modifier ownerOnly(uint256 rentalPropertyId) {
-        require(rentalProperties[rentalPropertyId].landlord == msg.sender);
+        require(rentalProperties[rentalPropertyId].landlord == msg.sender, "Only the landlord can call this function");
         _;
     }
 
     //Modifier to ensure a function is accessible only if the rental property id is valid
     modifier validRentalPropertyId(uint256 rentalPropertyId) {
-        require(rentalPropertyId < numRentalProperty);
+        require(rentalPropertyId < numRentalProperty, "Invalid rental property id");
         _;
     }
+
+    modifier validLocation(string memory location) {
+        require(bytes(location).length > 0, "Location must not be empty");
+        _;
+    }
+
+    modifier validPostalCode(string memory postalCode) {
+        require(bytes(postalCode).length > 0, "Postal Code must not be empty");
+        _;
+    }
+
+    modifier validUnitNumber(string memory unitNumber) {
+        require(bytes(unitNumber).length > 0, "Unit Number must not be empty");
+        _;
+    }
+
+    modifier validPropertyType(PropertyType propertyType) {
+        require(
+            propertyType == PropertyType.HDB ||
+                propertyType == PropertyType.Condo ||
+                propertyType == PropertyType.Landed ||
+                propertyType == PropertyType.Other,
+            "Invalid property type"
+        );
+        _;
+    }
+
+    modifier validDescription(string memory description) {
+        require(bytes(description).length > 0, "Description must not be empty");
+        _;
+    }
+
+    modifier validNumOfTenants(uint256 numOfTenants) {
+        require(numOfTenants > 0, "Number of tenants must be greater than 0");
+        _;
+    }
+
+    modifier validRentalPrice(uint256 rentalPrice) {
+        require(rentalPrice > 0, "Rental Price must be greater than 0");
+        _;
+    }
+
+    modifier validLeaseDuration(uint256 leaseDuration) {
+        require(leaseDuration > 0, "Lease Duration must be greater than 0");
+        _;
+    }
+
 
     // ################################################### CREATE METHOD ################################################### //
 
@@ -108,25 +155,16 @@ contract RentalProperty {
         uint256 _numOfTenants,
         uint256 _rentalPrice,
         uint256 _leaseDuration
-    ) public returns (uint256) {
-        require(bytes(_location).length > 0, "Location must not be empty");
-        require(bytes(_postalCode).length > 0, "Postal Code must not be empty");
-        require(bytes(_unitNumber).length > 0, "Unit Number must not be empty");
-        require(
-            _propertyType == PropertyType.HDB ||
-                _propertyType == PropertyType.Condo ||
-                _propertyType == PropertyType.Landed ||
-                _propertyType == PropertyType.Other,
-            "Invalid property type"
-        );
-        require(
-            bytes(_description).length > 0,
-            "Description must not be empty"
-        );
-        require(_numOfTenants > 0, "Number of tenants must be greater than 0");
-        require(_rentalPrice > 0, "Rental Price must be greater than 0");
-        require(_leaseDuration > 0, "Lease Duration must be greater than 0");
-        
+    ) public 
+    validLocation(_location)
+    validPostalCode(_postalCode)
+    validUnitNumber(_unitNumber)
+    validPropertyType(_propertyType)
+    validDescription(_description)
+    validNumOfTenants(_numOfTenants)
+    validRentalPrice(_rentalPrice)
+    validLeaseDuration(_leaseDuration)
+    returns (uint256) { 
         // New Rental Property object
         rentalProperty memory newRentalProperty = rentalProperty(
             _location,
@@ -154,6 +192,7 @@ contract RentalProperty {
             _leaseDuration,
             msg.sender
         );
+
         return newRentalPropertyId; //return new rental property id
     }
 
@@ -257,8 +296,8 @@ contract RentalProperty {
         public
         ownerOnly(rentalPropertyId)
         validRentalPropertyId(rentalPropertyId)
+        validRentalPrice(newRentalPrice)
     {
-        require(newRentalPrice > 0, "Rental Price must be greater than 0");
         rentalProperties[rentalPropertyId].rentalPrice = newRentalPrice;
         emit RentalPropertyUpdateRentalPrice(rentalPropertyId, newRentalPrice);
     }
@@ -271,8 +310,8 @@ contract RentalProperty {
         public
         ownerOnly(rentalPropertyId)
         validRentalPropertyId(rentalPropertyId)
+        validLeaseDuration(newLeaseDuration)
     {
-        require(newLeaseDuration > 0, "Lease Duration must be greater than 0");
         rentalProperties[rentalPropertyId].leaseDuration = newLeaseDuration;
         emit RentalPropertyUpdateLeaseDuration(rentalPropertyId, newLeaseDuration);
     }
@@ -285,8 +324,8 @@ contract RentalProperty {
         public
         ownerOnly(rentalPropertyId)
         validRentalPropertyId(rentalPropertyId)
+        validDescription(newDescription)
     {
-        require(bytes(newDescription).length > 0, "Description must not be empty");
         rentalProperties[rentalPropertyId].description = newDescription;
         emit RentalPropertyUpdateDescription(rentalPropertyId, newDescription);
     }
@@ -299,8 +338,8 @@ contract RentalProperty {
         public
         ownerOnly(rentalPropertyId)
         validRentalPropertyId(rentalPropertyId)
+        validNumOfTenants(newNumOfTenants)
     {
-        require(newNumOfTenants > 0, "Number of tenants must be greater than 0");
         rentalProperties[rentalPropertyId].numOfTenants = newNumOfTenants;
         emit RentalPropertyUpdateNumOfTenants(rentalPropertyId, newNumOfTenants);
     }
@@ -313,8 +352,8 @@ contract RentalProperty {
         public
         ownerOnly(rentalPropertyId)
         validRentalPropertyId(rentalPropertyId)
+        validLocation(newLocation)
     {
-        require(bytes(newLocation).length > 0, "Location must not be empty");
         rentalProperties[rentalPropertyId].location = newLocation;
         emit RentalPropertyUpdateLocation(rentalPropertyId, newLocation);
     }
@@ -327,8 +366,8 @@ contract RentalProperty {
         public
         ownerOnly(rentalPropertyId)
         validRentalPropertyId(rentalPropertyId)
+        validPostalCode(newPostalCode)
     {
-        require(bytes(newPostalCode).length > 0, "Postal Code must not be empty");
         rentalProperties[rentalPropertyId].postalCode = newPostalCode;
         emit RentalPropertyUpdatePostalCode(rentalPropertyId, newPostalCode);
     }
@@ -341,8 +380,8 @@ contract RentalProperty {
         public
         ownerOnly(rentalPropertyId)
         validRentalPropertyId(rentalPropertyId)
+        validUnitNumber(newUnitNumber)
     {
-        require(bytes(newUnitNumber).length > 0, "Unit Number must not be empty");
         rentalProperties[rentalPropertyId].unitNumber = newUnitNumber;
         emit RentalPropertyUpdateUnitNumber(rentalPropertyId, newUnitNumber);
     }
@@ -355,14 +394,8 @@ contract RentalProperty {
         public
         ownerOnly(rentalPropertyId)
         validRentalPropertyId(rentalPropertyId)
+        validPropertyType(newPropertyType)
     {
-        require(
-            newPropertyType == PropertyType.HDB ||
-                newPropertyType == PropertyType.Condo ||
-                newPropertyType == PropertyType.Landed ||
-                newPropertyType == PropertyType.Other,
-            "Invalid property type"
-        );
         rentalProperties[rentalPropertyId].propertyType = newPropertyType;
         emit RentalPropertyUpdatePropertyType(rentalPropertyId, newPropertyType);
     }
