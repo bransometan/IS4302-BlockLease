@@ -27,7 +27,7 @@ contract RentalMarketplace {
 
     // The number of tokens landlord must stake in the potential event of a dispute with tenant
     uint256 public safeguardLeaseToken;
-    uint256 private numOfRentalProperty = 0;
+    uint256 private numOfListedRentalProperty = 0;
 
     // This is mapping of RentalProperty id to the downpayment/deposit of the property
     mapping(uint256 => uint256) listRentalProperty;
@@ -62,7 +62,7 @@ contract RentalMarketplace {
             msg.sender == rentalPropertyContract.getLandlord(rentalPropertyId), "Only landlord can add rental property"
         );
         listRentalProperty[rentalPropertyId] = depositLeaseToken;
-        numOfRentalProperty++;
+        numOfListedRentalProperty++;
     }
 
     //Landlord can remove a rental property from the marketplace to stop accepting tenants.
@@ -71,7 +71,7 @@ contract RentalMarketplace {
             msg.sender == rentalPropertyContract.getLandlord(rentalPropertyId), "Only landlord can remove rental property"
         );
         listRentalProperty[rentalPropertyId] = 0;
-        numOfRentalProperty--;
+        numOfListedRentalProperty--;
     }
 
     //Tenant can apply for a rental property by submitting a rental application.
@@ -134,6 +134,36 @@ contract RentalMarketplace {
             applications[i] = rentalApplications[rentalPropertyId][i];
         }
         return applications;
+    }
+
+    // Landlord can reject a rental application.
+    function rejectRentalApplication(
+        uint256 rentalPropertyId,
+        uint256 applicationId
+    ) public {
+        RentalApplication storage rentalApplication = rentalApplications[
+            rentalPropertyId
+        ][applicationId];
+
+        require(
+            msg.sender == rentalPropertyContract.getLandlord(rentalPropertyId), "Only landlord can reject rental application"
+        );
+        require(
+            rentalApplication.status == RentStatus.PENDING,
+            "Rental application is not pending"
+        );
+
+        // Application count is reduced by 1
+        rentalApplicationCounts[rentalPropertyId]--;
+        // Tenant can reapply for the rental property
+        hasApplied[rentalPropertyId][rentalApplication.tenantAddress] = false;
+        // Remove the rental application
+        delete rentalApplications[rentalPropertyId][applicationId];
+
+        if (rentalApplicationCounts[rentalPropertyId] == 0) {
+            // Landlord can re-update the rental property if there is no ongoing application
+            rentalPropertyContract.setUpdateStatus(rentalPropertyId, true);
+        }
     }
 
     //Landlord can accept a rental application to start the rental process.
