@@ -112,6 +112,8 @@ contract RentalMarketplace {
         );
         rentalApplicationCounts[rentalPropertyId]++;
         hasApplied[rentalPropertyId][msg.sender] = true;
+        // Landlord cannot update the rental property while there is an ongoing application
+        rentalPropertyContract.setUpdateStatus(rentalPropertyId, false);
     }
 
     //Landlord can view all rental applications for a rental property.
@@ -186,9 +188,7 @@ contract RentalMarketplace {
             "Rental application is not ongoing"
         );
 
-        uint256 monthlyRent = rentalPropertyContract.getMonthlyRent(
-            rentalPropertyId
-        );
+        uint256 monthlyRent = rentalPropertyContract.getRentalPrice(rentalPropertyId);
 
         // uint256 paymentId = paymentEscrowContract.initiateRentPayment(
         //     rentalPropertyContract.getLandlord(rentalPropertyId),

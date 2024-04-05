@@ -12,15 +12,16 @@ contract RentalProperty {
     }
 
     struct rentalProperty {
-        string location;
-        string postalCode;
-        string unitNumber;
-        PropertyType propertyType;
-        string description;
+        string location; // location of the property
+        string postalCode; // postal code of the property
+        string unitNumber; // unit number of the property
+        PropertyType propertyType; // type of property
+        string description; // description of the property
         uint256 numOfTenants; // number of tenants in the property
         uint256 rentalPrice; // rental price in LeaseToken
         uint256 leaseDuration; // lease duration in months
         address landlord; // address of the landlord owner
+        bool updateStatus; // status of the rental property (true if property can be updated/deleted, false if property cannot be updated/deleted)
     }
 
     uint256 public numRentalProperty = 0;
@@ -38,7 +39,8 @@ contract RentalProperty {
         uint256 numOfTenants,
         uint256 rentalPrice,
         uint256 leaseDuration,
-        address landlord
+        address landlord,
+        bool updateStatus
     );
 
     event RentalPropertyUpdateLocation(
@@ -118,6 +120,14 @@ contract RentalProperty {
         _;
     }
 
+    modifier validUpdateStatus(uint256 rentalPropertyId) {
+        require(
+            rentalProperties[rentalPropertyId].updateStatus == true,
+            "Rental Property cannot be updated"
+        );
+        _;
+    }
+
     // ################################################### CREATE METHOD ################################################### //
 
     // Function for landlord to create a new Rental Property, and add to 'rentalProperties' map. requires at least 0.01ETH to create
@@ -147,7 +157,8 @@ contract RentalProperty {
             _numOfTenants,
             _rentalPrice,
             _leaseDuration,
-            msg.sender // landlord is the sender
+            msg.sender, // landlord is the sender
+            true // initially, rental property can be updated/deleted when there are no tenants applications
         );
 
         uint256 newRentalPropertyId = numRentalProperty++; // increment rental property id
@@ -162,7 +173,8 @@ contract RentalProperty {
             _numOfTenants,
             _rentalPrice,
             _leaseDuration,
-            msg.sender
+            msg.sender,
+            true
         );
 
         return newRentalPropertyId; //return new rental property id
@@ -268,6 +280,7 @@ contract RentalProperty {
         public
         ownerOnly(rentalPropertyId)
         validRentalPropertyId(rentalPropertyId)
+        validUpdateStatus(rentalPropertyId)
     {
         rentalProperties[rentalPropertyId].location = newLocation;
         emit RentalPropertyUpdateLocation(rentalPropertyId, newLocation);
@@ -281,6 +294,7 @@ contract RentalProperty {
         public
         ownerOnly(rentalPropertyId)
         validRentalPropertyId(rentalPropertyId)
+        validUpdateStatus(rentalPropertyId)
     {
         rentalProperties[rentalPropertyId].postalCode = newPostalCode;
         emit RentalPropertyUpdatePostalCode(rentalPropertyId, newPostalCode);
@@ -294,6 +308,7 @@ contract RentalProperty {
         public
         ownerOnly(rentalPropertyId)
         validRentalPropertyId(rentalPropertyId)
+        validUpdateStatus(rentalPropertyId)
     {
         rentalProperties[rentalPropertyId].unitNumber = newUnitNumber;
         emit RentalPropertyUpdateUnitNumber(rentalPropertyId, newUnitNumber);
@@ -307,6 +322,7 @@ contract RentalProperty {
         public
         ownerOnly(rentalPropertyId)
         validRentalPropertyId(rentalPropertyId)
+        validUpdateStatus(rentalPropertyId)
     {
         rentalProperties[rentalPropertyId].propertyType = newPropertyType;
         emit RentalPropertyUpdatePropertyType(
@@ -323,6 +339,7 @@ contract RentalProperty {
         public
         ownerOnly(rentalPropertyId)
         validRentalPropertyId(rentalPropertyId)
+        validUpdateStatus(rentalPropertyId)
     {
         rentalProperties[rentalPropertyId].description = newDescription;
         emit RentalPropertyUpdateDescription(rentalPropertyId, newDescription);
@@ -337,6 +354,7 @@ contract RentalProperty {
         ownerOnly(rentalPropertyId)
         validRentalPropertyId(rentalPropertyId)
         validNumOfTenants(newNumOfTenants)
+        validUpdateStatus(rentalPropertyId)
     {
         rentalProperties[rentalPropertyId].numOfTenants = newNumOfTenants;
         emit RentalPropertyUpdateNumOfTenants(
@@ -354,6 +372,7 @@ contract RentalProperty {
         ownerOnly(rentalPropertyId)
         validRentalPropertyId(rentalPropertyId)
         validRentalPrice(newRentalPrice)
+        validUpdateStatus(rentalPropertyId)
     {
         rentalProperties[rentalPropertyId].rentalPrice = newRentalPrice;
         emit RentalPropertyUpdateRentalPrice(rentalPropertyId, newRentalPrice);
@@ -368,12 +387,24 @@ contract RentalProperty {
         ownerOnly(rentalPropertyId)
         validRentalPropertyId(rentalPropertyId)
         validLeaseDuration(newLeaseDuration)
+        validUpdateStatus(rentalPropertyId)
     {
         rentalProperties[rentalPropertyId].leaseDuration = newLeaseDuration;
         emit RentalPropertyUpdateLeaseDuration(
             rentalPropertyId,
             newLeaseDuration
         );
+    }
+    //Function to set the new update status of a rental property
+    function setUpdateStatus(
+        uint256 rentalPropertyId,
+        bool newUpdateStatus
+    )
+        public
+        ownerOnly(rentalPropertyId)
+        validRentalPropertyId(rentalPropertyId)
+    {
+        rentalProperties[rentalPropertyId].updateStatus = newUpdateStatus;
     }
 
     // ################################################### DELETE METHOD ################################################### //
@@ -385,6 +416,7 @@ contract RentalProperty {
         public
         ownerOnly(rentalPropertyId)
         validRentalPropertyId(rentalPropertyId)
+        validUpdateStatus(rentalPropertyId)
     {
         delete rentalProperties[rentalPropertyId];
         emit RentalPropertyDeleted(rentalPropertyId);
