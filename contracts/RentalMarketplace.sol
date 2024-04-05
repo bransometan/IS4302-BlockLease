@@ -5,6 +5,8 @@ import "./RentalProperty.sol";
 import "./PaymentEscrow.sol";
 
 contract RentalMarketplace {
+    // ################################################### STRUCTURE & STATE VARIABLES ################################################### //
+
     enum RentStatus {
         PENDING, // This is when a tenant apply for a rental property and waiting for landlord to accept
         ONGOING, // This is when a tenant sign a rental agreement and the rental is ongoing
@@ -43,11 +45,20 @@ contract RentalMarketplace {
         address rentalPropertyAddress,
         address paymentEscrowAddress,
         uint256 _safeguardLeaseToken
-    ) public {
+    ) {
         rentalPropertyContract = RentalProperty(rentalPropertyAddress);
         paymentEscrowContract = PaymentEscrow(paymentEscrowAddress);
         safeguardLeaseToken = _safeguardLeaseToken;
     }
+
+      // ################################################### EVENTS ################################################### //
+
+
+
+    // ################################################### MODIFIERS ################################################### //
+
+
+    // ################################################### FUNCTIONS ################################################### //
 
     //Landlord can add a rental property to the marketplace to start accepting tenants.
     function addRentalProperty(
@@ -264,4 +275,6 @@ contract RentalMarketplace {
             rentalApplication.status = RentStatus.ONGOING;
         }
     }
+
+    // ################################################### GETTER METHODS ################################################### //
 }
