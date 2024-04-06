@@ -79,15 +79,6 @@ contract RentalMarketplace {
         _;
     }
 
-    // Modifier to check the tenant is not the owner of the rental property
-    modifier tenantOnly(uint256 rentalPropertyId) {
-        require(
-            msg.sender != rentalPropertyContract.getLandlord(rentalPropertyId),
-            "Tenant cannot perform this action"
-        );
-        _;
-    }
-
     // Modifier to check the rental property is listed
     modifier rentalPropertyListed(uint256 rentalPropertyId) {
         require(
@@ -315,7 +306,6 @@ contract RentalMarketplace {
         string memory description
     )
         public
-        tenantOnly(rentalPropertyId)
         rentalPropertyListed(rentalPropertyId)
         rentalPropertyNotFull(rentalPropertyId)
         tenantNotApplied(rentalPropertyId)
@@ -421,7 +411,6 @@ contract RentalMarketplace {
     )
         public
         rentalPropertyListed(rentalPropertyId)
-        tenantOnly(rentalPropertyId)
         tenantApplied(rentalPropertyId)
         rentalApplicationExist(rentalPropertyId, applicationId)
         rentalApplicationOngoing(rentalPropertyId, applicationId)
@@ -484,7 +473,7 @@ contract RentalMarketplace {
         } else {
             rentalApplication.status = RentStatus.ONGOING;
         }
-        
+
         emit PaymentAccepted(rentalPropertyId, applicationId);
     }
 
@@ -534,4 +523,5 @@ contract RentalMarketplace {
     function getPaymentEscrowContractAddress() public view returns (address) {
         return address(paymentEscrowContract);
     }
+    
 }
