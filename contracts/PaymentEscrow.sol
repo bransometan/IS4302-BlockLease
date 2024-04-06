@@ -37,11 +37,28 @@ contract PaymentEscrow {
 
     // ################################################### EVENTS ################################################### //
 
+    event paymentCreated(address payer, address payee, uint256 amount);
+    event paymentPaid(address payer, address payee, uint256 amount);
+    event paymentReleased(address payer, address payee, uint256 amount);
+    event paymentRefunded(address payer, address payee, uint256 amount);
+    event protectionFeeSet(uint256 protectionFee);
+    event commissionFeeSet(uint256 commissionFee);
+    event tokenWithdrawn(address owner, uint256 amount);
 
     // ################################################### MODIFIERS ################################################### //
 
     modifier onlyOwner() {
         require(msg.sender == owner, "Only owner can call this function");
+        _;
+    }
+
+    modifier onlyPayer(uint256 _paymentId) {
+        require(msg.sender == payments[_paymentId].payer, "Only payer can call this function");
+        _;
+    }
+
+    modifier onlyPayee(uint256 _paymentId) {
+        require(msg.sender == payments[_paymentId].payee, "Only payee can call this function");
         _;
     }
 
@@ -55,6 +72,7 @@ contract PaymentEscrow {
     function pay(uint256 _paymentId) public {
         Payment storage payment = payments[_paymentId];
         require(payment.status == PaymentStatus.PENDING, "Payment has already been made");
+        // Tenant transfers the payment amount to PaymentEscrow
         leaseTokenContract.transferLeaseTokenFrom(payment.payer, address(this), payment.amount);
         payment.status = PaymentStatus.PAID;
     }
@@ -72,6 +90,7 @@ contract PaymentEscrow {
     function refund(uint256 _paymentId) public {
         Payment storage payment = payments[_paymentId];
         require(payment.status == PaymentStatus.PAID, "Payment has not been made yet");
+        // PaymentEscrow transfers the payment amount back to the landlord
         leaseTokenContract.transferLeaseToken(payment.payer, payment.amount);
         payment.status = PaymentStatus.REFUNDED;
     }
