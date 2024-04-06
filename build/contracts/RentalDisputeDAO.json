@@ -1,29 +1,29 @@
 {
   "contractName": "RentalDisputeDAO",
   "abi": [],
-  "metadata": "{\"compiler\":{\"version\":\"0.8.1+commit.df193b15\"},\"language\":\"Solidity\",\"output\":{\"abi\":[],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"project:/contracts/RentDisputeDAO.sol\":\"RentalDisputeDAO\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"project:/contracts/RentDisputeDAO.sol\":{\"keccak256\":\"0x3cefac100a4f3af51413ca8faba74ce8563ce6c89a9f8c25b04f6a12f052c2dd\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://75d94515ba2c0dc53b639a5da22955a29a804616595fe5eaeee1c1334993fc71\",\"dweb:/ipfs/QmPtXwgC5t6zpqf75FtVumLNpKhW6YmbDgYVbVNzuAcoJf\"]}},\"version\":1}",
-  "bytecode": "0x6080604052348015600f57600080fd5b50603f80601d6000396000f3fe6080604052600080fdfea2646970667358221220f3183fe6afc88217c5d94f203b242c77f8d3498852bf7faac5acde423f66771164736f6c63430008010033",
-  "deployedBytecode": "0x6080604052600080fdfea2646970667358221220f3183fe6afc88217c5d94f203b242c77f8d3498852bf7faac5acde423f66771164736f6c63430008010033",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.1+commit.df193b15\"},\"language\":\"Solidity\",\"output\":{\"abi\":[],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"project:/contracts/RentDisputeDAO.sol\":\"RentalDisputeDAO\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"project:/contracts/RentDisputeDAO.sol\":{\"keccak256\":\"0x592b78b23251867550ebb34011db53577db79066bc3c05ee463fdb53d8bdfcd2\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://35775ee878a4b42368c8d69a7841a375eb457eafcbf20d6da31344e0ecc37346\",\"dweb:/ipfs/QmPsXehFDXArThrbUSTYE5DrMusSAXEpoMy32ea7i1EHZJ\"]}},\"version\":1}",
+  "bytecode": "0x6080604052348015600f57600080fd5b50603f80601d6000396000f3fe6080604052600080fdfea2646970667358221220051aae2d7e8a92fb1ac116963826d24816ad93e0483cdcc9fe4e36a9a7d725ac64736f6c63430008010033",
+  "deployedBytecode": "0x6080604052600080fdfea2646970667358221220051aae2d7e8a92fb1ac116963826d24816ad93e0483cdcc9fe4e36a9a7d725ac64736f6c63430008010033",
   "immutableReferences": {},
   "generatedSources": [],
   "deployedGeneratedSources": [],
-  "sourceMap": "58:36:3:-:0;;;;;;;;;;;;;;;;;;;",
-  "deployedSourceMap": "58:36:3:-:0;;;;;",
-  "source": "// SPDX-License-Identifier: MIT \npragma solidity ^0.8.0;\n\ncontract RentalDisputeDAO {\n    \n\n\n}",
-  "sourcePath": "/Users/Mike/Documents/GitHub/is4302-G13-project/contracts/RentDisputeDAO.sol",
+  "sourceMap": "61:40:3:-:0;;;;;;;;;;;;;;;;;;;",
+  "deployedSourceMap": "61:40:3:-:0;;;;;",
+  "source": "// SPDX-License-Identifier: MIT \r\npragma solidity ^0.8.0;\r\n\r\ncontract RentalDisputeDAO {\r\n    \r\n\r\n\r\n}",
+  "sourcePath": "C:\\Users\\Bransome Tan Yi Hao\\OneDrive - National University of Singapore\\Desktop\\IS4302\\is4302-project\\contracts\\RentDisputeDAO.sol",
   "ast": {
     "absolutePath": "project:/contracts/RentDisputeDAO.sol",
     "exportedSymbols": {
       "RentalDisputeDAO": [
-        1363
+        1391
       ]
     },
-    "id": 1364,
+    "id": 1392,
     "license": "MIT",
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 1362,
+        "id": 1390,
         "literals": [
           "solidity",
           "^",
@@ -31,7 +31,7 @@
           ".0"
         ],
         "nodeType": "PragmaDirective",
-        "src": "33:23:3"
+        "src": "34:23:3"
       },
       {
         "abstract": false,
@@ -39,18 +39,18 @@
         "contractDependencies": [],
         "contractKind": "contract",
         "fullyImplemented": true,
-        "id": 1363,
+        "id": 1391,
         "linearizedBaseContracts": [
-          1363
+          1391
         ],
         "name": "RentalDisputeDAO",
         "nodeType": "ContractDefinition",
         "nodes": [],
-        "scope": 1364,
-        "src": "58:36:3"
+        "scope": 1392,
+        "src": "61:40:3"
       }
     ],
-    "src": "33:61:3"
+    "src": "34:67:3"
   },
   "compiler": {
     "name": "solc",
@@ -58,7 +58,7 @@
   },
   "networks": {},
   "schemaVersion": "3.4.16",
-  "updatedAt": "2024-04-06T15:01:35.578Z",
+  "updatedAt": "2024-04-06T16:08:11.361Z",
   "devdoc": {
     "kind": "dev",
     "methods": {},
