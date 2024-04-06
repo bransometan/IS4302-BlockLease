@@ -31,8 +31,8 @@ contract LeaseToken {
         
     }
 
-    function checkLeaseToken() public returns(uint256) {
-        uint256 leaseToken = erc20Contract.balanceOf(msg.sender);
+    function checkLeaseToken(address recipient) public returns(uint256) {
+        uint256 leaseToken = erc20Contract.balanceOf(recipient);
         emit creditChecked(leaseToken);
         return leaseToken;
     }
