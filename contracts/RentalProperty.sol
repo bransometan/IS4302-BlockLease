@@ -24,8 +24,8 @@ contract RentalProperty {
         bool updateStatus; // status of the rental property (true if property can be updated/deleted, false if property cannot be updated/deleted)
     }
 
-    uint256 public numRentalProperty = 0;
-    mapping(uint256 => rentalProperty) public rentalProperties; // map of rental properties indexed by propertyId
+    uint256 private numRentalProperty = 0;
+    mapping(uint256 => rentalProperty) private rentalProperties; // map of rental properties indexed by propertyId
 
     // ################################################### EVENTS ################################################### //
 
