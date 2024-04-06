@@ -20,11 +20,11 @@ contract PaymentEscrow {
     }
 
     // The number of payment transactions that have been made
-    uint256 public numOfPayments = 0;
+    uint256 private numOfPayments = 0;
     // The number of tokens landlord must stake in the potential event of a dispute with tenant
     uint256 private protectionFee;
     // The commission fee (in tokens) that the platform charges for each transaction
-    uint256 public commissionFee;
+    uint256 private commissionFee;
 
     LeaseToken leaseTokenContract;
 
@@ -88,6 +88,14 @@ contract PaymentEscrow {
             msg.sender == rentalMarketplaceAddress ||
                 msg.sender == rentDisputeDAOAddress,
             "Only RentalMarketplace or RentDisputeDAO can call this function"
+        );
+        _;
+    }
+
+    modifier checkSufficientBalance(address _payer, uint256 _amount) {
+        require(
+            leaseTokenContract.checkLeaseToken(_payer) >= _amount,
+            "Payer does not have enough balance"
         );
         _;
     }
@@ -164,7 +172,12 @@ contract PaymentEscrow {
         address _payer,
         address _payee,
         uint256 _amount
-    ) public onlyRentalMarketplaceOrRentDisputeDAO {
+    )
+        public
+        onlyRentalMarketplaceOrRentDisputeDAO
+        checkSufficientBalance(_payer, _amount)
+        returns (uint256)
+    {
         payments[numOfPayments] = Payment(
             _payer,
             _payee,
@@ -173,6 +186,7 @@ contract PaymentEscrow {
         );
         numOfPayments++;
         emit paymentCreated(_payer, _payee, _amount);
+        return numOfPayments - 1; // Return the payment ID
     }
 
     // Function to transfer the payment amount from the tenant to the PaymentEscrow

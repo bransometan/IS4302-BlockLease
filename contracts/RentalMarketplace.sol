@@ -22,6 +22,7 @@ contract RentalMarketplace {
         string description; // The tenant description of why they want to rent the property
         uint256 monthsPaid; // The number of months the tenant has paid
         RentStatus status;
+        uint256[] paymentIds; // All the payment transaction ids by this tenant for the rental property
     }
 
     RentalProperty rentalPropertyContract;
@@ -40,10 +41,7 @@ contract RentalMarketplace {
     // This is to keep track if a tenant has already applied for a rental property
     mapping(uint256 => mapping(address => bool)) private hasApplied;
 
-    constructor(
-        address rentalPropertyAddress,
-        address paymentEscrowAddress
-    ) {
+    constructor(address rentalPropertyAddress, address paymentEscrowAddress) {
         rentalPropertyContract = RentalProperty(rentalPropertyAddress);
         paymentEscrowContract = PaymentEscrow(paymentEscrowAddress);
     }
@@ -104,6 +102,18 @@ contract RentalMarketplace {
         require(
             listRentalProperty[rentalPropertyId] == 0,
             "Rental property is already listed"
+        );
+        _;
+    }
+
+    modifier rentalApplicationExist(
+        uint256 rentalPropertyId,
+        uint256 applicationId
+    ) {
+        require(
+            rentalApplications[rentalPropertyId][applicationId].tenantAddress !=
+                address(0),
+            "Rental application does not exist"
         );
         _;
     }
@@ -295,6 +305,8 @@ contract RentalMarketplace {
     }
 
     //Tenant can apply for a rental property by submitting a rental application.
+    //Tenant must initially pay the deposit (LeaseToken) for the rental property to the PaymentEscrow contract.
+    //Deposit will be returned to the tenant if the rental application is rejected.
     function applyRentalProperty(
         uint256 rentalPropertyId,
         string memory tenantName,
@@ -316,10 +328,27 @@ contract RentalMarketplace {
             tenantPhone,
             description,
             0,
-            RentStatus.PENDING
+            RentStatus.PENDING,
+            new uint256[](1000) // Limit of 1000 payment transactions
         );
         rentalApplicationCounts[rentalPropertyId]++;
         hasApplied[rentalPropertyId][msg.sender] = true;
+
+        // Deposit LeaseToken required for the rental property
+        uint256 depositLeaseToken = listRentalProperty[rentalPropertyId];
+        // Create a payment transaction for the tenant
+        uint256 paymentId = paymentEscrowContract.createPayment(
+            msg.sender,
+            rentalPropertyContract.getLandlord(rentalPropertyId),
+            depositLeaseToken
+        );
+        // Add the payment transaction id to the rental application
+        rentalApplications[rentalPropertyId][applicationId].paymentIds.push(
+            paymentId
+        );
+        // Tenant pay/transfer the deposit (LeaseToken) for the rental property to the PaymentEscrow contract
+        paymentEscrowContract.pay(paymentId);
+
         // Landlord cannot update the rental property while there is an ongoing application
         rentalPropertyContract.setUpdateStatus(rentalPropertyId, false);
         emit RentalApplicationSubmitted(rentalPropertyId, applicationId);
@@ -332,11 +361,19 @@ contract RentalMarketplace {
     )
         public
         landlordOnly(rentalPropertyId)
+        rentalApplicationExist(rentalPropertyId, applicationId)
         rentalApplicationPending(rentalPropertyId, applicationId)
     {
         RentalApplication storage rentalApplication = rentalApplications[
             rentalPropertyId
         ][applicationId];
+
+        // Refund the deposit (LeaseToken) to the tenant if the rental application is rejected (latest payment transaction id)
+        paymentEscrowContract.refund(
+            rentalApplication.paymentIds[
+                rentalApplication.paymentIds.length - 1
+            ]
+        );
 
         // Application count is reduced by 1
         rentalApplicationCounts[rentalPropertyId]--;
@@ -359,20 +396,19 @@ contract RentalMarketplace {
     )
         public
         landlordOnly(rentalPropertyId)
+        rentalApplicationExist(rentalPropertyId, applicationId)
         rentalApplicationPending(rentalPropertyId, applicationId)
     {
         RentalApplication storage rentalApplication = rentalApplications[
             rentalPropertyId
         ][applicationId];
 
-        uint256 depositLeaseToken = listRentalProperty[rentalPropertyId];
-
-        // uint256 paymentId = paymentEscrowContract.createApplicationPayment(
-        //     rentalPropertyContract.getLandlord(rentalPropertyId),
-        //     rentalApplication.tenantId,
-        //     rentalPropertyId,
-        //     depositLeaseToken,
-        // );
+        // Release the deposit (LeaseToken) to the landlord if the rental application is accepted (latest payment transaction id)
+        paymentEscrowContract.release(
+            rentalApplication.paymentIds[
+                rentalApplication.paymentIds.length - 1
+            ]
+        );
 
         rentalApplication.status = RentStatus.ONGOING;
         emit RentalApplicationAccepted(rentalPropertyId, applicationId);
@@ -387,22 +423,29 @@ contract RentalMarketplace {
         rentalPropertyListed(rentalPropertyId)
         tenantOnly(rentalPropertyId)
         tenantApplied(rentalPropertyId)
+        rentalApplicationExist(rentalPropertyId, applicationId)
         rentalApplicationOngoing(rentalPropertyId, applicationId)
     {
         RentalApplication storage rentalApplication = rentalApplications[
             rentalPropertyId
         ][applicationId];
 
+        // Monthly rent required for the rental property
         uint256 monthlyRent = rentalPropertyContract.getRentalPrice(
             rentalPropertyId
         );
-
-        // uint256 paymentId = paymentEscrowContract.initiateRentPayment(
-        //     rentalPropertyContract.getLandlord(rentalPropertyId),
-        //     rentalApplication.tenantId,
-        //     rentalPropertyId,
-        //     monthlyRent
-        // );
+        // Create a payment transaction for the tenant
+        uint256 paymentId = paymentEscrowContract.createPayment(
+            msg.sender,
+            rentalPropertyContract.getLandlord(rentalPropertyId),
+            monthlyRent
+        );
+        // Add the payment transaction id to the rental application
+        rentalApplications[rentalPropertyId][applicationId].paymentIds.push(
+            paymentId
+        );
+        // Tenant pay/transfer the monthly rent for the rental property to the PaymentEscrow contract
+        paymentEscrowContract.pay(paymentId);
 
         rentalApplication.status = RentStatus.MADE_PAYMENT;
         emit PaymentMade(rentalPropertyId, applicationId);
@@ -416,19 +459,23 @@ contract RentalMarketplace {
         public
         rentalPropertyListed(rentalPropertyId)
         landlordOnly(rentalPropertyId)
+        rentalApplicationExist(rentalPropertyId, applicationId)
         rentalApplicationMadePayment(rentalPropertyId, applicationId)
     {
         RentalApplication storage rentalApplication = rentalApplications[
             rentalPropertyId
         ][applicationId];
-        // paymentEscrowContract.confirmRentPayment(
-        //     rentalPropertyContract.getLandlord(rentalPropertyId),
-        //     rentalApplication.tenantAddress,
-        //     rentalPropertyId
-        // );
+
+        // Release the monthly rent to the landlord if the payment is accepted (latest payment transaction id)
+        paymentEscrowContract.release(
+            rentalApplication.paymentIds[
+                rentalApplication.paymentIds.length - 1
+            ]
+        );
 
         rentalApplication.monthsPaid++;
 
+        // Check if the rental is completed for the tenant (e.g. tenant move out and landlord return deposit if any), else the rental is ongoing
         if (
             rentalApplication.monthsPaid ==
             rentalPropertyContract.getLeaseDuration(rentalPropertyId)
@@ -437,6 +484,7 @@ contract RentalMarketplace {
         } else {
             rentalApplication.status = RentStatus.ONGOING;
         }
+        
         emit PaymentAccepted(rentalPropertyId, applicationId);
     }
 
@@ -486,5 +534,4 @@ contract RentalMarketplace {
     function getPaymentEscrowContractAddress() public view returns (address) {
         return address(paymentEscrowContract);
     }
-
 }
