@@ -27,8 +27,6 @@ contract RentalMarketplace {
     RentalProperty rentalPropertyContract;
     PaymentEscrow paymentEscrowContract;
 
-    // The number of tokens landlord must stake in the potential event of a dispute with tenant
-    uint256 private safeguardLeaseToken;
     // The number of rental properties listed in the marketplace
     uint256 private numOfListedRentalProperty = 0;
 
@@ -44,12 +42,10 @@ contract RentalMarketplace {
 
     constructor(
         address rentalPropertyAddress,
-        address paymentEscrowAddress,
-        uint256 _safeguardLeaseToken
+        address paymentEscrowAddress
     ) {
         rentalPropertyContract = RentalProperty(rentalPropertyAddress);
         paymentEscrowContract = PaymentEscrow(paymentEscrowAddress);
-        safeguardLeaseToken = _safeguardLeaseToken;
     }
 
     // ################################################### EVENTS ################################################### //
@@ -371,12 +367,11 @@ contract RentalMarketplace {
 
         uint256 depositLeaseToken = listRentalProperty[rentalPropertyId];
 
-        // uint256 paymentId = paymentEscrowContract.initiateApplicationPayment(
+        // uint256 paymentId = paymentEscrowContract.createApplicationPayment(
         //     rentalPropertyContract.getLandlord(rentalPropertyId),
         //     rentalApplication.tenantId,
         //     rentalPropertyId,
         //     depositLeaseToken,
-        //     safeguardLeaseToken
         // );
 
         rentalApplication.status = RentStatus.ONGOING;
@@ -492,8 +487,4 @@ contract RentalMarketplace {
         return address(paymentEscrowContract);
     }
 
-    //Get the number of safeguardLeaseToken required for a rental property.
-    function getSafeguardLeaseToken() public view returns (uint256) {
-        return safeguardLeaseToken;
-    }
 }
