@@ -9,7 +9,7 @@ contract LeaseToken {
     uint256 currentSupply;
     address owner;
     
-    constructor() public {
+    constructor() {
         ERC20 e = new ERC20();
         erc20Contract = e;
         owner = msg.sender;
@@ -31,8 +31,8 @@ contract LeaseToken {
         
     }
 
-    function checkLeaseToken() public returns(uint256) {
-        uint256 leaseToken = erc20Contract.balanceOf(msg.sender);
+    function checkLeaseToken(address recipient) public returns(uint256) {
+        uint256 leaseToken = erc20Contract.balanceOf(recipient);
         emit creditChecked(leaseToken);
         return leaseToken;
     }
