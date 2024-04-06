@@ -1,0 +1,72 @@
+{
+  "contractName": "RentalDisputeDAO",
+  "abi": [],
+  "metadata": "{\"compiler\":{\"version\":\"0.8.1+commit.df193b15\"},\"language\":\"Solidity\",\"output\":{\"abi\":[],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"project:/contracts/RentDisputeDAO.sol\":\"RentalDisputeDAO\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"project:/contracts/RentDisputeDAO.sol\":{\"keccak256\":\"0x3cefac100a4f3af51413ca8faba74ce8563ce6c89a9f8c25b04f6a12f052c2dd\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://75d94515ba2c0dc53b639a5da22955a29a804616595fe5eaeee1c1334993fc71\",\"dweb:/ipfs/QmPtXwgC5t6zpqf75FtVumLNpKhW6YmbDgYVbVNzuAcoJf\"]}},\"version\":1}",
+  "bytecode": "0x6080604052348015600f57600080fd5b50603f80601d6000396000f3fe6080604052600080fdfea2646970667358221220f3183fe6afc88217c5d94f203b242c77f8d3498852bf7faac5acde423f66771164736f6c63430008010033",
+  "deployedBytecode": "0x6080604052600080fdfea2646970667358221220f3183fe6afc88217c5d94f203b242c77f8d3498852bf7faac5acde423f66771164736f6c63430008010033",
+  "immutableReferences": {},
+  "generatedSources": [],
+  "deployedGeneratedSources": [],
+  "sourceMap": "58:36:3:-:0;;;;;;;;;;;;;;;;;;;",
+  "deployedSourceMap": "58:36:3:-:0;;;;;",
+  "source": "// SPDX-License-Identifier: MIT \npragma solidity ^0.8.0;\n\ncontract RentalDisputeDAO {\n    \n\n\n}",
+  "sourcePath": "/Users/Mike/Documents/GitHub/is4302-G13-project/contracts/RentDisputeDAO.sol",
+  "ast": {
+    "absolutePath": "project:/contracts/RentDisputeDAO.sol",
+    "exportedSymbols": {
+      "RentalDisputeDAO": [
+        1363
+      ]
+    },
+    "id": 1364,
+    "license": "MIT",
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 1362,
+        "literals": [
+          "solidity",
+          "^",
+          "0.8",
+          ".0"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "33:23:3"
+      },
+      {
+        "abstract": false,
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "contract",
+        "fullyImplemented": true,
+        "id": 1363,
+        "linearizedBaseContracts": [
+          1363
+        ],
+        "name": "RentalDisputeDAO",
+        "nodeType": "ContractDefinition",
+        "nodes": [],
+        "scope": 1364,
+        "src": "58:36:3"
+      }
+    ],
+    "src": "33:61:3"
+  },
+  "compiler": {
+    "name": "solc",
+    "version": "0.8.1+commit.df193b15.Emscripten.clang"
+  },
+  "networks": {},
+  "schemaVersion": "3.4.16",
+  "updatedAt": "2024-04-06T15:01:35.578Z",
+  "devdoc": {
+    "kind": "dev",
+    "methods": {},
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {},
+    "version": 1
+  }
+}
