@@ -248,8 +248,8 @@ contract RentalMarketplace {
         emit RentalPropertyRemoved(rentalPropertyId);
     }
 
-    //Tenant can view all listed rental properties (By Id) in the marketplace.
-    function viewListedRentalPropertiesById()
+    //Tenant can view all Ids of listed rental properties in the marketplace.
+    function viewIdsOfListedRentalProperties()
         public
         view
         returns (uint256[] memory)
