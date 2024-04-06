@@ -67,6 +67,7 @@ contract PaymentEscrow {
     function createPayment(address _payer, address _payee, uint256 _amount) public onlyOwner {
         payments[numOfPayments] = Payment(_payer, _payee, _amount, PaymentStatus.PENDING);
         numOfPayments++;
+        emit paymentCreated(_payer, _payee, _amount);
     }
 
     function pay(uint256 _paymentId) public {
@@ -75,6 +76,7 @@ contract PaymentEscrow {
         // Tenant transfers the payment amount to PaymentEscrow
         leaseTokenContract.transferLeaseTokenFrom(payment.payer, address(this), payment.amount);
         payment.status = PaymentStatus.PAID;
+        emit paymentPaid(payment.payer, payment.payee, payment.amount);
     }
 
     function release(uint256 _paymentId) public {
@@ -85,6 +87,7 @@ contract PaymentEscrow {
         // PaymentEscrow transfers the payment amount to the tenant (minus the commission fee), commission fee is transferred to the platform
         leaseTokenContract.transferLeaseToken(payment.payee, payment.amount - commissionFee);
         payment.status = PaymentStatus.RELEASED;
+        emit paymentReleased(payment.payer, payment.payee, payment.amount);
     }
 
     function refund(uint256 _paymentId) public {
@@ -93,19 +96,23 @@ contract PaymentEscrow {
         // PaymentEscrow transfers the payment amount back to the landlord
         leaseTokenContract.transferLeaseToken(payment.payer, payment.amount);
         payment.status = PaymentStatus.REFUNDED;
+        emit paymentRefunded(payment.payer, payment.payee, payment.amount);
     }
 
     function withdrawToken() public onlyOwner {
         leaseTokenContract.transferLeaseToken(owner, leaseTokenContract.checkLeaseToken((address(this))));
+        emit tokenWithdrawn(owner, leaseTokenContract.checkLeaseToken((address(this))));
     }
 
     // ################################################### SETTER METHODS ################################################### //
     function setProtectionFee(uint256 _protectionFee) public onlyOwner {
         protectionFee = _protectionFee;
+        emit protectionFeeSet(_protectionFee);
     }
 
     function setCommissionFee(uint256 _commissionFee) public onlyOwner {
         commissionFee = _commissionFee;
+        emit commissionFeeSet(_commissionFee);
     } 
 
     // ################################################### GETTER METHODS ################################################### //
