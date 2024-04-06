@@ -17,10 +17,9 @@ contract LeaseToken {
     }
 
     event getCredit(uint256 credit);
-    event creditChecked(uint256 credit);
-    event transferCredit(address recipient, uint256 credit);
-    event transferCreditFrom(address sender, address recipient, uint256 credit);
-    event approveCredit(address spender, uint256 credit);
+    event transferCredit(address sender, address recipient, uint256 credit);
+    event transferCreditFrom(address spender, address sender, address recipient, uint256 credit);
+    event approveCredit(address sender, address spender, uint256 credit);
 
 
     function getLeaseToken() public payable {
@@ -31,25 +30,29 @@ contract LeaseToken {
         
     }
 
-    function checkLeaseToken(address recipient) public returns(uint256) {
+    function checkLeaseToken(address recipient) public view returns(uint256) {
         uint256 leaseToken = erc20Contract.balanceOf(recipient);
-        emit creditChecked(leaseToken);
         return leaseToken;
     }
 
-    function transferLeaseToken(address recipient, uint256 leaseToken) public {
-        erc20Contract.transfer(recipient, leaseToken);
-        emit transferCredit(recipient, leaseToken);
+    function transferLeaseToken(address sender, address recipient, uint256 leaseToken) public {
+        erc20Contract.transferLT(sender, recipient, leaseToken);
+        emit transferCredit(sender, recipient, leaseToken);
     }
 
-    function transferLeaseTokenFrom(address sender, address recipient, uint256 leaseToken) public {
-        erc20Contract.transferFrom(sender, recipient, leaseToken);
-        emit transferCreditFrom(sender, recipient, leaseToken);
+    function transferLeaseTokenFrom(address spender, address sender, address recipient, uint256 leaseToken) public {
+        erc20Contract.transferFromLT(spender, sender, recipient, leaseToken);
+        emit transferCreditFrom(spender, sender, recipient, leaseToken);
     }
 
-    function approveLeaseToken(address spender, uint256 leaseToken) public {
-        erc20Contract.approve(spender, leaseToken);
-        emit approveCredit(spender, leaseToken);
+    function approveLeaseToken(address sender, address spender, uint256 leaseToken) public {
+        erc20Contract.approveLT(sender, spender, leaseToken);
+        emit approveCredit(sender, spender, leaseToken);
+    }
+
+    function checkLeaseTokenAllowance(address _owner, address spender) public view returns(uint256) {
+        uint256 allowance = erc20Contract.allowance(_owner, spender);
+        return allowance;
     }
 
 }

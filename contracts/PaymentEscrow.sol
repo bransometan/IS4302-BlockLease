@@ -199,8 +199,12 @@ contract PaymentEscrow {
         PaymentPending(_paymentId)
     {
         Payment storage payment = payments[_paymentId];
+
+        // Tenant approves PaymentEscrow to transfer the payment amount to the Landlord
+        leaseTokenContract.approveLeaseToken(payment.payer, address(this), payment.amount);
         // Tenant transfers the payment amount to PaymentEscrow
         leaseTokenContract.transferLeaseTokenFrom(
+            address(this),
             payment.payer,
             address(this),
             payment.amount
@@ -220,10 +224,9 @@ contract PaymentEscrow {
     {
         Payment storage payment = payments[_paymentId];
 
-        // Tenant approves PaymentEscrow to transfer the payment amount to the Landlord
-        leaseTokenContract.approveLeaseToken(address(this), payment.amount);
         // PaymentEscrow transfers the payment amount to the tenant (minus the commission fee), commission fee is transferred to the platform
         leaseTokenContract.transferLeaseToken(
+            address(this),
             payment.payee,
             payment.amount - commissionFee
         );
@@ -236,13 +239,17 @@ contract PaymentEscrow {
         uint256 _paymentId
     )
         public
-        onlyRentDisputeDAO
+        onlyRentalMarketplaceOrRentDisputeDAO()
         PaymentExists(_paymentId)
         PaymentPaid(_paymentId)
     {
         Payment storage payment = payments[_paymentId];
         // PaymentEscrow transfers the payment amount back to the landlord
-        leaseTokenContract.transferLeaseToken(payment.payer, payment.amount);
+        leaseTokenContract.transferLeaseToken(
+            address(this),
+            payment.payer,
+            payment.amount
+        );
         payment.status = PaymentStatus.REFUNDED;
         emit paymentRefunded(payment.payer, payment.payee, payment.amount);
     }
@@ -250,6 +257,7 @@ contract PaymentEscrow {
     // Function to withdraw the tokens to the owner of the contract
     function withdrawToken() public onlyOwner {
         leaseTokenContract.transferLeaseToken(
+            address(this),
             owner,
             leaseTokenContract.checkLeaseToken((address(this)))
         );
@@ -321,7 +329,7 @@ contract PaymentEscrow {
     }
 
     // Function to get the balance of the contract
-    function getBalance() public returns (uint256) {
+    function getBalance() public view returns (uint256) {
         return leaseTokenContract.checkLeaseToken(address(this));
     }
 

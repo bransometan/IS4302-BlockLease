@@ -108,7 +108,16 @@ contract ERC20 {
     return true;
   }
 
+   // Additional function to transfer LeaseToken by taking in a specific sender/buyer
+   function transferLT(address _sender, address _to, uint256 _value) public returns (bool) {
+    require(_to != address(0), "A1");
+    require(_value <= balances[_sender], "A2");
 
+    balances[_sender] = balances[_sender].sub(_value);
+    balances[_to] = balances[_to].add(_value);
+    emit Transfer(_sender, _to, _value);
+    return true;
+  }
 
   /**
    * @dev Transfer tokens from one address to another
@@ -128,6 +137,20 @@ contract ERC20 {
     return true;
   }
 
+    // Additional function to transfer LeaseToken from one to other by taking in a specific spender
+    function transferFromLT(address _spender, address _from, address _to, uint256 _value) public returns (bool) {
+    require(_to != address(0), "C1");
+    require(_value <= balances[_from], "C2");
+    require(_value <= allowed[_from][_spender], "C3");
+
+    balances[_from] = balances[_from].sub(_value);
+    balances[_to] = balances[_to].add(_value);
+    allowed[_from][_spender] = allowed[_from][_spender].sub(_value);
+    emit Transfer(_from, _to, _value);
+    return true;
+  }
+
+
   /**
    * @dev Approve the passed address to spend the specified amount of tokens on behalf of msg.sender.
    *
@@ -143,6 +166,14 @@ contract ERC20 {
     emit Approval(tx.origin, _spender, _value);
     return true;
   }
+
+    // Additional function to approve LeaseToken by taking in a specific sender/buyer address
+   function approveLT(address _sender, address _spender, uint256 _value) public returns (bool) {
+    allowed[_sender][_spender] = _value;
+    emit Approval(_sender, _spender, _value);
+    return true;
+  }
+
 
   /**
    * @dev Function to check the amount of tokens that an owner allowed to a spender.

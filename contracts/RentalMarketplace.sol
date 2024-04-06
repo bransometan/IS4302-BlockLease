@@ -310,6 +310,8 @@ contract RentalMarketplace {
         rentalPropertyNotFull(rentalPropertyId)
         tenantNotApplied(rentalPropertyId)
     {
+        require(msg.sender != rentalPropertyContract.getLandlord(rentalPropertyId), "Landlord cannot apply for own rental property");
+
         uint256 applicationId = rentalApplicationCounts[rentalPropertyId];
         rentalApplications[rentalPropertyId][applicationId] = RentalApplication(
             msg.sender,
@@ -415,6 +417,7 @@ contract RentalMarketplace {
         rentalApplicationExist(rentalPropertyId, applicationId)
         rentalApplicationOngoing(rentalPropertyId, applicationId)
     {
+        require(msg.sender != rentalPropertyContract.getLandlord(rentalPropertyId), "Landlord cannot apply for own rental property");
         RentalApplication storage rentalApplication = rentalApplications[
             rentalPropertyId
         ][applicationId];
@@ -508,7 +511,7 @@ contract RentalMarketplace {
     }
 
     //Get the deposit required for a rental property.
-    function getListedRentalProperty(
+    function getDepositAmount(
         uint256 rentalPropertyId
     ) public view returns (uint256) {
         return listRentalProperty[rentalPropertyId];

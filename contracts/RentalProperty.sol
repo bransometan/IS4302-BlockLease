@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT 
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
 contract RentalProperty {
@@ -193,7 +193,7 @@ contract RentalProperty {
     {
         return rentalProperties[rentalPropertyId];
     }
-    
+
     //Function to get the location of a rental property
     function getLocation(
         uint256 rentalPropertyId
@@ -286,7 +286,6 @@ contract RentalProperty {
     function getNumRentalProperty() public view returns (uint256) {
         return numRentalProperty;
     }
-
 
     // ################################################### SETTER METHODS ################################################### //
 
@@ -414,14 +413,11 @@ contract RentalProperty {
         );
     }
     //Function to set the new update status of a rental property
+    //Not restricted to landlord as this function is used in RentalMarketplace to set the update status to false when there are tenants applications
     function setUpdateStatus(
         uint256 rentalPropertyId,
         bool newUpdateStatus
-    )
-        public
-        landlordOnly(rentalPropertyId)
-        validRentalPropertyId(rentalPropertyId)
-    {
+    ) public validRentalPropertyId(rentalPropertyId) {
         rentalProperties[rentalPropertyId].updateStatus = newUpdateStatus;
     }
 
