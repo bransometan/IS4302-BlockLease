@@ -54,6 +54,24 @@ contract RentalMarketplace {
 
     // ################################################### EVENTS ################################################### //
 
+    event RentalPropertyAdded(uint256 rentalPropertyId, uint256 depositLeaseToken);
+    event RentalPropertyRemoved(uint256 rentalPropertyId);
+    event RentalApplicationSubmitted(
+        uint256 rentalPropertyId,
+        uint256 applicationId
+    );
+    event RentalApplicationRejected(
+        uint256 rentalPropertyId,
+        uint256 applicationId
+    );
+    event RentalApplicationAccepted(
+        uint256 rentalPropertyId,
+        uint256 applicationId
+    );
+    event PaymentMade(uint256 rentalPropertyId, uint256 applicationId);
+    event PaymentAccepted(uint256 rentalPropertyId, uint256 applicationId);
+
+
     // ################################################### MODIFIERS ################################################### //
 
     // ################################################### FUNCTIONS ################################################### //
@@ -73,6 +91,7 @@ contract RentalMarketplace {
         );
         listRentalProperty[rentalPropertyId] = depositLeaseToken;
         numOfListedRentalProperty++;
+        emit RentalPropertyAdded(rentalPropertyId, depositLeaseToken);
     }
 
     //Landlord can remove a rental property from the marketplace to stop accepting tenants.
@@ -83,6 +102,7 @@ contract RentalMarketplace {
         );
         listRentalProperty[rentalPropertyId] = 0;
         numOfListedRentalProperty--;
+        emit RentalPropertyRemoved(rentalPropertyId);
     }
 
     //Tenant can view all listed rental properties (By Id) in the marketplace.
@@ -167,6 +187,7 @@ contract RentalMarketplace {
         hasApplied[rentalPropertyId][msg.sender] = true;
         // Landlord cannot update the rental property while there is an ongoing application
         rentalPropertyContract.setUpdateStatus(rentalPropertyId, false);
+        emit RentalApplicationSubmitted(rentalPropertyId, applicationId);
     }
 
     // Landlord can reject a rental application.
@@ -198,6 +219,7 @@ contract RentalMarketplace {
             // Landlord can re-update the rental property if there is no ongoing application
             rentalPropertyContract.setUpdateStatus(rentalPropertyId, true);
         }
+        emit RentalApplicationRejected(rentalPropertyId, applicationId);
     }
 
     //Landlord can accept a rental application to start the rental process.
@@ -229,6 +251,7 @@ contract RentalMarketplace {
         // );
 
         rentalApplication.status = RentStatus.ONGOING;
+        emit RentalApplicationAccepted(rentalPropertyId, applicationId);
     }
 
     //Tenant can make a payment for the rental property.
@@ -265,6 +288,7 @@ contract RentalMarketplace {
         // );
 
         rentalApplication.status = RentStatus.MADE_PAYMENT;
+        emit PaymentMade(rentalPropertyId, applicationId);
     }
 
     //Landlord can accept a payment from a tenant.
@@ -301,6 +325,7 @@ contract RentalMarketplace {
         } else {
             rentalApplication.status = RentStatus.ONGOING;
         }
+        emit PaymentAccepted(rentalPropertyId, applicationId);
     }
 
     // ################################################### GETTER METHODS ################################################### //
