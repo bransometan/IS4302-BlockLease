@@ -29,6 +29,7 @@ contract RentalMarketplace {
 
     // The number of tokens landlord must stake in the potential event of a dispute with tenant
     uint256 public safeguardLeaseToken;
+    // The number of rental properties listed in the marketplace
     uint256 private numOfListedRentalProperty = 0;
 
     // This is mapping of RentalProperty id to the downpayment/deposit of the property
@@ -83,6 +84,19 @@ contract RentalMarketplace {
         );
         listRentalProperty[rentalPropertyId] = 0;
         numOfListedRentalProperty--;
+    }
+
+    //Tenant can view all rental properties in the marketplace.
+    function viewRentalProperties() public view returns (uint256[] memory) {
+        uint256[] memory rentalProperties = new uint256[](numOfListedRentalProperty);
+        uint256 index = 0;
+        for (uint256 i = 0; i < rentalPropertyContract.getNumRentalProperty(); i++) {
+            if (listRentalProperty[i] > 0) {
+                rentalProperties[index] = i;
+                index++;
+            }
+        }
+        return rentalProperties;
     }
 
     //Tenant can apply for a rental property by submitting a rental application.
@@ -275,6 +289,9 @@ contract RentalMarketplace {
             rentalApplication.status = RentStatus.ONGOING;
         }
     }
+
+
+    
 
     // ################################################### GETTER METHODS ################################################### //
 }

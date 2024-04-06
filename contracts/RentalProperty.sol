@@ -182,6 +182,18 @@ contract RentalProperty {
 
     // ################################################### GETTER METHODS ################################################### //
 
+    //Function to get a rental property
+    function getRentalProperty(
+        uint256 rentalPropertyId
+    )
+        public
+        view
+        validRentalPropertyId(rentalPropertyId)
+        returns (rentalProperty memory)
+    {
+        return rentalProperties[rentalPropertyId];
+    }
+    
     //Function to get the location of a rental property
     function getLocation(
         uint256 rentalPropertyId
@@ -269,6 +281,12 @@ contract RentalProperty {
     ) public view validRentalPropertyId(rentalPropertyId) returns (address) {
         return rentalProperties[rentalPropertyId].landlord;
     }
+
+    //Function to get the number of rental properties
+    function getNumRentalProperty() public view returns (uint256) {
+        return numRentalProperty;
+    }
+
 
     // ################################################### SETTER METHODS ################################################### //
 
