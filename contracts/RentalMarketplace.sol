@@ -54,7 +54,10 @@ contract RentalMarketplace {
 
     // ################################################### EVENTS ################################################### //
 
-    event RentalPropertyAdded(uint256 rentalPropertyId, uint256 depositLeaseToken);
+    event RentalPropertyAdded(
+        uint256 rentalPropertyId,
+        uint256 depositLeaseToken
+    );
     event RentalPropertyRemoved(uint256 rentalPropertyId);
     event RentalApplicationSubmitted(
         uint256 rentalPropertyId,
@@ -71,42 +74,189 @@ contract RentalMarketplace {
     event PaymentMade(uint256 rentalPropertyId, uint256 applicationId);
     event PaymentAccepted(uint256 rentalPropertyId, uint256 applicationId);
 
-
     // ################################################### MODIFIERS ################################################### //
 
-    // ################################################### FUNCTIONS ################################################### //
+    // Modifier to check the landlord is the owner of the rental property
+    modifier landlordOnly(uint256 rentalPropertyId) {
+        require(
+            msg.sender == rentalPropertyContract.getLandlord(rentalPropertyId),
+            "Only landlord can perform this action"
+        );
+        _;
+    }
 
-    //Landlord can add a rental property to the marketplace to start accepting tenants.
-    function addRentalProperty(
+    // Modifier to check the tenant is not the owner of the rental property
+    modifier tenantOnly(uint256 rentalPropertyId) {
+        require(
+            msg.sender != rentalPropertyContract.getLandlord(rentalPropertyId),
+            "Tenant cannot perform this action"
+        );
+        _;
+    }
+
+    // Modifier to check the rental property is listed
+    modifier rentalPropertyListed(uint256 rentalPropertyId) {
+        require(
+            listRentalProperty[rentalPropertyId] > 0,
+            "Rental property is not listed"
+        );
+        _;
+    }
+
+    // Modifier to check the rental property is not listed
+    modifier rentalPropertyNotListed(uint256 rentalPropertyId) {
+        require(
+            listRentalProperty[rentalPropertyId] == 0,
+            "Rental property is already listed"
+        );
+        _;
+    }
+
+    // Modifier to check the rental application is pending
+    modifier rentalApplicationPending(
         uint256 rentalPropertyId,
-        uint256 depositLeaseToken
-    ) public {
+        uint256 applicationId
+    ) {
+        require(
+            rentalApplications[rentalPropertyId][applicationId].status ==
+                RentStatus.PENDING,
+            "Rental application is not pending"
+        );
+        _;
+    }
+
+    // Modifier to check the rental application is ongoing
+    modifier rentalApplicationOngoing(
+        uint256 rentalPropertyId,
+        uint256 applicationId
+    ) {
+        require(
+            rentalApplications[rentalPropertyId][applicationId].status ==
+                RentStatus.ONGOING,
+            "Rental application is not ongoing"
+        );
+        _;
+    }
+
+    // Modifier to check the rental application is made payment
+    modifier rentalApplicationMadePayment(
+        uint256 rentalPropertyId,
+        uint256 applicationId
+    ) {
+        require(
+            rentalApplications[rentalPropertyId][applicationId].status ==
+                RentStatus.MADE_PAYMENT,
+            "Tenant has not made payment"
+        );
+        _;
+    }
+
+    // Modifier to check the rental application is completed
+    modifier rentalApplicationCompleted(
+        uint256 rentalPropertyId,
+        uint256 applicationId
+    ) {
+        require(
+            rentalApplications[rentalPropertyId][applicationId].status ==
+                RentStatus.COMPLETED,
+            "Rental application is not completed"
+        );
+        _;
+    }
+
+    // Modifier to check the rental property is vacant
+    modifier rentalPropertyVacant(uint256 rentalPropertyId) {
+        require(
+            rentalApplicationCounts[rentalPropertyId] == 0,
+            "Rental property is not vacant"
+        );
+        _;
+    }
+
+    // Modifier to check the number of rental applications is less than the number of tenants
+    modifier rentalPropertyNotFull(uint256 rentalPropertyId) {
+        require(
+            rentalApplicationCounts[rentalPropertyId] <
+                rentalPropertyContract.getNumOfTenants(rentalPropertyId),
+            "Rental property is full"
+        );
+        _;
+    }
+
+    // Modifier to check the rental property is full
+    modifier rentalPropertyFull(uint256 rentalPropertyId) {
+        require(
+            rentalApplicationCounts[rentalPropertyId] ==
+                rentalPropertyContract.getNumOfTenants(rentalPropertyId),
+            "Rental property is not full"
+        );
+        _;
+    }
+
+    // Modifier to check the tenant has not applied for the rental property
+    modifier tenantNotApplied(uint256 rentalPropertyId) {
+        require(
+            !hasApplied[rentalPropertyId][msg.sender],
+            "Tenant has already applied for this rental property"
+        );
+        _;
+    }
+
+    // Modifier to check the tenant has applied for the rental property
+    modifier tenantApplied(uint256 rentalPropertyId) {
+        require(
+            hasApplied[rentalPropertyId][msg.sender],
+            "Tenant has not applied for this rental property"
+        );
+        _;
+    }
+
+    // Modifier to check Deposit LeaseToken is greater than 0
+    modifier depositLeaseTokenGreaterThanZero(uint256 depositLeaseToken) {
         require(
             depositLeaseToken > 0,
             "Deposit LeaseToken must be greater than 0"
         );
-        require(
-            msg.sender == rentalPropertyContract.getLandlord(rentalPropertyId),
-            "Only landlord can add rental property"
-        );
+        _;
+    }
+
+    // ################################################### FUNCTIONS ################################################### //
+
+    //Landlord can list a rental property to the marketplace to start accepting tenants.
+    function listARentalProperty(
+        uint256 rentalPropertyId,
+        uint256 depositLeaseToken
+    )
+        public
+        rentalPropertyNotListed(rentalPropertyId)
+        depositLeaseTokenGreaterThanZero(depositLeaseToken)
+        landlordOnly(rentalPropertyId)
+    {
         listRentalProperty[rentalPropertyId] = depositLeaseToken;
         numOfListedRentalProperty++;
         emit RentalPropertyAdded(rentalPropertyId, depositLeaseToken);
     }
 
-    //Landlord can remove a rental property from the marketplace to stop accepting tenants.
-    function removeRentalProperty(uint256 rentalPropertyId) public {
-        require(
-            msg.sender == rentalPropertyContract.getLandlord(rentalPropertyId),
-            "Only landlord can remove rental property"
-        );
+    //Landlord can unlist a rental property from the marketplace to stop accepting tenants.
+    function unlistARentalProperty(
+        uint256 rentalPropertyId
+    )
+        public
+        rentalPropertyListed(rentalPropertyId)
+        landlordOnly(rentalPropertyId)
+        rentalPropertyVacant(rentalPropertyId)
+    {
         listRentalProperty[rentalPropertyId] = 0;
         numOfListedRentalProperty--;
         emit RentalPropertyRemoved(rentalPropertyId);
     }
 
     //Tenant can view all listed rental properties (By Id) in the marketplace.
-    function viewListedRentalPropertiesById() public view returns (uint256[] memory) {
+    function viewListedRentalPropertiesById()
+        public
+        view
+        returns (uint256[] memory)
+    {
         require(numOfListedRentalProperty > 0, "No rental property listed");
         uint256[] memory rentalProperties = new uint256[](
             numOfListedRentalProperty
@@ -129,11 +279,12 @@ contract RentalMarketplace {
     //Landlord can view all rental applications for a rental property.
     function viewRentalApplications(
         uint256 rentalPropertyId
-    ) public view returns (RentalApplication[] memory) {
-        require(
-            msg.sender == rentalPropertyContract.getLandlord(rentalPropertyId),
-            "Only landlord can view rental applications"
-        );
+    )
+        public
+        view
+        landlordOnly(rentalPropertyId)
+        returns (RentalApplication[] memory)
+    {
         RentalApplication[] memory applications = new RentalApplication[](
             rentalApplicationCounts[rentalPropertyId]
         );
@@ -154,25 +305,13 @@ contract RentalMarketplace {
         string memory tenantEmail,
         string memory tenantPhone,
         string memory description
-    ) public {
-        require(
-            listRentalProperty[rentalPropertyId] > 0,
-            "Rental property does not exist"
-        );
-        require(
-            !hasApplied[rentalPropertyId][msg.sender],
-            "Tenant has already applied for this rental property"
-        );
-        require(
-            rentalPropertyContract.getLandlord(rentalPropertyId) != msg.sender,
-            "Landlord cannot apply for own rental property"
-        );
-        require(
-            rentalApplicationCounts[rentalPropertyId] <
-                rentalPropertyContract.getNumOfTenants(rentalPropertyId),
-            "Rental property is full"
-        );
-
+    )
+        public
+        tenantOnly(rentalPropertyId)
+        rentalPropertyListed(rentalPropertyId)
+        rentalPropertyNotFull(rentalPropertyId)
+        tenantNotApplied(rentalPropertyId)
+    {
         uint256 applicationId = rentalApplicationCounts[rentalPropertyId];
         rentalApplications[rentalPropertyId][applicationId] = RentalApplication(
             msg.sender,
@@ -194,19 +333,14 @@ contract RentalMarketplace {
     function rejectRentalApplication(
         uint256 rentalPropertyId,
         uint256 applicationId
-    ) public {
+    )
+        public
+        landlordOnly(rentalPropertyId)
+        rentalApplicationPending(rentalPropertyId, applicationId)
+    {
         RentalApplication storage rentalApplication = rentalApplications[
             rentalPropertyId
         ][applicationId];
-
-        require(
-            msg.sender == rentalPropertyContract.getLandlord(rentalPropertyId),
-            "Only landlord can reject rental application"
-        );
-        require(
-            rentalApplication.status == RentStatus.PENDING,
-            "Rental application is not pending"
-        );
 
         // Application count is reduced by 1
         rentalApplicationCounts[rentalPropertyId]--;
@@ -226,19 +360,14 @@ contract RentalMarketplace {
     function acceptRentalApplication(
         uint256 rentalPropertyId,
         uint256 applicationId
-    ) public {
+    )
+        public
+        landlordOnly(rentalPropertyId)
+        rentalApplicationPending(rentalPropertyId, applicationId)
+    {
         RentalApplication storage rentalApplication = rentalApplications[
             rentalPropertyId
         ][applicationId];
-
-        require(
-            msg.sender == rentalPropertyContract.getLandlord(rentalPropertyId),
-            "Only landlord can accept rental application"
-        );
-        require(
-            rentalApplication.status == RentStatus.PENDING,
-            "Rental application is not pending"
-        );
 
         uint256 depositLeaseToken = listRentalProperty[rentalPropertyId];
 
@@ -258,23 +387,16 @@ contract RentalMarketplace {
     function makePayment(
         uint256 rentalPropertyId,
         uint256 applicationId
-    ) public payable {
+    )
+        public
+        rentalPropertyListed(rentalPropertyId)
+        tenantOnly(rentalPropertyId)
+        tenantApplied(rentalPropertyId)
+        rentalApplicationOngoing(rentalPropertyId, applicationId)
+    {
         RentalApplication storage rentalApplication = rentalApplications[
             rentalPropertyId
         ][applicationId];
-
-        require(
-            listRentalProperty[rentalPropertyId] > 0,
-            "Rental property does not exist"
-        );
-        require(
-            hasApplied[rentalPropertyId][msg.sender],
-            "Tenant has not applied for this rental property"
-        );
-        require(
-            rentalApplication.status == RentStatus.ONGOING,
-            "Rental application is not ongoing"
-        );
 
         uint256 monthlyRent = rentalPropertyContract.getRentalPrice(
             rentalPropertyId
@@ -295,20 +417,15 @@ contract RentalMarketplace {
     function acceptPayment(
         uint256 rentalPropertyId,
         uint256 applicationId
-    ) public {
+    )
+        public
+        rentalPropertyListed(rentalPropertyId)
+        landlordOnly(rentalPropertyId)
+        rentalApplicationMadePayment(rentalPropertyId, applicationId)
+    {
         RentalApplication storage rentalApplication = rentalApplications[
             rentalPropertyId
         ][applicationId];
-
-        require(
-            msg.sender == rentalPropertyContract.getLandlord(rentalPropertyId),
-            "Only landlord can accept payment"
-        );
-        require(
-            rentalApplication.status == RentStatus.MADE_PAYMENT,
-            "Tenant has not made payment"
-        );
-
         // paymentEscrowContract.confirmRentPayment(
         //     rentalPropertyContract.getLandlord(rentalPropertyId),
         //     rentalApplication.tenantAddress,
@@ -344,38 +461,29 @@ contract RentalMarketplace {
     }
 
     //Get the number of rental applications for a rental property.
-    function getRentalApplicationCount(uint256 rentalPropertyId)
-        public
-        view
-        returns (uint256)
-    {
+    function getRentalApplicationCount(
+        uint256 rentalPropertyId
+    ) public view returns (uint256) {
         return rentalApplicationCounts[rentalPropertyId];
     }
 
     //Check if a tenant has applied for a rental property.
-    function getHasApplied(uint256 rentalPropertyId, address tenantAddress)
-        public
-        view
-        returns (bool)
-    {
+    function getHasApplied(
+        uint256 rentalPropertyId,
+        address tenantAddress
+    ) public view returns (bool) {
         return hasApplied[rentalPropertyId][tenantAddress];
     }
 
     //Get the deposit required for a rental property.
-    function getListedRentalProperty(uint256 rentalPropertyId)
-        public
-        view
-        returns (uint256)
-    {
+    function getListedRentalProperty(
+        uint256 rentalPropertyId
+    ) public view returns (uint256) {
         return listRentalProperty[rentalPropertyId];
     }
 
     //Get the address of the RentalProperty contract.
-    function getRentalPropertyContractAddress()
-        public
-        view
-        returns (address)
-    {
+    function getRentalPropertyContractAddress() public view returns (address) {
         return address(rentalPropertyContract);
     }
 
@@ -388,5 +496,4 @@ contract RentalMarketplace {
     function getSafeguardLeaseToken() public view returns (uint256) {
         return safeguardLeaseToken;
     }
-
 }

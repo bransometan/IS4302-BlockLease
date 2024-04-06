@@ -88,7 +88,7 @@ contract RentalProperty {
     // ################################################### MODIFIERS ################################################### //
 
     //Modifier to ensure a function is callable only by its landlord owner
-    modifier ownerOnly(uint256 rentalPropertyId) {
+    modifier landlordOnly(uint256 rentalPropertyId) {
         require(
             rentalProperties[rentalPropertyId].landlord == msg.sender,
             "Only the landlord can call this function"
@@ -296,7 +296,7 @@ contract RentalProperty {
         string memory newLocation
     )
         public
-        ownerOnly(rentalPropertyId)
+        landlordOnly(rentalPropertyId)
         validRentalPropertyId(rentalPropertyId)
         validUpdateStatus(rentalPropertyId)
     {
@@ -310,7 +310,7 @@ contract RentalProperty {
         string memory newPostalCode
     )
         public
-        ownerOnly(rentalPropertyId)
+        landlordOnly(rentalPropertyId)
         validRentalPropertyId(rentalPropertyId)
         validUpdateStatus(rentalPropertyId)
     {
@@ -324,7 +324,7 @@ contract RentalProperty {
         string memory newUnitNumber
     )
         public
-        ownerOnly(rentalPropertyId)
+        landlordOnly(rentalPropertyId)
         validRentalPropertyId(rentalPropertyId)
         validUpdateStatus(rentalPropertyId)
     {
@@ -338,7 +338,7 @@ contract RentalProperty {
         PropertyType newPropertyType
     )
         public
-        ownerOnly(rentalPropertyId)
+        landlordOnly(rentalPropertyId)
         validRentalPropertyId(rentalPropertyId)
         validUpdateStatus(rentalPropertyId)
     {
@@ -355,7 +355,7 @@ contract RentalProperty {
         string memory newDescription
     )
         public
-        ownerOnly(rentalPropertyId)
+        landlordOnly(rentalPropertyId)
         validRentalPropertyId(rentalPropertyId)
         validUpdateStatus(rentalPropertyId)
     {
@@ -369,7 +369,7 @@ contract RentalProperty {
         uint256 newNumOfTenants
     )
         public
-        ownerOnly(rentalPropertyId)
+        landlordOnly(rentalPropertyId)
         validRentalPropertyId(rentalPropertyId)
         validNumOfTenants(newNumOfTenants)
         validUpdateStatus(rentalPropertyId)
@@ -387,7 +387,7 @@ contract RentalProperty {
         uint256 newRentalPrice
     )
         public
-        ownerOnly(rentalPropertyId)
+        landlordOnly(rentalPropertyId)
         validRentalPropertyId(rentalPropertyId)
         validRentalPrice(newRentalPrice)
         validUpdateStatus(rentalPropertyId)
@@ -402,7 +402,7 @@ contract RentalProperty {
         uint256 newLeaseDuration
     )
         public
-        ownerOnly(rentalPropertyId)
+        landlordOnly(rentalPropertyId)
         validRentalPropertyId(rentalPropertyId)
         validLeaseDuration(newLeaseDuration)
         validUpdateStatus(rentalPropertyId)
@@ -419,7 +419,7 @@ contract RentalProperty {
         bool newUpdateStatus
     )
         public
-        ownerOnly(rentalPropertyId)
+        landlordOnly(rentalPropertyId)
         validRentalPropertyId(rentalPropertyId)
     {
         rentalProperties[rentalPropertyId].updateStatus = newUpdateStatus;
@@ -432,7 +432,7 @@ contract RentalProperty {
         uint256 rentalPropertyId
     )
         public
-        ownerOnly(rentalPropertyId)
+        landlordOnly(rentalPropertyId)
         validRentalPropertyId(rentalPropertyId)
         validUpdateStatus(rentalPropertyId)
     {
