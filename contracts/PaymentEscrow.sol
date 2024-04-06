@@ -27,6 +27,8 @@ contract PaymentEscrow {
     mapping(uint256 => Payment) public payments;
 
     address private owner;
+    address private rentalMarketplaceAddress;
+    address private rentDisputeDAOAddress;
 
     constructor(address _leaseTokenAddress, uint256 _protectionFee, uint256 _commissionFee) {
         leaseTokenContract = LeaseToken(_leaseTokenAddress);
@@ -52,24 +54,26 @@ contract PaymentEscrow {
         _;
     }
 
-    modifier onlyPayer(uint256 _paymentId) {
-        require(msg.sender == payments[_paymentId].payer, "Only payer can call this function");
+    modifier onlyRentalMarketplace() {
+        require(msg.sender == rentalMarketplaceAddress, "Only RentalMarketplace can call this function");
         _;
     }
 
-    modifier onlyPayee(uint256 _paymentId) {
-        require(msg.sender == payments[_paymentId].payee, "Only payee can call this function");
+    modifier onlyRentDisputeDAO() {
+        require(msg.sender == rentDisputeDAOAddress, "Only RentDisputeDAO can call this function");
         _;
     }
 
     // ################################################### FUNCTIONS ################################################### //
 
-    function createPayment(address _payer, address _payee, uint256 _amount) public onlyOwner {
+    // Function to create a payment transaction
+    function createPayment(address _payer, address _payee, uint256 _amount) public {
         payments[numOfPayments] = Payment(_payer, _payee, _amount, PaymentStatus.PENDING);
         numOfPayments++;
         emit paymentCreated(_payer, _payee, _amount);
     }
 
+    // Function to transfer the payment amount from the tenant to the PaymentEscrow
     function pay(uint256 _paymentId) public {
         Payment storage payment = payments[_paymentId];
         require(payment.status == PaymentStatus.PENDING, "Payment has already been made");
@@ -79,10 +83,11 @@ contract PaymentEscrow {
         emit paymentPaid(payment.payer, payment.payee, payment.amount);
     }
 
+    // Function to release the payment amount from the PaymentEscrow to the landlord
     function release(uint256 _paymentId) public {
         Payment storage payment = payments[_paymentId];
         require(payment.status == PaymentStatus.PAID, "Payment has not been made yet");
-        // Landlord approves PaymentEscrow to transfer the payment amount to the tenant
+        // Tenant approves PaymentEscrow to transfer the payment amount to the Landlord
         leaseTokenContract.approveLeaseToken(address(this), payment.amount);
         // PaymentEscrow transfers the payment amount to the tenant (minus the commission fee), commission fee is transferred to the platform
         leaseTokenContract.transferLeaseToken(payment.payee, payment.amount - commissionFee);
@@ -90,6 +95,7 @@ contract PaymentEscrow {
         emit paymentReleased(payment.payer, payment.payee, payment.amount);
     }
 
+    // Function to refund the payment amount from the PaymentEscrow to the tenant
     function refund(uint256 _paymentId) public {
         Payment storage payment = payments[_paymentId];
         require(payment.status == PaymentStatus.PAID, "Payment has not been made yet");
@@ -99,21 +105,36 @@ contract PaymentEscrow {
         emit paymentRefunded(payment.payer, payment.payee, payment.amount);
     }
 
+    // Function to withdraw the tokens to the owner of the contract
     function withdrawToken() public onlyOwner {
         leaseTokenContract.transferLeaseToken(owner, leaseTokenContract.checkLeaseToken((address(this))));
         emit tokenWithdrawn(owner, leaseTokenContract.checkLeaseToken((address(this))));
     }
 
     // ################################################### SETTER METHODS ################################################### //
+    
+    // Function to set the protection fee
     function setProtectionFee(uint256 _protectionFee) public onlyOwner {
         protectionFee = _protectionFee;
         emit protectionFeeSet(_protectionFee);
     }
-
+    // Function to set the commission fee
     function setCommissionFee(uint256 _commissionFee) public onlyOwner {
         commissionFee = _commissionFee;
         emit commissionFeeSet(_commissionFee);
     } 
+
+    // Function to set the RentalMarketplace address
+    function setRentalMarketplaceAddress(address _rentalMarketplaceAddress) public onlyOwner {
+        require(_rentalMarketplaceAddress != address(0), "Invalid Rentalmarketpalce address");
+        rentalMarketplaceAddress = _rentalMarketplaceAddress;
+    }
+
+    // Function to set the RentDisputeDAO address
+    function setRentDisputeDAOAddress(address _rentDisputeDAOAddress) public onlyOwner {
+        require(_rentDisputeDAOAddress != address(0), "Invalid RentDisputeDAO address");
+        rentDisputeDAOAddress = _rentDisputeDAOAddress;
+    }
 
     // ################################################### GETTER METHODS ################################################### //
 
@@ -152,5 +173,14 @@ contract PaymentEscrow {
         return address(this);
     }
 
+    // Function to get the RentalMarketplace address
+    function getRentalMarketplaceAddress() public view returns(address) {
+        return rentalMarketplaceAddress;
+    }
+
+    // Function to get the RentDisputeDAO address
+    function getRentDisputeDAOAddress() public view returns(address) {
+        return rentDisputeDAOAddress;
+    }
 
 }
