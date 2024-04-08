@@ -34,7 +34,7 @@ export default function Navbar() {
   const { wallet } = useSelector((states: RootState) => states.globalStates);
 
   return (
-    <nav className="w-full fixed top-0 z-20 nav-blur">
+    <nav className="w-full fixed top-0 z-20 bg-white">
       <div className="flex items-center justify-between p-3 px-10">
         <ul className="m-0 p-0 overflow-hidden">
           <Link href="/">
