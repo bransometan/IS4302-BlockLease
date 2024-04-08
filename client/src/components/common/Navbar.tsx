@@ -3,6 +3,10 @@
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { connectWallet } from "@/services/wallet";
+import { RootState } from "@/types/state";
+import { useSelector } from "react-redux";
 
 const TENANT_TABS = [
   {
@@ -27,6 +31,7 @@ const VALIDATOR_TABS = [
 
 export default function Navbar() {
   const path = usePathname();
+  const { wallet } = useSelector((states: RootState) => states.globalStates);
 
   return (
     <nav className="w-full fixed top-0 z-20 nav-blur">
@@ -79,6 +84,11 @@ export default function Navbar() {
             );
           })}
         </ul>
+        {wallet ? (
+          <Button disabled>{wallet}</Button>
+        ) : (
+          <Button onClick={connectWallet}>Connect wallet</Button>
+        )}
       </div>
       <hr className="border-slate-400 opacity-25" />
     </nav>
