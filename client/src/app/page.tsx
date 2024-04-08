@@ -1,13 +1,4 @@
-"use client";
-
-import { useEffect } from "react";
-import { checkWallet } from "@/services/wallet";
-
 export default function Home() {
-  useEffect(() => {
-    checkWallet();
-  }, []);
-
   return (
     <main className="flex min-h-screen flex-col items-center justify-between">
       <div className="space-y-4 text-center">
