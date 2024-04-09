@@ -28,9 +28,6 @@ contract RentalMarketplace {
     RentalProperty rentalPropertyContract;
     PaymentEscrow paymentEscrowContract;
 
-    // The number of rental properties listed in the marketplace
-    uint256 private numOfListedRentalProperty = 0;
-
     // This is mapping of RentalProperty id to the downpayment/deposit of the property
     mapping(uint256 => uint256) private rentalPropertyDeposits;
     // This is mapping of RentalProperty id to the (RentalApplication id to RentalApplication struct) mapping
@@ -234,7 +231,7 @@ contract RentalMarketplace {
         //Set the rental property as listed
         rentalPropertyContract.setListedStatus(rentalPropertyId, true);
         //Increment the number of listed rental properties
-        numOfListedRentalProperty++;
+        rentalPropertyContract.incrementListedRentalProperty();
         emit RentalPropertyAdded(rentalPropertyId, depositLeaseToken);
     }
 
@@ -252,7 +249,7 @@ contract RentalMarketplace {
         //Set the rental property as not listed
         rentalPropertyContract.setListedStatus(rentalPropertyId, false);
         //Decrement the number of listed rental properties
-        numOfListedRentalProperty--;
+        rentalPropertyContract.decrementListedRentalProperty();
         emit RentalPropertyRemoved(rentalPropertyId);
     }
 
@@ -442,11 +439,6 @@ contract RentalMarketplace {
     }
 
     // ################################################### GETTER METHODS ################################################### //
-
-    //Get the number of listed rental properties in the marketplace.
-    function getNumOfListedRentalProperty() public view returns (uint256) {
-        return numOfListedRentalProperty;
-    }
 
     //Get the rental application details for a rental property.
     function getRentalApplication(

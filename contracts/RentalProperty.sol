@@ -26,6 +26,7 @@ contract RentalProperty {
     }
 
     uint256 private numRentalProperty = 0;
+    uint256 private numListedRentalProperty = 0;
     mapping(uint256 => rentalProperty) private rentalProperties; // map of rental properties indexed by rentalPropertyId
     mapping(address => rentalProperty[]) private landlordRentalProperties; // map of rental properties indexed by landlord address
 
@@ -295,22 +296,16 @@ contract RentalProperty {
     }
 
     //Function to get the update status of a rental property
-    function getUpdateStatus(uint256 rentalPropertyId)
-        public
-        view
-        validRentalPropertyId(rentalPropertyId)
-        returns (bool)
-    {
+    function getUpdateStatus(
+        uint256 rentalPropertyId
+    ) public view validRentalPropertyId(rentalPropertyId) returns (bool) {
         return rentalProperties[rentalPropertyId].updateStatus;
     }
 
     //Function to get the listed status of a rental property
-    function getListedStatus(uint256 rentalPropertyId)
-        public
-        view
-        validRentalPropertyId(rentalPropertyId)
-        returns (bool)
-    {
+    function getListedStatus(
+        uint256 rentalPropertyId
+    ) public view validRentalPropertyId(rentalPropertyId) returns (bool) {
         return rentalProperties[rentalPropertyId].isListed;
     }
 
@@ -320,7 +315,9 @@ contract RentalProperty {
         view
         returns (rentalProperty[] memory)
     {
-        rentalProperty[] memory allRentalProperties = new rentalProperty[](numRentalProperty);
+        rentalProperty[] memory allRentalProperties = new rentalProperty[](
+            numRentalProperty
+        );
         for (uint256 i = 0; i < numRentalProperty; i++) {
             allRentalProperties[i] = rentalProperties[i];
         }
@@ -333,7 +330,9 @@ contract RentalProperty {
         view
         returns (rentalProperty[] memory)
     {
-        rentalProperty[] memory listedRentalProperties;
+        rentalProperty[] memory listedRentalProperties = new rentalProperty[](
+            numListedRentalProperty
+        );
         uint256 index = 0;
         for (uint256 i = 0; i < numRentalProperty; i++) {
             if (rentalProperties[i].isListed == true) {
@@ -350,7 +349,9 @@ contract RentalProperty {
         view
         returns (rentalProperty[] memory)
     {
-        rentalProperty[] memory unlistedRentalProperties;
+        rentalProperty[] memory unlistedRentalProperties = new rentalProperty[](
+            numRentalProperty - numListedRentalProperty
+        );
         uint256 index = 0;
         for (uint256 i = 0; i < numRentalProperty; i++) {
             if (rentalProperties[i].isListed == false) {
@@ -362,25 +363,33 @@ contract RentalProperty {
     }
 
     //Function to get all the rental properties of a landlord
-    function getLandlordRentalProperties(address landlord)
-        public
-        view
-        returns (rentalProperty[] memory)
-    {
+    function getLandlordRentalProperties(
+        address landlord
+    ) public view returns (rentalProperty[] memory) {
         return landlordRentalProperties[landlord];
     }
 
     //Function to get all the listed rental properties of a landlord
-    function getLandlordListedRentalProperties(address landlord)
-        public
-        view
-        returns (rentalProperty[] memory)
-    {
-        rentalProperty[] memory listedRentalProperties;
+    function getLandlordListedRentalProperties(
+        address landlord
+    ) public view returns (rentalProperty[] memory) {
+        // get the number of listed rental properties of the landlord
+        uint256 numLandlordListedRentalProperty = getNumLandlordListedRentalProperty(
+                landlord
+            );
+        rentalProperty[] memory listedRentalProperties = new rentalProperty[](
+            numLandlordListedRentalProperty
+        );
         uint256 index = 0;
-        for (uint256 i = 0; i < landlordRentalProperties[landlord].length; i++) {
+        for (
+            uint256 i = 0;
+            i < landlordRentalProperties[landlord].length;
+            i++
+        ) {
             if (landlordRentalProperties[landlord][i].isListed == true) {
-                listedRentalProperties[index] = landlordRentalProperties[landlord][i];
+                listedRentalProperties[index] = landlordRentalProperties[
+                    landlord
+                ][i];
                 index++;
             }
         }
@@ -388,20 +397,49 @@ contract RentalProperty {
     }
 
     //Function to get all the unlisted rental properties of a landlord
-    function getLandlordUnlistedRentalProperties(address landlord)
-        public
-        view
-        returns (rentalProperty[] memory)
-    {
-        rentalProperty[] memory unlistedRentalProperties;
+    function getLandlordUnlistedRentalProperties(
+        address landlord
+    ) public view returns (rentalProperty[] memory) {
+        rentalProperty[] memory unlistedRentalProperties = new rentalProperty[](
+            landlordRentalProperties[landlord].length -
+                getNumLandlordListedRentalProperty(landlord)
+        );
         uint256 index = 0;
-        for (uint256 i = 0; i < landlordRentalProperties[landlord].length; i++) {
+        for (
+            uint256 i = 0;
+            i < landlordRentalProperties[landlord].length;
+            i++
+        ) {
             if (landlordRentalProperties[landlord][i].isListed == false) {
-                unlistedRentalProperties[index] = landlordRentalProperties[landlord][i];
+                unlistedRentalProperties[index] = landlordRentalProperties[
+                    landlord
+                ][i];
                 index++;
             }
         }
         return unlistedRentalProperties;
+    }
+
+    //Function to get the number of listed rental properties
+    function getNumListedRentalProperty() public view returns (uint256) {
+        return numListedRentalProperty;
+    }
+
+    //Function to get the number of listed rental properties of a landlord
+    function getNumLandlordListedRentalProperty(
+        address landlord
+    ) public view returns (uint256) {
+        uint256 numLandlordListedRentalProperty = 0;
+        for (
+            uint256 i = 0;
+            i < landlordRentalProperties[landlord].length;
+            i++
+        ) {
+            if (landlordRentalProperties[landlord][i].isListed == true) {
+                numLandlordListedRentalProperty++;
+            }
+        }
+        return numLandlordListedRentalProperty;
     }
 
     // ################################################### SETTER METHODS ################################################### //
@@ -529,7 +567,7 @@ contract RentalProperty {
             newLeaseDuration
         );
     }
-    
+
     //Function to set the new update status of a rental property
     //Not restricted to landlord as this function is used in RentalMarketplace to set the update status to false when there are tenants applications
     function setUpdateStatus(
@@ -548,6 +586,18 @@ contract RentalProperty {
         rentalProperties[rentalPropertyId].isListed = newListedStatus;
     }
 
+    //Function to increment the number of listed rental properties
+    //Not restricted to landlord as this function is used in RentalMarketplace to increment the number of listed rental properties
+    function incrementListedRentalProperty() public {
+        numListedRentalProperty++;
+    }
+
+    //Function to decrement the number of listed rental properties
+    //Not restricted to landlord as this function is used in RentalMarketplace to decrement the number of listed rental properties
+    function decrementListedRentalProperty() public {
+        numListedRentalProperty--;
+    }
+
     // ################################################### DELETE METHOD ################################################### //
 
     //Function to delete a rental property
@@ -562,7 +612,7 @@ contract RentalProperty {
         // delete rental property from rentalProperties map
         delete rentalProperties[rentalPropertyId];
         // delete rental property from landlordRentalProperties map
-        landlordRentalProperties[msg.sender].pop(); 
+        landlordRentalProperties[msg.sender].pop();
         emit RentalPropertyDeleted(rentalPropertyId);
     }
 }
