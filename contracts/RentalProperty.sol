@@ -22,6 +22,7 @@ contract RentalProperty {
         uint256 leaseDuration; // lease duration in months
         address landlord; // address of the landlord owner
         bool updateStatus; // status of the rental property (true if property can be updated/deleted, false if property cannot be updated/deleted)
+        bool isListed; // status of the rental property (true if property is listed, false if property is not listed)
     }
 
     uint256 private numRentalProperty = 0;
@@ -40,7 +41,8 @@ contract RentalProperty {
         uint256 rentalPrice,
         uint256 leaseDuration,
         address landlord,
-        bool updateStatus
+        bool updateStatus,
+        bool isListed
     );
 
     event RentalPropertyUpdateLocation(
@@ -158,7 +160,8 @@ contract RentalProperty {
             _rentalPrice,
             _leaseDuration,
             msg.sender, // landlord is the sender
-            true // initially, rental property can be updated/deleted when there are no tenants applications
+            true, // initially, rental property can be updated/deleted when there are no tenants applications
+            false // initially, rental property is not listed
         );
 
         uint256 newRentalPropertyId = numRentalProperty++; // increment rental property id
@@ -174,7 +177,8 @@ contract RentalProperty {
             _rentalPrice,
             _leaseDuration,
             msg.sender,
-            true
+            true,
+            false
         );
 
         return newRentalPropertyId; //return new rental property id
@@ -412,6 +416,7 @@ contract RentalProperty {
             newLeaseDuration
         );
     }
+    
     //Function to set the new update status of a rental property
     //Not restricted to landlord as this function is used in RentalMarketplace to set the update status to false when there are tenants applications
     function setUpdateStatus(
@@ -419,6 +424,15 @@ contract RentalProperty {
         bool newUpdateStatus
     ) public validRentalPropertyId(rentalPropertyId) {
         rentalProperties[rentalPropertyId].updateStatus = newUpdateStatus;
+    }
+
+    //Function to set the new listed status of a rental property
+    //Not restricted to landlord as this function is used in RentalMarketplace to set the listed status to true when the rental property is listed
+    function setListedStatus(
+        uint256 rentalPropertyId,
+        bool newListedStatus
+    ) public validRentalPropertyId(rentalPropertyId) {
+        rentalProperties[rentalPropertyId].isListed = newListedStatus;
     }
 
     // ################################################### DELETE METHOD ################################################### //
