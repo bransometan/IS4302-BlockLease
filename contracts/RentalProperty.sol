@@ -314,6 +314,53 @@ contract RentalProperty {
         return rentalProperties[rentalPropertyId].isListed;
     }
 
+    //Function to get all the rental properties (listed and unlisted)
+    function getAllRentalProperties()
+        public
+        view
+        returns (rentalProperty[] memory)
+    {
+        rentalProperty[] memory allRentalProperties = new rentalProperty[](numRentalProperty);
+        for (uint256 i = 0; i < numRentalProperty; i++) {
+            allRentalProperties[i] = rentalProperties[i];
+        }
+        return allRentalProperties;
+    }
+
+    //Function to get all the listed rental properties
+    function getAllListedRentalProperties()
+        public
+        view
+        returns (rentalProperty[] memory)
+    {
+        rentalProperty[] memory listedRentalProperties;
+        uint256 index = 0;
+        for (uint256 i = 0; i < numRentalProperty; i++) {
+            if (rentalProperties[i].isListed == true) {
+                listedRentalProperties[index] = rentalProperties[i];
+                index++;
+            }
+        }
+        return listedRentalProperties;
+    }
+
+    //Function to get all the unlisted rental properties
+    function getAllUnlistedRentalProperties()
+        public
+        view
+        returns (rentalProperty[] memory)
+    {
+        rentalProperty[] memory unlistedRentalProperties;
+        uint256 index = 0;
+        for (uint256 i = 0; i < numRentalProperty; i++) {
+            if (rentalProperties[i].isListed == false) {
+                unlistedRentalProperties[index] = rentalProperties[i];
+                index++;
+            }
+        }
+        return unlistedRentalProperties;
+    }
+
     //Function to get all the rental properties of a landlord
     function getLandlordRentalProperties(address landlord)
         public
