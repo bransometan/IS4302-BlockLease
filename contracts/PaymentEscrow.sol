@@ -181,7 +181,7 @@ contract PaymentEscrow {
 
     // ################################################### FUNCTIONS ################################################### //
 
-    // Function to create a payment transaction
+    // Function to create a payment transaction between the tenant and landlord
     function createPayment(
         address _payer,
         address _payee,
@@ -196,14 +196,14 @@ contract PaymentEscrow {
             _payer,
             _payee,
             _amount,
-            PaymentStatus.PENDING
+            PaymentStatus.PENDING // Payment is pending until it is made
         );
         numOfPayments++;
         emit paymentCreated(_payer, _payee, _amount);
         return numOfPayments - 1; // Return the payment ID
     }
 
-    // Function to transfer the payment amount from the tenant to the PaymentEscrow
+    // Function to transfer the payment amount from the tenant or landlord to the PaymentEscrow
     function pay(
         uint256 _paymentId
     )
@@ -214,20 +214,20 @@ contract PaymentEscrow {
     {
         Payment storage payment = payments[_paymentId];
 
-        // Tenant approves PaymentEscrow to transfer the payment amount to the Landlord
+        // Landlord or Tenant approves PaymentEscrow to transfer the payment amount to the Landlord
         leaseTokenContract.approveLeaseToken(payment.payer, address(this), payment.amount);
-        // Tenant transfers the payment amount to PaymentEscrow
+        // Landlord or Tenant transfers the payment amount to PaymentEscrow
         leaseTokenContract.transferLeaseTokenFrom(
             address(this),
             payment.payer,
             address(this),
             payment.amount
         );
-        payment.status = PaymentStatus.PAID;
+        payment.status = PaymentStatus.PAID; // Payment has been made
         emit paymentPaid(payment.payer, payment.payee, payment.amount);
     }
 
-    // Function to release the payment amount from the PaymentEscrow to the landlord
+    // Function to release the payment amount from the PaymentEscrow to the landlord or tenant
     function release(
         uint256 _paymentId
     )
@@ -238,7 +238,7 @@ contract PaymentEscrow {
     {
         Payment storage payment = payments[_paymentId];
 
-        // PaymentEscrow transfers the payment amount to the tenant (minus the commission fee), commission fee is transferred to the platform
+        // PaymentEscrow transfers the payment amount to the landlord or tenant (minus the commission fee), commission fee is transferred to the platform
         leaseTokenContract.transferLeaseToken(
             address(this),
             payment.payee,
@@ -248,8 +248,9 @@ contract PaymentEscrow {
         emit paymentReleased(payment.payer, payment.payee, payment.amount);
     }
 
-    // Function to refund the payment amount from the PaymentEscrow to the tenant
-    function refund(
+    // Function to refund the payment amount from the PaymentEscrow to the landlord or tenant (after PaymentEscrow has received the payment amount from the landlord or tenant)
+    // Mainly used when landlord rejects the rental application or tenant cancels the rental application
+    function refundPayment(
         uint256 _paymentId
     )
         public
@@ -261,7 +262,28 @@ contract PaymentEscrow {
         // PaymentEscrow transfers the payment amount back to the landlord
         leaseTokenContract.transferLeaseToken(
             address(this),
-            payment.payer,
+            payment.payer, // Refund the payment amount to the tenant
+            payment.amount
+        );
+        payment.status = PaymentStatus.REFUNDED;
+        emit paymentRefunded(payment.payer, payment.payee, payment.amount);
+    }
+
+    // Function to refund any amount from the PaymentEscrow (to the tenant or landlord) at any point of time
+    // Mainly used when returning the remaining balance to the tenant or landlord after the rental agreement has ended 
+    // Also used during the dispute resolution process
+    function refund(
+        uint256 _paymentId
+    )
+        public
+        onlyRentalMarketplaceOrRentDisputeDAO()
+        PaymentExists(_paymentId)
+    {
+        Payment storage payment = payments[_paymentId];
+        // PaymentEscrow transfers the payment amount back to the landlord or tenant
+        leaseTokenContract.transferLeaseToken(
+            address(this),
+            payment.payee,
             payment.amount
         );
         payment.status = PaymentStatus.REFUNDED;

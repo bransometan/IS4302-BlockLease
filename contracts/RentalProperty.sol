@@ -24,6 +24,7 @@ contract RentalProperty {
         bool updateStatus; // status of the rental property (true if property can be updated/deleted, false if property cannot be updated/deleted)
         bool isListed; // status of the rental property (true if property is listed, false if property is not listed)
         uint256[] paymentIds; // All the payment transaction ids generated for landlord during listing/unlisting of rental property (mainly to keep track of protection fee payments/refunds)
+        uint256 protectionFeeBalance; // balance of protection fee remaining for the rental property (to protect landlord from tenant disputes)
     }
 
     uint256 private numRentalProperty = 0; // number of rental properties
@@ -166,7 +167,8 @@ contract RentalProperty {
             msg.sender, // landlord is the sender
             true, // initially, rental property can be updated/deleted when there are no tenants applications
             false, // initially, rental property is not listed
-            new uint256[](1000) // Limit of 1000 payment transactions
+            new uint256[](1000), // Limit of 1000 payment transactions
+            0 // Initially, protection fee balance is 0 (Protection fee is used to protect landlord from tenant disputes)
         );
 
         uint256 newRentalPropertyId = numRentalProperty++; // increment rental property id
@@ -483,6 +485,13 @@ contract RentalProperty {
         ];
     }
 
+    //Function to get protection fee balance of a rental property
+    function getProtectionFeeBalance(
+        uint256 rentalPropertyId
+    ) public view validRentalPropertyId(rentalPropertyId) returns (uint256) {
+        return rentalProperties[rentalPropertyId].protectionFeeBalance;
+    }
+
 
     // ################################################### SETTER METHODS ################################################### //
 
@@ -647,6 +656,15 @@ contract RentalProperty {
         uint256 paymentId
     ) public validRentalPropertyId(rentalPropertyId) {
         rentalProperties[rentalPropertyId].paymentIds.push(paymentId);
+    }
+
+    //Function to update the protection fee balance of a rental property
+    //Not restricted to landlord as this function is used in RentalMarketplace to update the protection fee balance
+    function updateProtectionFeeBalance(
+        uint256 rentalPropertyId,
+        uint256 newProtectionFeeBalance
+    ) public validRentalPropertyId(rentalPropertyId) {
+        rentalProperties[rentalPropertyId].protectionFeeBalance = newProtectionFeeBalance;
     }
 
     // ################################################### DELETE METHOD ################################################### //
