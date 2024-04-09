@@ -26,7 +26,8 @@ contract RentalProperty {
     }
 
     uint256 private numRentalProperty = 0;
-    mapping(uint256 => rentalProperty) private rentalProperties; // map of rental properties indexed by propertyId
+    mapping(uint256 => rentalProperty) private rentalProperties; // map of rental properties indexed by rentalPropertyId
+    mapping(address => rentalProperty[]) private landlordRentalProperties; // map of rental properties indexed by landlord address
 
     // ################################################### EVENTS ################################################### //
 
@@ -166,6 +167,8 @@ contract RentalProperty {
 
         uint256 newRentalPropertyId = numRentalProperty++; // increment rental property id
         rentalProperties[newRentalPropertyId] = newRentalProperty; // add to rentalProperties map
+        landlordRentalProperties[msg.sender].push(newRentalProperty); // add to landlordRentalProperties map
+
         emit RentalPropertyCreated(
             newRentalPropertyId,
             _location,
@@ -289,6 +292,69 @@ contract RentalProperty {
     //Function to get the number of rental properties
     function getNumRentalProperty() public view returns (uint256) {
         return numRentalProperty;
+    }
+
+    //Function to get the update status of a rental property
+    function getUpdateStatus(uint256 rentalPropertyId)
+        public
+        view
+        validRentalPropertyId(rentalPropertyId)
+        returns (bool)
+    {
+        return rentalProperties[rentalPropertyId].updateStatus;
+    }
+
+    //Function to get the listed status of a rental property
+    function getListedStatus(uint256 rentalPropertyId)
+        public
+        view
+        validRentalPropertyId(rentalPropertyId)
+        returns (bool)
+    {
+        return rentalProperties[rentalPropertyId].isListed;
+    }
+
+    //Function to get all the rental properties of a landlord
+    function getLandlordRentalProperties(address landlord)
+        public
+        view
+        returns (rentalProperty[] memory)
+    {
+        return landlordRentalProperties[landlord];
+    }
+
+    //Function to get all the listed rental properties of a landlord
+    function getLandlordListedRentalProperties(address landlord)
+        public
+        view
+        returns (rentalProperty[] memory)
+    {
+        rentalProperty[] memory listedRentalProperties;
+        uint256 index = 0;
+        for (uint256 i = 0; i < landlordRentalProperties[landlord].length; i++) {
+            if (landlordRentalProperties[landlord][i].isListed == true) {
+                listedRentalProperties[index] = landlordRentalProperties[landlord][i];
+                index++;
+            }
+        }
+        return listedRentalProperties;
+    }
+
+    //Function to get all the unlisted rental properties of a landlord
+    function getLandlordUnlistedRentalProperties(address landlord)
+        public
+        view
+        returns (rentalProperty[] memory)
+    {
+        rentalProperty[] memory unlistedRentalProperties;
+        uint256 index = 0;
+        for (uint256 i = 0; i < landlordRentalProperties[landlord].length; i++) {
+            if (landlordRentalProperties[landlord][i].isListed == false) {
+                unlistedRentalProperties[index] = landlordRentalProperties[landlord][i];
+                index++;
+            }
+        }
+        return unlistedRentalProperties;
     }
 
     // ################################################### SETTER METHODS ################################################### //
@@ -446,7 +512,10 @@ contract RentalProperty {
         validRentalPropertyId(rentalPropertyId)
         validUpdateStatus(rentalPropertyId)
     {
+        // delete rental property from rentalProperties map
         delete rentalProperties[rentalPropertyId];
+        // delete rental property from landlordRentalProperties map
+        landlordRentalProperties[msg.sender].pop(); 
         emit RentalPropertyDeleted(rentalPropertyId);
     }
 }
