@@ -32,7 +32,7 @@ contract RentalMarketplace {
     uint256 private numOfListedRentalProperty = 0;
 
     // This is mapping of RentalProperty id to the downpayment/deposit of the property
-    mapping(uint256 => uint256) private listRentalProperty;
+    mapping(uint256 => uint256) private rentalPropertyDeposits;
     // This is mapping of RentalProperty id to the (RentalApplication id to RentalApplication struct) mapping
     mapping(uint256 => mapping(uint256 => RentalApplication))
         private rentalApplications;
@@ -82,7 +82,7 @@ contract RentalMarketplace {
     // Modifier to check the rental property is listed
     modifier rentalPropertyListed(uint256 rentalPropertyId) {
         require(
-            listRentalProperty[rentalPropertyId] > 0,
+            rentalPropertyContract.getListedStatus(rentalPropertyId) == true,
             "Rental property is not listed"
         );
         _;
@@ -91,7 +91,7 @@ contract RentalMarketplace {
     // Modifier to check the rental property is not listed
     modifier rentalPropertyNotListed(uint256 rentalPropertyId) {
         require(
-            listRentalProperty[rentalPropertyId] == 0,
+            rentalPropertyContract.getListedStatus(rentalPropertyId) == false,
             "Rental property is already listed"
         );
         _;
@@ -228,8 +228,12 @@ contract RentalMarketplace {
         rentalPropertyNotListed(rentalPropertyId)
         depositLeaseTokenGreaterThanZero(depositLeaseToken)
         landlordOnly(rentalPropertyId)
-    {
-        listRentalProperty[rentalPropertyId] = depositLeaseToken;
+    {   
+        //Set the deposit required for the rental property
+        rentalPropertyDeposits[rentalPropertyId] = depositLeaseToken;
+        //Set the rental property as listed
+        rentalPropertyContract.setListedStatus(rentalPropertyId, true);
+        //Increment the number of listed rental properties
         numOfListedRentalProperty++;
         emit RentalPropertyAdded(rentalPropertyId, depositLeaseToken);
     }
@@ -243,56 +247,13 @@ contract RentalMarketplace {
         landlordOnly(rentalPropertyId)
         rentalPropertyVacant(rentalPropertyId)
     {
-        listRentalProperty[rentalPropertyId] = 0;
+        //Set the deposit required for the rental property to 0
+        rentalPropertyDeposits[rentalPropertyId] = 0;
+        //Set the rental property as not listed
+        rentalPropertyContract.setListedStatus(rentalPropertyId, false);
+        //Decrement the number of listed rental properties
         numOfListedRentalProperty--;
         emit RentalPropertyRemoved(rentalPropertyId);
-    }
-
-    //Tenant can view all Ids of listed rental properties in the marketplace.
-    function viewIdsOfListedRentalProperties()
-        public
-        view
-        returns (uint256[] memory)
-    {
-        require(numOfListedRentalProperty > 0, "No rental property listed");
-        uint256[] memory rentalProperties = new uint256[](
-            numOfListedRentalProperty
-        );
-        uint256 index = 0;
-        for (
-            uint256 i = 0;
-            i < rentalPropertyContract.getNumRentalProperty();
-            i++
-        ) {
-            // Check if the rental property is listed
-            if (listRentalProperty[i] > 0) {
-                rentalProperties[index] = i;
-                index++;
-            }
-        }
-        return rentalProperties;
-    }
-
-    //Landlord can view all rental applications for a rental property.
-    function viewRentalApplications(
-        uint256 rentalPropertyId
-    )
-        public
-        view
-        landlordOnly(rentalPropertyId)
-        returns (RentalApplication[] memory)
-    {
-        RentalApplication[] memory applications = new RentalApplication[](
-            rentalApplicationCounts[rentalPropertyId]
-        );
-        for (
-            uint256 i = 0;
-            i < rentalApplicationCounts[rentalPropertyId];
-            i++
-        ) {
-            applications[i] = rentalApplications[rentalPropertyId][i];
-        }
-        return applications;
     }
 
     //Tenant can apply for a rental property by submitting a rental application.
@@ -327,7 +288,7 @@ contract RentalMarketplace {
         hasApplied[rentalPropertyId][msg.sender] = true;
 
         // Deposit LeaseToken required for the rental property
-        uint256 depositLeaseToken = listRentalProperty[rentalPropertyId];
+        uint256 depositLeaseToken = rentalPropertyDeposits[rentalPropertyId];
         // Create a payment transaction for the tenant
         uint256 paymentId = paymentEscrowContract.createPayment(
             msg.sender,
@@ -495,6 +456,28 @@ contract RentalMarketplace {
         return rentalApplications[rentalPropertyId][applicationId];
     }
 
+    //Get all rental applications for a rental property.
+    function getRentalApplicationsFromRentalProperty(
+        uint256 rentalPropertyId
+    )
+        public
+        view
+        landlordOnly(rentalPropertyId)
+        returns (RentalApplication[] memory)
+    {
+        RentalApplication[] memory applications = new RentalApplication[](
+            rentalApplicationCounts[rentalPropertyId]
+        );
+        for (
+            uint256 i = 0;
+            i < rentalApplicationCounts[rentalPropertyId];
+            i++
+        ) {
+            applications[i] = rentalApplications[rentalPropertyId][i];
+        }
+        return applications;
+    }
+
     //Get the number of rental applications for a rental property.
     function getRentalApplicationCount(
         uint256 rentalPropertyId
@@ -514,7 +497,7 @@ contract RentalMarketplace {
     function getDepositAmount(
         uint256 rentalPropertyId
     ) public view returns (uint256) {
-        return listRentalProperty[rentalPropertyId];
+        return rentalPropertyDeposits[rentalPropertyId];
     }
 
     //Get the address of the RentalProperty contract.
