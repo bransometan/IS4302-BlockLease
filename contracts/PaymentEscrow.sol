@@ -6,10 +6,10 @@ import "./LeaseToken.sol";
 contract PaymentEscrow {
     // ################################################### STRUCTURE & STATE VARIABLES ################################################### //
     enum PaymentStatus {
-        PENDING,
-        PAID,
-        RELEASED,
-        REFUNDED
+        PENDING, // Payment has been created but not yet made
+        PAID, // Payment has been made but not yet released
+        RELEASED, // Payment has been released
+        REFUNDED // Payment has been refunded
     }
 
     struct Payment {
@@ -28,7 +28,7 @@ contract PaymentEscrow {
 
     LeaseToken leaseTokenContract;
 
-    mapping(uint256 => Payment) public payments;
+    mapping(uint256 => Payment) public payments; // Mapping of payment ID to payment details
 
     // The owner of the contract (PaymentEscrow), who can set the protection fee (for landlord) and commission fee (for platform)
     address private owner;
@@ -62,11 +62,13 @@ contract PaymentEscrow {
 
     // ################################################### MODIFIERS ################################################### //
 
+    // Modifier to check if the caller is the owner of the contract
     modifier onlyOwner() {
         require(msg.sender == owner, "Only owner can call this function");
         _;
     }
 
+    // Modifier to check if the caller is the RentalMarketplace contract
     modifier onlyRentalMarketplace() {
         require(
             msg.sender == rentalMarketplaceAddress,
@@ -75,6 +77,7 @@ contract PaymentEscrow {
         _;
     }
 
+    // Modifier to check if the caller is the RentDisputeDAO contract
     modifier onlyRentDisputeDAO() {
         require(
             msg.sender == rentDisputeDAOAddress,
@@ -83,6 +86,7 @@ contract PaymentEscrow {
         _;
     }
 
+    // Modifier to check if the caller is the RentalMarketplace or RentDisputeDAO contract
     modifier onlyRentalMarketplaceOrRentDisputeDAO() {
         require(
             msg.sender == rentalMarketplaceAddress ||
@@ -92,6 +96,7 @@ contract PaymentEscrow {
         _;
     }
 
+    // Modifier to check if the payer has sufficient balance to make the payment
     modifier checkSufficientBalance(address _payer, uint256 _amount) {
         require(
             leaseTokenContract.checkLeaseToken(_payer) >= _amount,
@@ -100,11 +105,13 @@ contract PaymentEscrow {
         _;
     }
 
+    // Modifier to check if the payment exists
     modifier PaymentExists(uint256 _paymentId) {
         require(_paymentId < numOfPayments, "Payment does not exist");
         _;
     }
 
+    // Modifier to check if the payment is pending
     modifier PaymentPending(uint256 _paymentId) {
         require(
             payments[_paymentId].status == PaymentStatus.PENDING,
@@ -113,6 +120,7 @@ contract PaymentEscrow {
         _;
     }
 
+    // Modifier to check if the payment has been made
     modifier PaymentPaid(uint256 _paymentId) {
         require(
             payments[_paymentId].status == PaymentStatus.PAID,
@@ -121,6 +129,7 @@ contract PaymentEscrow {
         _;
     }
 
+    // Modifier to check if the payment has been released
     modifier PaymentReleased(uint256 _paymentId) {
         require(
             payments[_paymentId].status == PaymentStatus.RELEASED,
@@ -129,6 +138,7 @@ contract PaymentEscrow {
         _;
     }
 
+    // Modifier to check if the payment has been refunded
     modifier PaymentRefunded(uint256 _paymentId) {
         require(
             payments[_paymentId].status == PaymentStatus.REFUNDED,
@@ -137,16 +147,19 @@ contract PaymentEscrow {
         _;
     }
 
+    // Modifier to check if the protection fee is valid
     modifier invalidProtectionFee(uint256 _protectionFee) {
         require(_protectionFee > 0, "Protection fee must be greater than 0");
         _;
     }
 
+    // Modifier to check if the commission fee is valid
     modifier invalidCommissionFee(uint256 _commissionFee) {
         require(_commissionFee > 0, "Commission fee must be greater than 0");
         _;
     }
 
+    // Modifier to check if the RentalMarketplace address is valid
     modifier invalidRentalMarketplaceAddress(
         address _rentalMarketplaceAddress
     ) {
@@ -157,6 +170,7 @@ contract PaymentEscrow {
         _;
     }
 
+    // Modifier to check if the RentDisputeDAO address is valid
     modifier invalidRentDisputeDAOAddress(address _rentDisputeDAOAddress) {
         require(
             _rentDisputeDAOAddress != address(0),

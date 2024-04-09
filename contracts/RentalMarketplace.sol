@@ -21,7 +21,7 @@ contract RentalMarketplace {
         string tenantPhone; // The tenant contact
         string description; // The tenant description of why they want to rent the property
         uint256 monthsPaid; // The number of months the tenant has paid
-        RentStatus status;
+        RentStatus status; // The status of the rental application
         uint256[] paymentIds; // All the payment transaction ids by this tenant for the rental property
     }
 
@@ -94,6 +94,7 @@ contract RentalMarketplace {
         _;
     }
 
+    // Modifier to check the rental application exist
     modifier rentalApplicationExist(
         uint256 rentalPropertyId,
         uint256 applicationId

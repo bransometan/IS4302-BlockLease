@@ -5,10 +5,10 @@ contract RentalProperty {
     // ################################################### STRUCTURE & STATE VARIABLES ################################################### //
 
     enum PropertyType {
-        HDB,
-        Condo,
-        Landed,
-        Other
+        HDB, // Housing and Development Board
+        Condo, // Condominium
+        Landed, // Landed Property
+        Other // Other types of property
     }
 
     struct rentalProperty {
@@ -25,8 +25,8 @@ contract RentalProperty {
         bool isListed; // status of the rental property (true if property is listed, false if property is not listed)
     }
 
-    uint256 private numRentalProperty = 0;
-    uint256 private numListedRentalProperty = 0;
+    uint256 private numRentalProperty = 0; // number of rental properties
+    uint256 private numListedRentalProperty = 0; // number of listed rental properties
     mapping(uint256 => rentalProperty) private rentalProperties; // map of rental properties indexed by rentalPropertyId
 
     // ################################################### EVENTS ################################################### //
@@ -108,25 +108,29 @@ contract RentalProperty {
         _;
     }
 
+    //Modifier to ensure the number of tenants is valid
     modifier validNumOfTenants(uint256 numOfTenants) {
         require(numOfTenants > 0, "Number of tenants must be greater than 0");
         _;
     }
 
+    //Modifier to ensure the rental price is valid
     modifier validRentalPrice(uint256 rentalPrice) {
         require(rentalPrice > 0, "Rental Price must be greater than 0");
         _;
     }
 
+    //Modifier to ensure the lease duration is valid
     modifier validLeaseDuration(uint256 leaseDuration) {
         require(leaseDuration > 0, "Lease Duration must be greater than 0");
         _;
     }
 
+    //Modifier to ensure the rental property can be updated or deleted
     modifier validUpdateStatus(uint256 rentalPropertyId) {
         require(
             rentalProperties[rentalPropertyId].updateStatus == true,
-            "Rental Property cannot be updated"
+            "Rental Property cannot be updated or deleted"
         );
         _;
     }
