@@ -28,7 +28,6 @@ contract RentalProperty {
     uint256 private numRentalProperty = 0;
     uint256 private numListedRentalProperty = 0;
     mapping(uint256 => rentalProperty) private rentalProperties; // map of rental properties indexed by rentalPropertyId
-    mapping(address => rentalProperty[]) private landlordRentalProperties; // map of rental properties indexed by landlord address
 
     // ################################################### EVENTS ################################################### //
 
@@ -168,7 +167,6 @@ contract RentalProperty {
 
         uint256 newRentalPropertyId = numRentalProperty++; // increment rental property id
         rentalProperties[newRentalPropertyId] = newRentalProperty; // add to rentalProperties map
-        landlordRentalProperties[msg.sender].push(newRentalProperty); // add to landlordRentalProperties map
 
         emit RentalPropertyCreated(
             newRentalPropertyId,
@@ -290,11 +288,6 @@ contract RentalProperty {
         return rentalProperties[rentalPropertyId].landlord;
     }
 
-    //Function to get the number of rental properties
-    function getNumRentalProperty() public view returns (uint256) {
-        return numRentalProperty;
-    }
-
     //Function to get the update status of a rental property
     function getUpdateStatus(
         uint256 rentalPropertyId
@@ -308,6 +301,65 @@ contract RentalProperty {
     ) public view validRentalPropertyId(rentalPropertyId) returns (bool) {
         return rentalProperties[rentalPropertyId].isListed;
     }
+
+    //Function to get the number of rental properties
+    function getNumRentalProperty() public view returns (uint256) {
+        return numRentalProperty;
+    }
+
+    //Function to get the number of listed rental properties
+    function getNumListedRentalProperty() public view returns (uint256) {
+        return numListedRentalProperty;
+    }
+
+    //Function to get the number of unlisted rental properties
+    function getNumUnlistedRentalProperty() public view returns (uint256) {
+        return numRentalProperty - numListedRentalProperty;
+    }
+
+    //Function to get the number of rental properties of a landlord
+    function getNumLandlordRentalProperties(
+        address landlord
+    ) public view returns (uint256) {
+        uint256 count = 0;
+        for (uint256 i = 0; i < numRentalProperty; i++) {
+            if (rentalProperties[i].landlord == landlord) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    //Function to get the number of listed rental properties of a landlord
+    function getNumLandlordListedRentalProperties(
+        address landlord
+    ) public view returns (uint256) {
+        uint256 count = 0;
+        for (uint256 i = 0; i < numRentalProperty; i++) {
+            if (rentalProperties[i].landlord == landlord) {
+                if (rentalProperties[i].isListed == true) {
+                    count++;
+                }
+            }
+        }
+        return count;
+    }
+
+    //Function to get the number of unlisted rental properties of a landlord
+    function getNumLandlordUnlistedRentalProperties(
+        address landlord
+    ) public view returns (uint256) {
+        uint256 count = 0;
+        for (uint256 i = 0; i < numRentalProperty; i++) {
+            if (rentalProperties[i].landlord == landlord) {
+                if (rentalProperties[i].isListed == false) {
+                    count++;
+                }
+            }
+        }
+        return count;
+    }
+
 
     //Function to get all the rental properties (listed and unlisted)
     function getAllRentalProperties()
@@ -362,84 +414,59 @@ contract RentalProperty {
         return unlistedRentalProperties;
     }
 
-    //Function to get all the rental properties of a landlord
+    //Function to get all the rental properties of a landlord (listed and unlisted)
     function getLandlordRentalProperties(
         address landlord
     ) public view returns (rentalProperty[] memory) {
-        return landlordRentalProperties[landlord];
+        rentalProperty[] memory landlordRentalProperties = new rentalProperty[](
+            getNumLandlordRentalProperties(landlord)
+        );
+        uint256 index = 0;
+        for (uint256 i = 0; i < numRentalProperty; i++) {
+            if (rentalProperties[i].landlord == landlord) {
+                landlordRentalProperties[index] = rentalProperties[i];
+                index++;
+            }
+        }
+        return landlordRentalProperties;
     }
 
     //Function to get all the listed rental properties of a landlord
     function getLandlordListedRentalProperties(
         address landlord
     ) public view returns (rentalProperty[] memory) {
-        // get the number of listed rental properties of the landlord
-        uint256 numLandlordListedRentalProperty = getNumLandlordListedRentalProperty(
-                landlord
-            );
-        rentalProperty[] memory listedRentalProperties = new rentalProperty[](
-            numLandlordListedRentalProperty
+        rentalProperty[] memory landlordListedRentalProperties = new rentalProperty[](
+            getNumLandlordListedRentalProperties(landlord)
         );
         uint256 index = 0;
-        for (
-            uint256 i = 0;
-            i < landlordRentalProperties[landlord].length;
-            i++
-        ) {
-            if (landlordRentalProperties[landlord][i].isListed == true) {
-                listedRentalProperties[index] = landlordRentalProperties[
-                    landlord
-                ][i];
-                index++;
+        for (uint256 i = 0; i < numRentalProperty; i++) {
+            if (rentalProperties[i].landlord == landlord) {
+                if (rentalProperties[i].isListed == true) {
+                    landlordListedRentalProperties[index] = rentalProperties[i];
+                    index++;
+                }
             }
         }
-        return listedRentalProperties;
+        return landlordListedRentalProperties;
     }
 
     //Function to get all the unlisted rental properties of a landlord
     function getLandlordUnlistedRentalProperties(
         address landlord
     ) public view returns (rentalProperty[] memory) {
-        rentalProperty[] memory unlistedRentalProperties = new rentalProperty[](
-            landlordRentalProperties[landlord].length -
-                getNumLandlordListedRentalProperty(landlord)
+        rentalProperty[] memory landlordUnlistedRentalProperties = new rentalProperty[](
+            getNumLandlordUnlistedRentalProperties(landlord)
         );
         uint256 index = 0;
-        for (
-            uint256 i = 0;
-            i < landlordRentalProperties[landlord].length;
-            i++
-        ) {
-            if (landlordRentalProperties[landlord][i].isListed == false) {
-                unlistedRentalProperties[index] = landlordRentalProperties[
-                    landlord
-                ][i];
-                index++;
+        for (uint256 i = 0; i < numRentalProperty; i++) {
+            if (rentalProperties[i].landlord == landlord) {
+                if (rentalProperties[i].isListed == false) {
+                    landlordUnlistedRentalProperties[index] = rentalProperties[i];
+                    index++;
+                }
             }
         }
-        return unlistedRentalProperties;
-    }
-
-    //Function to get the number of listed rental properties
-    function getNumListedRentalProperty() public view returns (uint256) {
-        return numListedRentalProperty;
-    }
-
-    //Function to get the number of listed rental properties of a landlord
-    function getNumLandlordListedRentalProperty(
-        address landlord
-    ) public view returns (uint256) {
-        uint256 numLandlordListedRentalProperty = 0;
-        for (
-            uint256 i = 0;
-            i < landlordRentalProperties[landlord].length;
-            i++
-        ) {
-            if (landlordRentalProperties[landlord][i].isListed == true) {
-                numLandlordListedRentalProperty++;
-            }
-        }
-        return numLandlordListedRentalProperty;
+        return landlordUnlistedRentalProperties;
     }
 
     // ################################################### SETTER METHODS ################################################### //
@@ -611,8 +638,6 @@ contract RentalProperty {
     {
         // delete rental property from rentalProperties map
         delete rentalProperties[rentalPropertyId];
-        // delete rental property from landlordRentalProperties map
-        landlordRentalProperties[msg.sender].pop();
         emit RentalPropertyDeleted(rentalPropertyId);
     }
 }
