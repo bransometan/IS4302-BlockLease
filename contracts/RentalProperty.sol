@@ -23,6 +23,7 @@ contract RentalProperty {
         address landlord; // address of the landlord owner
         bool updateStatus; // status of the rental property (true if property can be updated/deleted, false if property cannot be updated/deleted)
         bool isListed; // status of the rental property (true if property is listed, false if property is not listed)
+        uint256[] paymentIds; // All the payment transaction ids generated for landlord during listing/unlisting of rental property (mainly to keep track of protection fee payments/refunds)
     }
 
     uint256 private numRentalProperty = 0; // number of rental properties
@@ -41,9 +42,7 @@ contract RentalProperty {
         uint256 numOfTenants,
         uint256 rentalPrice,
         uint256 leaseDuration,
-        address landlord,
-        bool updateStatus,
-        bool isListed
+        address landlord
     );
 
     event RentalPropertyUpdateLocation(
@@ -166,7 +165,8 @@ contract RentalProperty {
             _leaseDuration,
             msg.sender, // landlord is the sender
             true, // initially, rental property can be updated/deleted when there are no tenants applications
-            false // initially, rental property is not listed
+            false, // initially, rental property is not listed
+            new uint256[](1000) // Limit of 1000 payment transactions
         );
 
         uint256 newRentalPropertyId = numRentalProperty++; // increment rental property id
@@ -182,9 +182,7 @@ contract RentalProperty {
             _numOfTenants,
             _rentalPrice,
             _leaseDuration,
-            msg.sender,
-            true,
-            false
+            msg.sender
         );
 
         return newRentalPropertyId; //return new rental property id
@@ -364,7 +362,6 @@ contract RentalProperty {
         return count;
     }
 
-
     //Function to get all the rental properties (listed and unlisted)
     function getAllRentalProperties()
         public
@@ -439,9 +436,10 @@ contract RentalProperty {
     function getLandlordListedRentalProperties(
         address landlord
     ) public view returns (rentalProperty[] memory) {
-        rentalProperty[] memory landlordListedRentalProperties = new rentalProperty[](
-            getNumLandlordListedRentalProperties(landlord)
-        );
+        rentalProperty[]
+            memory landlordListedRentalProperties = new rentalProperty[](
+                getNumLandlordListedRentalProperties(landlord)
+            );
         uint256 index = 0;
         for (uint256 i = 0; i < numRentalProperty; i++) {
             if (rentalProperties[i].landlord == landlord) {
@@ -458,20 +456,33 @@ contract RentalProperty {
     function getLandlordUnlistedRentalProperties(
         address landlord
     ) public view returns (rentalProperty[] memory) {
-        rentalProperty[] memory landlordUnlistedRentalProperties = new rentalProperty[](
-            getNumLandlordUnlistedRentalProperties(landlord)
-        );
+        rentalProperty[]
+            memory landlordUnlistedRentalProperties = new rentalProperty[](
+                getNumLandlordUnlistedRentalProperties(landlord)
+            );
         uint256 index = 0;
         for (uint256 i = 0; i < numRentalProperty; i++) {
             if (rentalProperties[i].landlord == landlord) {
                 if (rentalProperties[i].isListed == false) {
-                    landlordUnlistedRentalProperties[index] = rentalProperties[i];
+                    landlordUnlistedRentalProperties[index] = rentalProperties[
+                        i
+                    ];
                     index++;
                 }
             }
         }
         return landlordUnlistedRentalProperties;
     }
+
+    //Function to get payment id of a rental property (latest payment transaction id)
+    function getLatestPaymentId(
+        uint256 rentalPropertyId
+    ) public view validRentalPropertyId(rentalPropertyId) returns (uint256) {
+        return rentalProperties[rentalPropertyId].paymentIds[
+            rentalProperties[rentalPropertyId].paymentIds.length - 1
+        ];
+    }
+
 
     // ################################################### SETTER METHODS ################################################### //
 
@@ -627,6 +638,15 @@ contract RentalProperty {
     //Not restricted to landlord as this function is used in RentalMarketplace to decrement the number of listed rental properties
     function decrementListedRentalProperty() public {
         numListedRentalProperty--;
+    }
+
+    //Function to add a payment id to the rental property
+    //Not restricted to landlord as this function is used in RentalMarketplace to keep track of protection fee payments/refunds
+    function addPaymentId(
+        uint256 rentalPropertyId,
+        uint256 paymentId
+    ) public validRentalPropertyId(rentalPropertyId) {
+        rentalProperties[rentalPropertyId].paymentIds.push(paymentId);
     }
 
     // ################################################### DELETE METHOD ################################################### //

@@ -22,7 +22,7 @@ contract RentalMarketplace {
         string description; // The tenant description of why they want to rent the property
         uint256 monthsPaid; // The number of months the tenant has paid
         RentStatus status; // The status of the rental application
-        uint256[] paymentIds; // All the payment transaction ids by this tenant for the rental property
+        uint256[] paymentIds; // All the payment transaction ids generated for tenant during deposit/monthlyPayment of rental property (mainly to keep track of payments/refunds for deposit and monthly rent)
     }
 
     RentalProperty rentalPropertyContract;
@@ -47,7 +47,7 @@ contract RentalMarketplace {
 
     event RentalPropertyAdded(
         uint256 rentalPropertyId,
-        uint256 depositLeaseToken
+        uint256 depositFee
     );
     event RentalPropertyRemoved(uint256 rentalPropertyId);
     event RentalApplicationSubmitted(
@@ -207,9 +207,9 @@ contract RentalMarketplace {
     }
 
     // Modifier to check Deposit LeaseToken is greater than 0
-    modifier depositLeaseTokenGreaterThanZero(uint256 depositLeaseToken) {
+    modifier depositFeeGreaterThanZero(uint256 depositFee) {
         require(
-            depositLeaseToken > 0,
+            depositFee > 0,
             "Deposit LeaseToken must be greater than 0"
         );
         _;
@@ -220,20 +220,34 @@ contract RentalMarketplace {
     //Landlord can list a rental property to the marketplace to start accepting tenants.
     function listARentalProperty(
         uint256 rentalPropertyId,
-        uint256 depositLeaseToken
+        uint256 depositFee
     )
         public
         rentalPropertyNotListed(rentalPropertyId)
-        depositLeaseTokenGreaterThanZero(depositLeaseToken)
+        depositFeeGreaterThanZero(depositFee)
         landlordOnly(rentalPropertyId)
     {   
-        //Set the deposit required for the rental property
-        rentalPropertyDeposits[rentalPropertyId] = depositLeaseToken;
+        // Deposit fee (in LeaseToken) set by Landlord required for the rental property (to be paid by tenant if they apply for the rental property)
+        rentalPropertyDeposits[rentalPropertyId] = depositFee;
+        
+        // Protection fee (in LeaseToken) set by PaymentEscrow Contract required for listing of the rental property (to protect the landlord from potential disputes)
+        uint256 protectionFee = paymentEscrowContract.getProtectionFee();
+        // Create a payment transaction for the landlord
+        uint256 paymentId = paymentEscrowContract.createPayment(
+            msg.sender,
+            rentalPropertyContract.getLandlord(rentalPropertyId),
+            protectionFee
+        );
+        // Add the payment transaction id to the rental property
+        rentalPropertyContract.addPaymentId(rentalPropertyId, paymentId);
+        // Landlord pay/transfer the protection fee (LeaseToken) for the rental property to the PaymentEscrow contract
+        paymentEscrowContract.pay(paymentId);
+
         //Set the rental property as listed
         rentalPropertyContract.setListedStatus(rentalPropertyId, true);
         //Increment the number of listed rental properties
         rentalPropertyContract.incrementListedRentalProperty();
-        emit RentalPropertyAdded(rentalPropertyId, depositLeaseToken);
+        emit RentalPropertyAdded(rentalPropertyId, depositFee);
     }
 
     //Landlord can unlist a rental property from the marketplace to stop accepting tenants.
@@ -247,6 +261,12 @@ contract RentalMarketplace {
     {
         //Set the deposit required for the rental property to 0
         rentalPropertyDeposits[rentalPropertyId] = 0;
+
+        //PaymentEscrow Contract refund the protection fee (LeaseToken) to the landlord (latest payment transaction id)
+        paymentEscrowContract.refund(
+            rentalPropertyContract.getLatestPaymentId(rentalPropertyId)
+        );
+        
         //Set the rental property as not listed
         rentalPropertyContract.setListedStatus(rentalPropertyId, false);
         //Decrement the number of listed rental properties
@@ -286,12 +306,12 @@ contract RentalMarketplace {
         hasApplied[rentalPropertyId][msg.sender] = true;
 
         // Deposit LeaseToken required for the rental property
-        uint256 depositLeaseToken = rentalPropertyDeposits[rentalPropertyId];
+        uint256 depositFee = rentalPropertyDeposits[rentalPropertyId];
         // Create a payment transaction for the tenant
         uint256 paymentId = paymentEscrowContract.createPayment(
             msg.sender,
             rentalPropertyContract.getLandlord(rentalPropertyId),
-            depositLeaseToken
+            depositFee
         );
         // Add the payment transaction id to the rental application
         rentalApplications[rentalPropertyId][applicationId].paymentIds.push(
@@ -319,7 +339,7 @@ contract RentalMarketplace {
             rentalPropertyId
         ][applicationId];
 
-        // Refund the deposit (LeaseToken) to the tenant if the rental application is rejected (latest payment transaction id)
+        // PaymentEscrow Contract refund the deposit (LeaseToken) to the tenant if the rental application is rejected (latest payment transaction id)
         paymentEscrowContract.refund(
             rentalApplication.paymentIds[
                 rentalApplication.paymentIds.length - 1
