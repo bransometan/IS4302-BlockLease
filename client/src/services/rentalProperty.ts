@@ -156,20 +156,19 @@ export const updateRentalPropertyById = async (
       leaseDuration,
     } = props;
 
-    //TODO: do all in one
-    //TODO: add tx.wait()
-    await rentalPropertyContract.updateLocation(id, location);
-    await rentalPropertyContract.updatePostalCode(id, postalCode);
-    await rentalPropertyContract.updateUnitNumber(id, unitNumber);
-    await rentalPropertyContract.updatePropertyType(
+    const tx = await rentalPropertyContract.updateRentalProperty(
       id,
-      enumValueToIndex(PropertyType, propertyType)
+      location,
+      postalCode,
+      unitNumber,
+      enumValueToIndex(PropertyType, propertyType),
+      description,
+      numOfTenants,
+      rentalPrice,
+      leaseDuration
     );
-    await rentalPropertyContract.updateDescription(id, description);
-    await rentalPropertyContract.updateNumOfTenants(id, numOfTenants);
-    await rentalPropertyContract.updateRentalPrice(id, rentalPrice);
-    await rentalPropertyContract.updateLeaseDuration(id, leaseDuration);
-    // return Promise.resolve(tx);
+    await tx.wait();
+    return Promise.resolve(tx);
   } catch (error) {
     reportError(error);
     return Promise.reject(error);
