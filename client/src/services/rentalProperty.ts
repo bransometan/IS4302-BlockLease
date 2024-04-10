@@ -1,6 +1,16 @@
-import { AddRentalPropertyParams } from "@/types/services/rentalProperty";
 import { DeployedContract, getContract } from "./contractFactory";
 import { PropertyType, RentalPropertyStruct } from "@/types/contracts";
+
+export interface AddRentalPropertyParams {
+  location: string;
+  postalCode: string;
+  unitNumber: string;
+  propertyType: PropertyType;
+  description: string;
+  numOfTenants: number;
+  rentalPrice: number;
+  leaseDuration: number;
+}
 
 let ethereum: any;
 
@@ -45,8 +55,60 @@ export const addRentalProperty = async (data: AddRentalPropertyParams) => {
   }
 };
 
-//TODO: Post-processing needed?
-export const getRentalProperty = async (
+/**
+ * Returns all listed rental property by landlord
+ * @returns rental properties
+ */
+export const getListedRentalPropertiesByLandlord = async (): Promise<
+  RentalPropertyStruct[]
+> => {
+  if (!ethereum) {
+    reportError("Please install Metamask");
+    return Promise.reject(new Error("Metamask not installed"));
+  }
+  const accounts = await ethereum.request?.({ method: "eth_accounts" });
+
+  const rentalPropertyContract = await getContract(
+    DeployedContract.RentalPropertyContract
+  );
+  const rentalProperties: RentalPropertyStruct[] =
+    await rentalPropertyContract.getLandlordListedRentalProperties(accounts[0]);
+  return rentalProperties.map((rentalProperty) =>
+    _structureRentalProperty(rentalProperty)
+  );
+};
+
+/**
+ * Returns all unlisted rental property by landlord
+ * @returns rental properties
+ */
+export const getUnlistedRentalPropertiesByLandlord = async (): Promise<
+  RentalPropertyStruct[]
+> => {
+  if (!ethereum) {
+    reportError("Please install Metamask");
+    return Promise.reject(new Error("Metamask not installed"));
+  }
+  const accounts = await ethereum.request?.({ method: "eth_accounts" });
+
+  const rentalPropertyContract = await getContract(
+    DeployedContract.RentalPropertyContract
+  );
+  const rentalProperties: RentalPropertyStruct[] =
+    await rentalPropertyContract.getLandlordUnlistedRentalProperties(
+      accounts[0]
+    );
+  return rentalProperties.map((rentalProperty) =>
+    _structureRentalProperty(rentalProperty)
+  );
+};
+
+/**
+ * Returns a rental property
+ * @param id rentalPropertyId
+ * @returns rental property
+ */
+export const getRentalPropertyById = async (
   id: number
 ): Promise<RentalPropertyStruct> => {
   const rentalPropertyContract = await getContract(
@@ -76,5 +138,7 @@ const _structureRentalProperty = (rentalProperty: RentalPropertyStruct) => {
     leaseDuration: Number(rentalProperty.leaseDuration),
     landlord: rentalProperty.landlord,
     updateStatus: rentalProperty.updateStatus,
+    isListed: rentalProperty.isListed,
+    paymentId: Number(rentalProperty.paymentId).toString(),
   };
 };

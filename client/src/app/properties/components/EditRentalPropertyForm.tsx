@@ -28,8 +28,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
-import { addRentalProperty } from "@/services/rentalProperty";
-import { PropertyType } from "@/types/contracts";
+import { PropertyType, RentalPropertyStruct } from "@/types/contracts";
 import { RootState } from "@/types/state";
 import { zodResolver } from "@hookform/resolvers/zod";
 import React, { useState } from "react";
@@ -54,22 +53,26 @@ const formSchema = z.object({
     .positive("Lease duration (months) must be greater than 0"),
 });
 
-export default function AddRentalPropertyForm() {
-  const [open, setOpen] = useState(false);
+export default function EditRentalPropertyForm({
+  rentalProperty,
+}: {
+  rentalProperty: RentalPropertyStruct;
+}) {
   const { toast } = useToast();
+  const [open, setOpen] = useState(false);
   const { wallet } = useSelector((states: RootState) => states.globalStates);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      location: "",
-      postalCode: "",
-      unitNumber: "",
-      propertyType: PropertyType.HDB,
-      description: "",
-      numOfTenants: 1,
-      rentalPrice: 1,
-      leaseDuration: 12,
+      location: rentalProperty.location,
+      postalCode: rentalProperty.postalCode,
+      unitNumber: rentalProperty.unitNumber,
+      propertyType: rentalProperty.propertyType,
+      description: rentalProperty.description,
+      numOfTenants: rentalProperty.numOfTenants,
+      rentalPrice: rentalProperty.rentalPrice,
+      leaseDuration: rentalProperty.leaseDuration,
     },
   });
 
@@ -81,10 +84,9 @@ export default function AddRentalPropertyForm() {
       return;
     }
     try {
-      await addRentalProperty(values);
       toast({
         title: "Success!",
-        description: "Rental property successfully added",
+        description: "Rental property successfully edited",
       });
       setOpen(false);
       form.reset();
@@ -102,13 +104,15 @@ export default function AddRentalPropertyForm() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>Add Rental Property</Button>
+        <li className="hover:bg-gray-100 hover:cursor-pointer rounded px-2">
+          <span>Edit</span>
+        </li>
       </DialogTrigger>
       <DialogContent className="max-w-[600px] max-h-[500px] overflow-scroll">
         <DialogHeader>
-          <DialogTitle>Add Rental Property</DialogTitle>
+          <DialogTitle>Edit Rental Property</DialogTitle>
           <DialogDescription>
-            Create a new rental property for tenants to view
+            Make changes to your rental property
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
