@@ -111,7 +111,7 @@ contract PaymentEscrow {
 
     // Modifier to check if the payment exists
     modifier PaymentExists(uint256 _paymentId) {
-        require(_paymentId < numOfPayments, "Payment does not exist");
+        require(_paymentId <= numOfPayments, "Payment does not exist");
         _;
     }
 
@@ -196,15 +196,16 @@ contract PaymentEscrow {
         checkSufficientBalance(_payer, _amount)
         returns (uint256)
     {
+        numOfPayments++;
         payments[numOfPayments] = Payment(
             _payer,
             _payee,
             _amount,
             PaymentStatus.PENDING // Payment is pending until it is made
         );
-        numOfPayments++;
+      
         emit paymentCreated(_payer, _payee, _amount);
-        return numOfPayments; // Return the payment ID (index starts from 1 since 0 is used to denote non-existence of payment transaction)
+        return numOfPayments; // Return the payment ID (index starts from 1 as 0 is used for non-existent payments)
     }
 
     // Function to transfer the payment amount from the payer to the PaymentEscrow

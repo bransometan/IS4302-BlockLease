@@ -12,6 +12,7 @@ contract RentalProperty {
     }
 
     struct rentalProperty {
+        uint256 rentalPropertyId; // id of the rental property
         string location; // location of the property
         string postalCode; // postal code of the property
         string unitNumber; // unit number of the property
@@ -155,6 +156,7 @@ contract RentalProperty {
     {
         // New Rental Property object
         rentalProperty memory newRentalProperty = rentalProperty(
+            numRentalProperty,
             _location,
             _postalCode,
             _unitNumber,
