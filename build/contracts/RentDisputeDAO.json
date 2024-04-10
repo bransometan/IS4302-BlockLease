@@ -15,15 +15,15 @@
     "absolutePath": "project:/contracts/RentDisputeDAO.sol",
     "exportedSymbols": {
       "RentDisputeDAO": [
-        1678
+        1761
       ]
     },
-    "id": 1679,
+    "id": 1762,
     "license": "MIT",
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 1642,
+        "id": 1725,
         "literals": [
           "solidity",
           "^",
@@ -39,24 +39,24 @@
         "contractDependencies": [],
         "contractKind": "contract",
         "fullyImplemented": true,
-        "id": 1678,
+        "id": 1761,
         "linearizedBaseContracts": [
-          1678
+          1761
         ],
         "name": "RentDisputeDAO",
         "nodeType": "ContractDefinition",
         "nodes": [
           {
             "canonicalName": "RentDisputeDAO.RentDispute",
-            "id": 1659,
+            "id": 1742,
             "members": [
               {
                 "constant": false,
-                "id": 1644,
+                "id": 1727,
                 "mutability": "mutable",
                 "name": "id",
                 "nodeType": "VariableDeclaration",
-                "scope": 1659,
+                "scope": 1742,
                 "src": "270:10:3",
                 "stateVariable": false,
                 "storageLocation": "default",
@@ -65,7 +65,7 @@
                   "typeString": "uint256"
                 },
                 "typeName": {
-                  "id": 1643,
+                  "id": 1726,
                   "name": "uint256",
                   "nodeType": "ElementaryTypeName",
                   "src": "270:7:3",
@@ -78,11 +78,11 @@
               },
               {
                 "constant": false,
-                "id": 1646,
+                "id": 1729,
                 "mutability": "mutable",
                 "name": "tenant",
                 "nodeType": "VariableDeclaration",
-                "scope": 1659,
+                "scope": 1742,
                 "src": "291:14:3",
                 "stateVariable": false,
                 "storageLocation": "default",
@@ -91,7 +91,7 @@
                   "typeString": "address"
                 },
                 "typeName": {
-                  "id": 1645,
+                  "id": 1728,
                   "name": "address",
                   "nodeType": "ElementaryTypeName",
                   "src": "291:7:3",
@@ -105,11 +105,11 @@
               },
               {
                 "constant": false,
-                "id": 1648,
+                "id": 1731,
                 "mutability": "mutable",
                 "name": "landlord",
                 "nodeType": "VariableDeclaration",
-                "scope": 1659,
+                "scope": 1742,
                 "src": "316:16:3",
                 "stateVariable": false,
                 "storageLocation": "default",
@@ -118,7 +118,7 @@
                   "typeString": "address"
                 },
                 "typeName": {
-                  "id": 1647,
+                  "id": 1730,
                   "name": "address",
                   "nodeType": "ElementaryTypeName",
                   "src": "316:7:3",
@@ -132,11 +132,11 @@
               },
               {
                 "constant": false,
-                "id": 1650,
+                "id": 1733,
                 "mutability": "mutable",
                 "name": "startDate",
                 "nodeType": "VariableDeclaration",
-                "scope": 1659,
+                "scope": 1742,
                 "src": "343:17:3",
                 "stateVariable": false,
                 "storageLocation": "default",
@@ -145,7 +145,7 @@
                   "typeString": "uint256"
                 },
                 "typeName": {
-                  "id": 1649,
+                  "id": 1732,
                   "name": "uint256",
                   "nodeType": "ElementaryTypeName",
                   "src": "343:7:3",
@@ -158,11 +158,11 @@
               },
               {
                 "constant": false,
-                "id": 1652,
+                "id": 1735,
                 "mutability": "mutable",
                 "name": "endDate",
                 "nodeType": "VariableDeclaration",
-                "scope": 1659,
+                "scope": 1742,
                 "src": "371:15:3",
                 "stateVariable": false,
                 "storageLocation": "default",
@@ -171,7 +171,7 @@
                   "typeString": "uint256"
                 },
                 "typeName": {
-                  "id": 1651,
+                  "id": 1734,
                   "name": "uint256",
                   "nodeType": "ElementaryTypeName",
                   "src": "371:7:3",
@@ -184,11 +184,11 @@
               },
               {
                 "constant": false,
-                "id": 1654,
+                "id": 1737,
                 "mutability": "mutable",
                 "name": "disputeAmount",
                 "nodeType": "VariableDeclaration",
-                "scope": 1659,
+                "scope": 1742,
                 "src": "397:21:3",
                 "stateVariable": false,
                 "storageLocation": "default",
@@ -197,7 +197,7 @@
                   "typeString": "uint256"
                 },
                 "typeName": {
-                  "id": 1653,
+                  "id": 1736,
                   "name": "uint256",
                   "nodeType": "ElementaryTypeName",
                   "src": "397:7:3",
@@ -210,11 +210,11 @@
               },
               {
                 "constant": false,
-                "id": 1656,
+                "id": 1739,
                 "mutability": "mutable",
                 "name": "disputeReason",
                 "nodeType": "VariableDeclaration",
-                "scope": 1659,
+                "scope": 1742,
                 "src": "429:20:3",
                 "stateVariable": false,
                 "storageLocation": "default",
@@ -223,7 +223,7 @@
                   "typeString": "string"
                 },
                 "typeName": {
-                  "id": 1655,
+                  "id": 1738,
                   "name": "string",
                   "nodeType": "ElementaryTypeName",
                   "src": "429:6:3",
@@ -236,11 +236,11 @@
               },
               {
                 "constant": false,
-                "id": 1658,
+                "id": 1741,
                 "mutability": "mutable",
                 "name": "isResolved",
                 "nodeType": "VariableDeclaration",
-                "scope": 1659,
+                "scope": 1742,
                 "src": "460:15:3",
                 "stateVariable": false,
                 "storageLocation": "default",
@@ -249,7 +249,7 @@
                   "typeString": "bool"
                 },
                 "typeName": {
-                  "id": 1657,
+                  "id": 1740,
                   "name": "bool",
                   "nodeType": "ElementaryTypeName",
                   "src": "460:4:3",
@@ -263,17 +263,17 @@
             ],
             "name": "RentDispute",
             "nodeType": "StructDefinition",
-            "scope": 1678,
+            "scope": 1761,
             "src": "240:243:3",
             "visibility": "public"
           },
           {
             "constant": false,
-            "id": 1662,
+            "id": 1745,
             "mutability": "mutable",
             "name": "numOfDisputes",
             "nodeType": "VariableDeclaration",
-            "scope": 1678,
+            "scope": 1761,
             "src": "491:33:3",
             "stateVariable": true,
             "storageLocation": "default",
@@ -282,7 +282,7 @@
               "typeString": "uint256"
             },
             "typeName": {
-              "id": 1660,
+              "id": 1743,
               "name": "uint256",
               "nodeType": "ElementaryTypeName",
               "src": "491:7:3",
@@ -293,7 +293,7 @@
             },
             "value": {
               "hexValue": "30",
-              "id": 1661,
+              "id": 1744,
               "isConstant": false,
               "isLValue": false,
               "isPure": true,
@@ -311,22 +311,22 @@
           },
           {
             "constant": false,
-            "id": 1667,
+            "id": 1750,
             "mutability": "mutable",
             "name": "disputes",
             "nodeType": "VariableDeclaration",
-            "scope": 1678,
+            "scope": 1761,
             "src": "531:48:3",
             "stateVariable": true,
             "storageLocation": "default",
             "typeDescriptions": {
-              "typeIdentifier": "t_mapping$_t_uint256_$_t_struct$_RentDispute_$1659_storage_$",
+              "typeIdentifier": "t_mapping$_t_uint256_$_t_struct$_RentDispute_$1742_storage_$",
               "typeString": "mapping(uint256 => struct RentDisputeDAO.RentDispute)"
             },
             "typeName": {
-              "id": 1666,
+              "id": 1749,
               "keyType": {
-                "id": 1663,
+                "id": 1746,
                 "name": "uint256",
                 "nodeType": "ElementaryTypeName",
                 "src": "539:7:3",
@@ -338,23 +338,23 @@
               "nodeType": "Mapping",
               "src": "531:31:3",
               "typeDescriptions": {
-                "typeIdentifier": "t_mapping$_t_uint256_$_t_struct$_RentDispute_$1659_storage_$",
+                "typeIdentifier": "t_mapping$_t_uint256_$_t_struct$_RentDispute_$1742_storage_$",
                 "typeString": "mapping(uint256 => struct RentDisputeDAO.RentDispute)"
               },
               "valueType": {
-                "id": 1665,
+                "id": 1748,
                 "nodeType": "UserDefinedTypeName",
                 "pathNode": {
-                  "id": 1664,
+                  "id": 1747,
                   "name": "RentDispute",
                   "nodeType": "IdentifierPath",
-                  "referencedDeclaration": 1659,
+                  "referencedDeclaration": 1742,
                   "src": "550:11:3"
                 },
-                "referencedDeclaration": 1659,
+                "referencedDeclaration": 1742,
                 "src": "550:11:3",
                 "typeDescriptions": {
-                  "typeIdentifier": "t_struct$_RentDispute_$1659_storage_ptr",
+                  "typeIdentifier": "t_struct$_RentDispute_$1742_storage_ptr",
                   "typeString": "struct RentDisputeDAO.RentDispute"
                 }
               }
@@ -363,11 +363,11 @@
           },
           {
             "constant": false,
-            "id": 1672,
+            "id": 1755,
             "mutability": "mutable",
             "name": "tenantDisputes",
             "nodeType": "VariableDeclaration",
-            "scope": 1678,
+            "scope": 1761,
             "src": "614:52:3",
             "stateVariable": true,
             "storageLocation": "default",
@@ -376,9 +376,9 @@
               "typeString": "mapping(address => uint256[])"
             },
             "typeName": {
-              "id": 1671,
+              "id": 1754,
               "keyType": {
-                "id": 1668,
+                "id": 1751,
                 "name": "address",
                 "nodeType": "ElementaryTypeName",
                 "src": "622:7:3",
@@ -395,7 +395,7 @@
               },
               "valueType": {
                 "baseType": {
-                  "id": 1669,
+                  "id": 1752,
                   "name": "uint256",
                   "nodeType": "ElementaryTypeName",
                   "src": "633:7:3",
@@ -404,7 +404,7 @@
                     "typeString": "uint256"
                   }
                 },
-                "id": 1670,
+                "id": 1753,
                 "nodeType": "ArrayTypeName",
                 "src": "633:9:3",
                 "typeDescriptions": {
@@ -417,11 +417,11 @@
           },
           {
             "constant": false,
-            "id": 1677,
+            "id": 1760,
             "mutability": "mutable",
             "name": "landlordDisputes",
             "nodeType": "VariableDeclaration",
-            "scope": 1678,
+            "scope": 1761,
             "src": "698:54:3",
             "stateVariable": true,
             "storageLocation": "default",
@@ -430,9 +430,9 @@
               "typeString": "mapping(address => uint256[])"
             },
             "typeName": {
-              "id": 1676,
+              "id": 1759,
               "keyType": {
-                "id": 1673,
+                "id": 1756,
                 "name": "address",
                 "nodeType": "ElementaryTypeName",
                 "src": "706:7:3",
@@ -449,7 +449,7 @@
               },
               "valueType": {
                 "baseType": {
-                  "id": 1674,
+                  "id": 1757,
                   "name": "uint256",
                   "nodeType": "ElementaryTypeName",
                   "src": "717:7:3",
@@ -458,7 +458,7 @@
                     "typeString": "uint256"
                   }
                 },
-                "id": 1675,
+                "id": 1758,
                 "nodeType": "ArrayTypeName",
                 "src": "717:9:3",
                 "typeDescriptions": {
@@ -470,7 +470,7 @@
             "visibility": "private"
           }
         ],
-        "scope": 1679,
+        "scope": 1762,
         "src": "60:1467:3"
       }
     ],
@@ -482,7 +482,7 @@
   },
   "networks": {},
   "schemaVersion": "3.4.16",
-  "updatedAt": "2024-04-10T12:37:59.199Z",
+  "updatedAt": "2024-04-10T15:25:44.762Z",
   "devdoc": {
     "kind": "dev",
     "methods": {},

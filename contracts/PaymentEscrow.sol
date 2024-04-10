@@ -203,8 +203,12 @@ contract PaymentEscrow {
             _amount,
             PaymentStatus.PENDING // Payment is pending until it is made
         );
+
+        // Payer approves PaymentEscrow to spend the payment amount on behalf of the payer
+        leaseTokenContract.approveLeaseToken(_payer, address(this), _amount);
       
         emit paymentCreated(_payer, _payee, _amount);
+       
         return numOfPayments; // Return the payment ID (index starts from 1 as 0 is used for non-existent payments)
     }
 
@@ -219,8 +223,6 @@ contract PaymentEscrow {
     {
         Payment storage payment = payments[_paymentId];
 
-        // Payer approves PaymentEscrow to transfer the payment amount to the payee
-        leaseTokenContract.approveLeaseToken(payment.payer, address(this), payment.amount);
         // Payer transfers the payment amount to PaymentEscrow
         leaseTokenContract.transferLeaseTokenFrom(
             address(this),
@@ -247,7 +249,7 @@ contract PaymentEscrow {
         leaseTokenContract.transferLeaseToken(
             address(this),
             payment.payee,
-            payment.amount - commissionFee
+            payment.amount
         );
         payment.status = PaymentStatus.RELEASED;
         emit paymentReleased(payment.payer, payment.payee, payment.amount);
@@ -285,6 +287,14 @@ contract PaymentEscrow {
             owner,
             leaseTokenContract.checkLeaseToken((address(this)))
         );
+    }
+
+    // Convert LeaseToken to ETH 
+    // Tenant or landlord can convert their LeaseToken to ETH by burning the LeaseToken and receiving the equivalent amount of ETH minus the commission fee
+    // The commission fee is transferred to the platform
+    function convertLeaseTokenToETH(address _sender, uint256 _amount) public {
+        leaseTokenContract.burnLeaseToken(_sender, _amount);
+        payable(_sender).transfer((_amount - commissionFee) * 1e16);
     }
 
     // ################################################### SETTER METHODS ################################################### //

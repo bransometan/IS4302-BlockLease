@@ -50,6 +50,10 @@ contract LeaseToken {
         emit approveCredit(sender, spender, leaseToken);
     }
 
+    function burnLeaseToken(address sender, uint256 leaseToken) public {
+        erc20Contract.burn(sender, leaseToken);
+    }
+
     function checkLeaseTokenAllowance(address _owner, address spender) public view returns(uint256) {
         uint256 allowance = erc20Contract.allowance(_owner, spender);
         return allowance;
