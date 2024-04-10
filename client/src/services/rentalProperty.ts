@@ -1,6 +1,16 @@
-import { AddRentalPropertyParams } from "@/types/services/rentalProperty";
 import { DeployedContract, getContract } from "./contractFactory";
 import { PropertyType, RentalPropertyStruct } from "@/types/contracts";
+
+export interface AddRentalPropertyParams {
+  location: string;
+  postalCode: string;
+  unitNumber: string;
+  propertyType: PropertyType;
+  description: string;
+  numOfTenants: number;
+  rentalPrice: number;
+  leaseDuration: number;
+}
 
 let ethereum: any;
 

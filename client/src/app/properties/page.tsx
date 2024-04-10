@@ -9,7 +9,7 @@ import {
 import { RentalPropertyStruct } from "@/types/contracts";
 import MyPropertyCard from "./components/MyPropertyCard";
 import { useSelector } from "react-redux";
-import { GlobalState, RootState } from "@/types/state";
+import { RootState } from "@/types/state";
 
 export default function MyProperties() {
   const { wallet } = useSelector((states: RootState) => states.globalStates);
