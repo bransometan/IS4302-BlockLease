@@ -5,6 +5,7 @@ const RentalMarketplace = artifacts.require("RentalMarketplace");
 
 const PROTECTION_FEE = 1;
 const COMMISSION_FEE = 1;
+const VOTER_REWARD = 1;
 
 module.exports = (deployer, network, accounts) => {
   deployer.deploy(LeaseToken).then(function () {
@@ -12,7 +13,8 @@ module.exports = (deployer, network, accounts) => {
       PaymentEscrow,
       LeaseToken.address,
       PROTECTION_FEE,
-      COMMISSION_FEE
+      COMMISSION_FEE,
+      VOTER_REWARD
     );
   });
   deployer.deploy(RentalProperty).then(function () {
