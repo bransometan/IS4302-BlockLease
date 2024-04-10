@@ -23,8 +23,6 @@ contract PaymentEscrow {
     uint256 private numOfPayments = 0;
     // The number of tokens landlord must stake in the potential event of a dispute with tenant
     uint256 private protectionFee;
-    // The commission fee (in tokens) that the platform charges for each transaction
-    uint256 private commissionFee;
     // Tenant or landlord who wants to initiate a dispute must stake a reward (in tokens) to incentivize voters to vote in the dispute
     uint256 private voterReward;
 
@@ -32,7 +30,7 @@ contract PaymentEscrow {
 
     mapping(uint256 => Payment) public payments; // Mapping of payment ID to payment details
 
-    // The owner of the contract (PaymentEscrow), who can set the protection fee (for landlord) and commission fee (for platform)
+    // The owner of the contract (PaymentEscrow), who can set the protection fee (for landlord) and voter rewards (for disputes)
     address private owner;
     // The address of the RentalMarketplace contract, which is the only contract that can call the release function
     address private rentalMarketplaceAddress;
@@ -42,12 +40,10 @@ contract PaymentEscrow {
     constructor(
         address _leaseTokenAddress,
         uint256 _protectionFee,
-        uint256 _commissionFee,
         uint256 _voterReward
     ) {
         leaseTokenContract = LeaseToken(_leaseTokenAddress);
         protectionFee = _protectionFee;
-        commissionFee = _commissionFee;
         voterReward = _voterReward;
         owner = msg.sender;
     }
@@ -59,7 +55,7 @@ contract PaymentEscrow {
     event paymentReleased(address payer, address payee, uint256 amount);
     event paymentRefunded(address payer, address payee, uint256 amount);
     event protectionFeeSet(uint256 protectionFee);
-    event commissionFeeSet(uint256 commissionFee);
+    event voterRewardSet(uint256 voterReward);
     event tokenWithdrawn(address owner, uint256 amount);
     event rentalMarketplaceAddressSet(address rentalMarketplaceAddress);
     event rentDisputeDAOAddressSet(address rentDisputeDAOAddress);
@@ -157,9 +153,9 @@ contract PaymentEscrow {
         _;
     }
 
-    // Modifier to check if the commission fee is valid
-    modifier invalidCommissionFee(uint256 _commissionFee) {
-        require(_commissionFee > 0, "Commission fee must be greater than 0");
+    // Modifier to check if voter reward is valid
+    modifier invalidVoterReward(uint256 _voterReward) {
+        require(_voterReward > 0, "Voter reward must be greater than 0");
         _;
     }
 
@@ -245,7 +241,7 @@ contract PaymentEscrow {
     {
         Payment storage payment = payments[_paymentId];
 
-        // PaymentEscrow transfers the payment amount to the payee (minus the commission fee), commission fee is transferred to the platform
+        // PaymentEscrow transfers the payment amount to the payee
         leaseTokenContract.transferLeaseToken(
             address(this),
             payment.payee,
@@ -289,14 +285,6 @@ contract PaymentEscrow {
         );
     }
 
-    // Convert LeaseToken to ETH 
-    // Tenant or landlord can convert their LeaseToken to ETH by burning the LeaseToken and receiving the equivalent amount of ETH minus the commission fee
-    // The commission fee is transferred to the platform
-    function convertLeaseTokenToETH(address _sender, uint256 _amount) public {
-        leaseTokenContract.burnLeaseToken(_sender, _amount);
-        payable(_sender).transfer((_amount - commissionFee) * 1e16);
-    }
-
     // ################################################### SETTER METHODS ################################################### //
 
     // Function to set the protection fee
@@ -306,18 +294,11 @@ contract PaymentEscrow {
         protectionFee = _protectionFee;
         emit protectionFeeSet(_protectionFee);
     }
-    // Function to set the commission fee
-    function setCommissionFee(
-        uint256 _commissionFee
-    ) public onlyOwner invalidCommissionFee(_commissionFee) {
-        commissionFee = _commissionFee;
-        emit commissionFeeSet(_commissionFee);
-    }
 
     // Function to set the voter reward
     function setVoterReward(
         uint256 _voterReward
-    ) public onlyOwner {
+    ) public onlyOwner invalidVoterReward(_voterReward) {
         voterReward = _voterReward;
     }
 
@@ -346,11 +327,6 @@ contract PaymentEscrow {
     // Function to get the protection fee
     function getProtectionFee() public view returns (uint256) {
         return protectionFee;
-    }
-
-    // Function to get the commission fee
-    function getCommissionFee() public view returns (uint256) {
-        return commissionFee;
     }
 
     // Function to get the voter reward
