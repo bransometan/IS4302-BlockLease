@@ -1,94 +1,82 @@
 "use client";
 
-import { cn } from "@/lib/utils";
+import { checkUserRole, cn } from "@/lib/utils";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { connectWallet } from "@/services/wallet";
 import { RootState } from "@/types/state";
 import { useSelector } from "react-redux";
+import { SignedIn, UserButton, useSession } from "@clerk/nextjs";
+import { UserRole } from "@/constants";
 
-const TENANT_TABS = [
+const TABS = [
   {
     href: "/marketplace",
     name: "Browse Properties",
+    roles: [UserRole.Admin, UserRole.Landlord, UserRole.Tenant],
   },
-];
-
-const LANDLORD_TABS = [
   {
     href: "/properties",
     name: "My Properties",
+    roles: [UserRole.Admin, UserRole.Landlord],
   },
-];
-
-const VALIDATOR_TABS = [
   {
     href: "/disputes",
     name: "Disputes",
+    roles: [
+      UserRole.Admin,
+      UserRole.Landlord,
+      UserRole.Tenant,
+      UserRole.Validator,
+    ],
   },
 ];
 
 export default function Navbar() {
   const path = usePathname();
   const { wallet } = useSelector((states: RootState) => states.globalStates);
+  const { session } = useSession();
+  const role = checkUserRole(session);
 
   return (
-    <nav className="w-full fixed top-0 z-20 nav-blur">
+    <nav className="w-full fixed top-0 z-20 bg-white">
       <div className="flex items-center justify-between p-3 px-10">
         <ul className="m-0 p-0 overflow-hidden">
           <Link href="/">
             <li className="float-left mr-8 text-lg font-bold">BlockLease</li>
           </Link>
-          {/**TODO: Display tabs according to role */}
-          {TENANT_TABS.map((tab, i) => {
-            return (
-              <Link href={tab.href} key={i}>
-                <li
-                  className={cn(
-                    "float-left mr-4 text-lg px-2 rounded hover:bg-gray-200",
-                    path.includes(`${tab.href}`) && "bg-gray-200 nav-active"
-                  )}
-                >
-                  {tab.name}
-                </li>
-              </Link>
-            );
-          })}
-          {LANDLORD_TABS.map((tab, i) => {
-            return (
-              <Link href={tab.href} key={i}>
-                <li
-                  className={cn(
-                    "float-left mr-4 text-lg px-2 rounded hover:bg-gray-200",
-                    path.includes(`${tab.href}`) && "bg-gray-200 nav-active"
-                  )}
-                >
-                  {tab.name}
-                </li>
-              </Link>
-            );
-          })}
-          {VALIDATOR_TABS.map((tab, i) => {
-            return (
-              <Link href={tab.href} key={i}>
-                <li
-                  className={cn(
-                    "float-left mr-4 text-lg px-2 rounded hover:bg-gray-200",
-                    path.includes(`${tab.href}`) && "bg-gray-200 nav-active"
-                  )}
-                >
-                  {tab.name}
-                </li>
-              </Link>
-            );
-          })}
+          <SignedIn>
+            {/**TODO: Display tabs according to role */}
+            {TABS.map((tab, i) => {
+              if (!role) return;
+              if (tab.roles.includes(role as UserRole)) {
+                return (
+                  <Link href={tab.href} key={i}>
+                    <li
+                      className={cn(
+                        "float-left mr-4 text-lg px-2 rounded hover:bg-gray-200",
+                        path.includes(`${tab.href}`) && "bg-gray-200 nav-active"
+                      )}
+                    >
+                      {tab.name}
+                    </li>
+                  </Link>
+                );
+              }
+            })}
+          </SignedIn>
         </ul>
-        {wallet ? (
-          <Button disabled>{wallet}</Button>
-        ) : (
-          <Button onClick={connectWallet}>Connect wallet</Button>
-        )}
+        <SignedIn>
+          <div className="flex items-center space-x-4">
+            {wallet ? (
+              <Button disabled>{wallet}</Button>
+            ) : (
+              <Button onClick={connectWallet}>Connect wallet</Button>
+            )}
+            <UserButton afterSignOutUrl="/login" />
+          </div>
+        </SignedIn>
       </div>
       <hr className="border-slate-400 opacity-25" />
     </nav>

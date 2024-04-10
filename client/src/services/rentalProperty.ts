@@ -1,6 +1,6 @@
 import { AddRentalPropertyParams } from "@/types/services/rentalProperty";
 import { DeployedContract, getContract } from "./contractFactory";
-import { RentalPropertyStruct } from "@/types/contracts";
+import { PropertyType, RentalPropertyStruct } from "@/types/contracts";
 
 let ethereum: any;
 
@@ -11,7 +11,7 @@ if (typeof window !== "undefined") {
 export const addRentalProperty = async (data: AddRentalPropertyParams) => {
   if (!ethereum) {
     reportError("Please install Metamask");
-    return Promise.reject(new Error("Metamas not installed'"));
+    return Promise.reject(new Error("Metamask not installed'"));
   }
 
   try {
@@ -32,7 +32,7 @@ export const addRentalProperty = async (data: AddRentalPropertyParams) => {
       location,
       postalCode,
       unitNumber,
-      propertyType,
+      Object.keys(PropertyType).indexOf(propertyType), // Index required on solidity end
       description,
       numOfTenants,
       rentalPrice,
@@ -47,11 +47,34 @@ export const addRentalProperty = async (data: AddRentalPropertyParams) => {
 
 //TODO: Post-processing needed?
 export const getRentalProperty = async (
-  id: string
+  id: number
 ): Promise<RentalPropertyStruct> => {
   const rentalPropertyContract = await getContract(
     DeployedContract.RentalPropertyContract
   );
-  const rentalProperties = await rentalPropertyContract.getRentalProperty(id);
-  return rentalProperties;
+  const rentalProperty: RentalPropertyStruct =
+    await rentalPropertyContract.getRentalProperty(id);
+  return _structureRentalProperty(rentalProperty);
+};
+
+/**
+ * Process rental property for display on frontend
+ * @param rentalProperty
+ * @returns processed RentalProperty
+ */
+const _structureRentalProperty = (rentalProperty: RentalPropertyStruct) => {
+  // Solidity end returns BigNumber, so need convert to Number
+  return {
+    location: rentalProperty.location,
+    postalCode: rentalProperty.postalCode,
+    unitNumber: rentalProperty.unitNumber,
+    propertyType:
+      Object.values(PropertyType)[Number(rentalProperty.propertyType)],
+    description: rentalProperty.description,
+    numOfTenants: Number(rentalProperty.numOfTenants),
+    rentalPrice: Number(rentalProperty.rentalPrice),
+    leaseDuration: Number(rentalProperty.leaseDuration),
+    landlord: rentalProperty.landlord,
+    updateStatus: rentalProperty.updateStatus,
+  };
 };

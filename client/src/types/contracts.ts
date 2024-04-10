@@ -1,8 +1,8 @@
 export enum PropertyType {
-  HDB,
-  Condo,
-  Landed,
-  Other,
+  HDB = "HDB",
+  Condo = "Condo",
+  Landed = "Landed",
+  Other = "Other",
 }
 
 export interface RentalPropertyStruct {
