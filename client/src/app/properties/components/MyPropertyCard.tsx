@@ -10,6 +10,7 @@ export default function MyPropertyCard({
   return (
     <Card className="space-y-2">
       <CardHeader className="font-bold">
+        {rentalProperty.isListed && <p>LISTED</p>}
         <div className="flex justify-between">
           <h1>{rentalProperty.location} </h1>
           <h1>{rentalProperty.rentalPrice} Lease Token</h1>

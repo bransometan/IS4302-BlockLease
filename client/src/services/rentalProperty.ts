@@ -45,8 +45,48 @@ export const addRentalProperty = async (data: AddRentalPropertyParams) => {
   }
 };
 
-//TODO: Post-processing needed?
-export const getRentalProperty = async (
+/**
+ * Returns all listed rental property by landlord
+ * @param address Landlord wallet used to list property
+ * @returns rental properties
+ */
+export const getListedRentalPropertiesByLandlord = async (
+  address: string
+): Promise<RentalPropertyStruct[]> => {
+  const rentalPropertyContract = await getContract(
+    DeployedContract.RentalPropertyContract
+  );
+  const rentalProperties: RentalPropertyStruct[] =
+    await rentalPropertyContract.getLandlordListedRentalProperties(address);
+  return rentalProperties.map((rentalProperty) =>
+    _structureRentalProperty(rentalProperty)
+  );
+};
+
+/**
+ * Returns all unlisted rental property by landlord
+ * @param address Landlord wallet used to list property
+ * @returns rental properties
+ */
+export const getUnlistedRentalPropertiesByLandlord = async (
+  address: string
+): Promise<RentalPropertyStruct[]> => {
+  const rentalPropertyContract = await getContract(
+    DeployedContract.RentalPropertyContract
+  );
+  const rentalProperties: RentalPropertyStruct[] =
+    await rentalPropertyContract.getLandlordUnlistedRentalProperties(address);
+  return rentalProperties.map((rentalProperty) =>
+    _structureRentalProperty(rentalProperty)
+  );
+};
+
+/**
+ * Returns a rental property
+ * @param id rentalPropertyId
+ * @returns rental property
+ */
+export const getRentalPropertyById = async (
   id: number
 ): Promise<RentalPropertyStruct> => {
   const rentalPropertyContract = await getContract(
@@ -76,5 +116,7 @@ const _structureRentalProperty = (rentalProperty: RentalPropertyStruct) => {
     leaseDuration: Number(rentalProperty.leaseDuration),
     landlord: rentalProperty.landlord,
     updateStatus: rentalProperty.updateStatus,
+    isListed: rentalProperty.isListed,
+    paymentId: Number(rentalProperty.paymentId).toString(),
   };
 };

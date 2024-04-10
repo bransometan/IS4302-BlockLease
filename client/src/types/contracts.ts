@@ -16,4 +16,6 @@ export interface RentalPropertyStruct {
   leaseDuration: number;
   landlord: string;
   updateStatus: boolean;
+  isListed: boolean;
+  paymentId: string;
 }
