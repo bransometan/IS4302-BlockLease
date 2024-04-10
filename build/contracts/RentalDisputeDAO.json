@@ -15,15 +15,15 @@
     "absolutePath": "project:/contracts/RentDisputeDAO.sol",
     "exportedSymbols": {
       "RentalDisputeDAO": [
-        1617
+        1615
       ]
     },
-    "id": 1618,
+    "id": 1616,
     "license": "MIT",
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 1616,
+        "id": 1614,
         "literals": [
           "solidity",
           "^",
@@ -39,14 +39,14 @@
         "contractDependencies": [],
         "contractKind": "contract",
         "fullyImplemented": true,
-        "id": 1617,
+        "id": 1615,
         "linearizedBaseContracts": [
-          1617
+          1615
         ],
         "name": "RentalDisputeDAO",
         "nodeType": "ContractDefinition",
         "nodes": [],
-        "scope": 1618,
+        "scope": 1616,
         "src": "61:40:3"
       }
     ],
@@ -58,7 +58,7 @@
   },
   "networks": {},
   "schemaVersion": "3.4.16",
-  "updatedAt": "2024-04-09T12:46:30.147Z",
+  "updatedAt": "2024-04-10T03:49:42.506Z",
   "devdoc": {
     "kind": "dev",
     "methods": {},
