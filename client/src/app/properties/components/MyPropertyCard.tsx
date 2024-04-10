@@ -28,7 +28,9 @@ const MyPropertyActionsDropdown = ({
             {!rentalProperty.isListed ? (
               <>
                 <li>
-                  <ListRentalPropertyDialog />
+                  <ListRentalPropertyDialog
+                    rentalPropertyId={rentalProperty.rentalPropertyId}
+                  />
                 </li>
                 <Separator />
                 <li>
@@ -36,7 +38,9 @@ const MyPropertyActionsDropdown = ({
                 </li>
                 <Separator />
                 <li>
-                  <DeleteRentalPropertyDialog />
+                  <DeleteRentalPropertyDialog
+                    rentalPropertyId={rentalProperty.rentalPropertyId}
+                  />
                 </li>
               </>
             ) : (

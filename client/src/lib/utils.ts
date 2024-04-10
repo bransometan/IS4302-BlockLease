@@ -10,6 +10,10 @@ export function capitalizeFirstLetter(str: string) {
   return [str[0].toUpperCase(), str.slice(1)].join("");
 }
 
+export function enumValueToIndex(enumeration: any, value: any) {
+  return Object.keys(enumeration).indexOf(value);
+}
+
 export function checkUserRole(
   session: ActiveSessionResource | null | undefined
 ) {

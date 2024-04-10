@@ -6,6 +6,7 @@ export enum PropertyType {
 }
 
 export interface RentalPropertyStruct {
+  rentalPropertyId: number;
   location: string;
   postalCode: string;
   unitNumber: string;
@@ -17,5 +18,5 @@ export interface RentalPropertyStruct {
   landlord: string;
   updateStatus: boolean;
   isListed: boolean;
-  paymentId: string;
+  paymentId: number;
 }

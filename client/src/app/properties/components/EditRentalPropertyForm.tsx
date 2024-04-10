@@ -28,6 +28,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
+import { updateRentalPropertyById } from "@/services/rentalProperty";
 import { PropertyType, RentalPropertyStruct } from "@/types/contracts";
 import { RootState } from "@/types/state";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -84,6 +85,7 @@ export default function EditRentalPropertyForm({
       return;
     }
     try {
+      await updateRentalPropertyById(rentalProperty.rentalPropertyId, values);
       toast({
         title: "Success!",
         description: "Rental property successfully edited",

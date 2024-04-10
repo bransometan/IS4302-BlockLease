@@ -9,14 +9,25 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/use-toast";
+import { deleteRentalPropertyById } from "@/services/rentalProperty";
 import { useState } from "react";
 
-export default function DeleteRentalPropertyDialog() {
+export default function DeleteRentalPropertyDialog({
+  rentalPropertyId,
+}: {
+  rentalPropertyId: number;
+}) {
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
 
-  function handleDelete() {
+  async function handleDelete() {
     try {
+      await deleteRentalPropertyById(rentalPropertyId);
+      toast({
+        title: "Success",
+        description: "Rental property successfully deleted",
+      });
+      window.location.reload();
     } catch (error) {
       console.error(error);
       toast({
