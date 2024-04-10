@@ -219,10 +219,10 @@ contract RentalMarketplace {
         uint256 protectionFee = paymentEscrowContract.getProtectionFee();
         
         // Create a payment transaction between landlord and PaymentEscrow contract
-        uint256 paymentId = createPayment(
-            msg.sender,
-            address(paymentEscrowContract),
-            protectionFee
+        uint256 paymentId = createPaymentTransaction(
+            msg.sender, // Landlord
+            address(paymentEscrowContract), // PaymentEscrow Contract
+            protectionFee // Protection fee (LeaseToken) required for listing of the rental property
         );
 
         // Set the payment transaction id to the rental property
@@ -295,22 +295,24 @@ contract RentalMarketplace {
             new uint256[](1000) // Limit of 1000 payment transactions
         );
 
-        rentalApplicationCounts[rentalPropertyId]++;
-        hasApplied[rentalPropertyId][msg.sender] = true;
-
         // Deposit Fee (LeaseToken) required for the rental property
         uint256 depositFee = rentalPropertyDeposits[rentalPropertyId];
         // Create a payment transaction between tenant and PaymentEscrow contract
-        uint256 paymentId = createPayment(
-            msg.sender,
-            paymentEscrowContract.getContractAddress(),
-            depositFee
+        uint256 paymentId = createPaymentTransaction(
+            msg.sender, // Tenant
+            rentalPropertyContract.getLandlord(rentalPropertyId), // Landlord
+            depositFee // Deposit fee (LeaseToken) required for the rental property
         );
         
         // Add the payment transaction id to the rental application
         rentalApplications[rentalPropertyId][applicationId].paymentIds.push(
             paymentId
         );
+
+        // Increment the application count
+        rentalApplicationCounts[rentalPropertyId]++;
+        // Tenant has applied for the rental property
+        hasApplied[rentalPropertyId][msg.sender] = true;
         // Landlord cannot update/delete the rental property while there is an ongoing application
         rentalPropertyContract.setUpdateStatus(rentalPropertyId, false);
         emit RentalApplicationSubmitted(rentalPropertyId, applicationId);
@@ -332,6 +334,7 @@ contract RentalMarketplace {
             rentalApplications[rentalPropertyId][applicationId].paymentIds[0]
         );
 
+        // Remove the rental application from the rental property and update corresponding mappings
         removeApplication(rentalPropertyId, applicationId);
 
         emit RentalApplicationRejected(rentalPropertyId, applicationId);
@@ -355,6 +358,7 @@ contract RentalMarketplace {
         // First payment transaction id in the array is always the deposit
         paymentEscrowContract.release(rentalApplication.paymentIds[0]);
 
+        // Update the rental application status to ongoing
         rentalApplication.status = RentStatus.ONGOING;
         emit RentalApplicationAccepted(rentalPropertyId, applicationId);
     }
@@ -383,10 +387,10 @@ contract RentalMarketplace {
             rentalPropertyId
         );
         // Create a payment transaction between tenant and landlord
-        uint256 paymentId = createPayment(
-            msg.sender,
-            rentalPropertyContract.getLandlord(rentalPropertyId),
-            monthlyRent
+        uint256 paymentId = createPaymentTransaction(
+            msg.sender, // Tenant
+            rentalPropertyContract.getLandlord(rentalPropertyId), // Landlord
+            monthlyRent // Monthly rent required for the rental property
         );
 
          // Add the payment transaction id to the rental application
@@ -394,6 +398,7 @@ contract RentalMarketplace {
             paymentId
         );
 
+        // Update the rental application status to made payment
         rentalApplication.status = RentStatus.MADE_PAYMENT;
         emit PaymentMade(rentalPropertyId, applicationId);
     }
@@ -421,6 +426,7 @@ contract RentalMarketplace {
             ]
         );
 
+        // Increment the number of months the tenant has paid
         rentalApplication.monthsPaid++;
 
         // Check if the rental is completed for the tenant (e.g. tenant move out and landlord return deposit if any), else the rental is ongoing
@@ -455,10 +461,10 @@ contract RentalMarketplace {
         // PaymentEscrow Contract refund the deposit fee balance (LeaseToken) to the tenant if the rental is completed
         uint256 depositFee = rentalPropertyDeposits[rentalPropertyId];
         // Create a payment transaction between tenant and landlord
-        uint256 paymentId = createPayment(
-            rentalPropertyContract.getLandlord(rentalPropertyId),
-            msg.sender,
-            depositFee
+        uint256 paymentId = createPaymentTransaction(
+            rentalPropertyContract.getLandlord(rentalPropertyId), // Landlord
+            msg.sender, // Tenant
+            depositFee // Deposit fee balance (LeaseToken) to be returned to the tenant if the rental is completed
         );
         // Release the remaining deposit fee balance (LeaseToken) from PaymentEscrow to the tenant if the rental is completed
         paymentEscrowContract.release(paymentId);
@@ -468,6 +474,7 @@ contract RentalMarketplace {
             paymentId
         );
 
+        // Remove the rental application from the rental property and update corresponding mappings
         removeApplication(rentalPropertyId, applicationId);
 
         emit tenantMoveOut(rentalPropertyId, applicationId);
@@ -476,7 +483,7 @@ contract RentalMarketplace {
 
     // ################################################### INTERNAL FUNCTIONS ################################################### //
     
-    // Remove the rental application from the rental property
+    // Remove the rental application from the rental property and update corresponding mappings
     function removeApplication(
         uint256 rentalPropertyId,
         uint256 applicationId
@@ -501,7 +508,7 @@ contract RentalMarketplace {
     }
 
     // Create a payment transaction between two parties
-    function createPayment(
+    function createPaymentTransaction(
         address from,
         address to,
         uint256 amount
