@@ -46,43 +46,15 @@ contract RentalProperty {
         address landlord
     );
 
-    event RentalPropertyUpdateLocation(
+    event RentalPropertyUpdateDetails(
         uint256 rentalPropertyId,
-        string newLocation
-    );
-
-    event RentalPropertyUpdatePostalCode(
-        uint256 rentalPropertyId,
-        string newPostalCode
-    );
-
-    event RentalPropertyUpdateUnitNumber(
-        uint256 rentalPropertyId,
-        string newUnitNumber
-    );
-
-    event RentalPropertyUpdatePropertyType(
-        uint256 rentalPropertyId,
-        PropertyType newPropertyType
-    );
-
-    event RentalPropertyUpdateDescription(
-        uint256 rentalPropertyId,
-        string newDescription
-    );
-
-    event RentalPropertyUpdateNumOfTenants(
-        uint256 rentalPropertyId,
-        uint256 newNumOfTenants
-    );
-
-    event RentalPropertyUpdateRentalPrice(
-        uint256 rentalPropertyId,
-        uint256 newRentalPrice
-    );
-
-    event RentalPropertyUpdateLeaseDuration(
-        uint256 rentalPropertyId,
+        string newLocation,
+        string newPostalCode,
+        string newUnitNumber,
+        PropertyType newPropertyType,
+        string newDescription,
+        uint256 newNumOfTenants,
+        uint256 newRentalPrice,
         uint256 newLeaseDuration
     );
 
@@ -483,13 +455,19 @@ contract RentalProperty {
         return rentalProperties[rentalPropertyId].paymentId;
     }
 
-
     // ################################################### SETTER METHODS ################################################### //
 
-    //Function to update the location of a rental property
-    function updateLocation(
+    //Function to update details of a rental property
+    function updateRentalProperty(
         uint256 rentalPropertyId,
-        string memory newLocation
+        string memory newLocation,
+        string memory newPostalCode,
+        string memory newUnitNumber,
+        PropertyType newPropertyType,
+        string memory newDescription,
+        uint256 newNumOfTenants,
+        uint256 newRentalPrice,
+        uint256 newLeaseDuration
     )
         public
         landlordOnly(rentalPropertyId)
@@ -497,115 +475,23 @@ contract RentalProperty {
         validUpdateStatus(rentalPropertyId)
     {
         rentalProperties[rentalPropertyId].location = newLocation;
-        emit RentalPropertyUpdateLocation(rentalPropertyId, newLocation);
-    }
-
-    //Function to update the postal code of a rental property
-    function updatePostalCode(
-        uint256 rentalPropertyId,
-        string memory newPostalCode
-    )
-        public
-        landlordOnly(rentalPropertyId)
-        validRentalPropertyId(rentalPropertyId)
-        validUpdateStatus(rentalPropertyId)
-    {
         rentalProperties[rentalPropertyId].postalCode = newPostalCode;
-        emit RentalPropertyUpdatePostalCode(rentalPropertyId, newPostalCode);
-    }
-
-    //Function to update the unit number of a rental property
-    function updateUnitNumber(
-        uint256 rentalPropertyId,
-        string memory newUnitNumber
-    )
-        public
-        landlordOnly(rentalPropertyId)
-        validRentalPropertyId(rentalPropertyId)
-        validUpdateStatus(rentalPropertyId)
-    {
         rentalProperties[rentalPropertyId].unitNumber = newUnitNumber;
-        emit RentalPropertyUpdateUnitNumber(rentalPropertyId, newUnitNumber);
-    }
-
-    //Function to update the property type of a rental property
-    function updatePropertyType(
-        uint256 rentalPropertyId,
-        PropertyType newPropertyType
-    )
-        public
-        landlordOnly(rentalPropertyId)
-        validRentalPropertyId(rentalPropertyId)
-        validUpdateStatus(rentalPropertyId)
-    {
         rentalProperties[rentalPropertyId].propertyType = newPropertyType;
-        emit RentalPropertyUpdatePropertyType(
-            rentalPropertyId,
-            newPropertyType
-        );
-    }
-
-    //Function to update the description of a rental property
-    function updateDescription(
-        uint256 rentalPropertyId,
-        string memory newDescription
-    )
-        public
-        landlordOnly(rentalPropertyId)
-        validRentalPropertyId(rentalPropertyId)
-        validUpdateStatus(rentalPropertyId)
-    {
         rentalProperties[rentalPropertyId].description = newDescription;
-        emit RentalPropertyUpdateDescription(rentalPropertyId, newDescription);
-    }
-
-    //Function to update the number of tenants in a rental property
-    function updateNumOfTenants(
-        uint256 rentalPropertyId,
-        uint256 newNumOfTenants
-    )
-        public
-        landlordOnly(rentalPropertyId)
-        validRentalPropertyId(rentalPropertyId)
-        validNumOfTenants(newNumOfTenants)
-        validUpdateStatus(rentalPropertyId)
-    {
         rentalProperties[rentalPropertyId].numOfTenants = newNumOfTenants;
-        emit RentalPropertyUpdateNumOfTenants(
-            rentalPropertyId,
-            newNumOfTenants
-        );
-    }
-
-    //Function to update the rental price of a rental property
-    function updateRentalPrice(
-        uint256 rentalPropertyId,
-        uint256 newRentalPrice
-    )
-        public
-        landlordOnly(rentalPropertyId)
-        validRentalPropertyId(rentalPropertyId)
-        validRentalPrice(newRentalPrice)
-        validUpdateStatus(rentalPropertyId)
-    {
         rentalProperties[rentalPropertyId].rentalPrice = newRentalPrice;
-        emit RentalPropertyUpdateRentalPrice(rentalPropertyId, newRentalPrice);
-    }
-
-    //Function to update the lease duration of a rental property
-    function updateLeaseDuration(
-        uint256 rentalPropertyId,
-        uint256 newLeaseDuration
-    )
-        public
-        landlordOnly(rentalPropertyId)
-        validRentalPropertyId(rentalPropertyId)
-        validLeaseDuration(newLeaseDuration)
-        validUpdateStatus(rentalPropertyId)
-    {
         rentalProperties[rentalPropertyId].leaseDuration = newLeaseDuration;
-        emit RentalPropertyUpdateLeaseDuration(
+
+        emit RentalPropertyUpdateDetails(
             rentalPropertyId,
+            newLocation,
+            newPostalCode,
+            newUnitNumber,
+            newPropertyType,
+            newDescription,
+            newNumOfTenants,
+            newRentalPrice,
             newLeaseDuration
         );
     }
