@@ -59,10 +59,7 @@ contract RentalMarketplace {
         uint256 rentalPropertyId,
         uint256 applicationId
     );
-    event RentalApplicationCancelled(
-        uint256 rentalPropertyId,
-        uint256 applicationId
-    );
+
     event PaymentMade(uint256 rentalPropertyId, uint256 applicationId);
     event PaymentAccepted(uint256 rentalPropertyId, uint256 applicationId);
     event tenantMoveOut(uint256 rentalPropertyId, uint256 applicationId);
@@ -380,43 +377,6 @@ contract RentalMarketplace {
 
         rentalApplication.status = RentStatus.ONGOING;
         emit RentalApplicationAccepted(rentalPropertyId, applicationId);
-    }
-
-    // Tenant can cancel a rental application.
-    function cancelRentalApplication(
-        uint256 rentalPropertyId,
-        uint256 applicationId
-    )
-        public
-        tenantApplied(rentalPropertyId)
-        rentalApplicationExist(rentalPropertyId, applicationId)
-        rentalApplicationPending(rentalPropertyId, applicationId)
-    {
-        require(
-            msg.sender != rentalPropertyContract.getLandlord(rentalPropertyId),
-            "Landlord cannot cancel rental application for own rental property"
-        );
-        RentalApplication storage rentalApplication = rentalApplications[
-            rentalPropertyId
-        ][applicationId];
-
-        // PaymentEscrow Contract refund the deposit (LeaseToken) to the tenant if the rental application is cancelled (first payment transaction id)
-        // First payment transaction id in the array is always the deposit
-        paymentEscrowContract.refund(rentalApplication.paymentIds[0]);
-
-        // Application count is reduced by 1
-        rentalApplicationCounts[rentalPropertyId]--;
-        // Tenant can reapply for the rental property
-        hasApplied[rentalPropertyId][rentalApplication.tenantAddress] = false;
-        // Remove the rental application
-        delete rentalApplications[rentalPropertyId][applicationId];
-
-        if (rentalApplicationCounts[rentalPropertyId] == 0) {
-            // Landlord can re-update the rental property if there is no ongoing application
-            rentalPropertyContract.setUpdateStatus(rentalPropertyId, true);
-        }
-
-        emit RentalApplicationCancelled(rentalPropertyId, applicationId);
     }
 
     //Tenant can make a payment for the rental property.
