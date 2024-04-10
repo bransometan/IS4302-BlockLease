@@ -25,6 +25,8 @@ contract PaymentEscrow {
     uint256 private protectionFee;
     // The commission fee (in tokens) that the platform charges for each transaction
     uint256 private commissionFee;
+    // Tenant or landlord who wants to initiate a dispute must stake a reward (in tokens) to incentivize voters to vote in the dispute
+    uint256 private voterReward;
 
     LeaseToken leaseTokenContract;
 
@@ -40,11 +42,13 @@ contract PaymentEscrow {
     constructor(
         address _leaseTokenAddress,
         uint256 _protectionFee,
-        uint256 _commissionFee
+        uint256 _commissionFee,
+        uint256 _voterReward
     ) {
         leaseTokenContract = LeaseToken(_leaseTokenAddress);
         protectionFee = _protectionFee;
         commissionFee = _commissionFee;
+        voterReward = _voterReward;
         owner = msg.sender;
     }
 
@@ -299,6 +303,13 @@ contract PaymentEscrow {
         emit commissionFeeSet(_commissionFee);
     }
 
+    // Function to set the voter reward
+    function setVoterReward(
+        uint256 _voterReward
+    ) public onlyOwner {
+        voterReward = _voterReward;
+    }
+
     // Function to set the RentalMarketplace address (Access Control)
     function setRentalMarketplaceAddress(
         address _rentalMarketplaceAddress
@@ -329,6 +340,11 @@ contract PaymentEscrow {
     // Function to get the commission fee
     function getCommissionFee() public view returns (uint256) {
         return commissionFee;
+    }
+
+    // Function to get the voter reward
+    function getVoterReward() public view returns (uint256) {
+        return voterReward;
     }
 
     // Function to get the payment details

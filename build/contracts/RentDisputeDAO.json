@@ -1,0 +1,496 @@
+{
+  "contractName": "RentDisputeDAO",
+  "abi": [],
+  "metadata": "{\"compiler\":{\"version\":\"0.8.1+commit.df193b15\"},\"language\":\"Solidity\",\"output\":{\"abi\":[],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"project:/contracts/RentDisputeDAO.sol\":\"RentDisputeDAO\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"project:/contracts/RentDisputeDAO.sol\":{\"keccak256\":\"0xf50175ddfdb586489cbbb8645a4f80358a17fb2cce5e1242453be620955fcf24\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://ea9820cdc105795f2625502314ce89a6bf22eaa4c0c3b9bb22974d186e7c6cf4\",\"dweb:/ipfs/QmTbngjntfkAXfMcT2g8JC8M6gMKarQFUhQkPMVJ82xQSY\"]}},\"version\":1}",
+  "bytecode": "0x608060405260008055348015601357600080fd5b50603f8060216000396000f3fe6080604052600080fdfea26469706673582212201024e8401859990d5d592eb43d1693412d03e1597fdb2cc5ea1a95c00a30d51264736f6c63430008010033",
+  "deployedBytecode": "0x6080604052600080fdfea26469706673582212201024e8401859990d5d592eb43d1693412d03e1597fdb2cc5ea1a95c00a30d51264736f6c63430008010033",
+  "immutableReferences": {},
+  "generatedSources": [],
+  "deployedGeneratedSources": [],
+  "sourceMap": "60:1467:3:-:0;;;523:1;491:33;;60:1467;;;;;;;;;;;;;;;;",
+  "deployedSourceMap": "60:1467:3:-:0;;;;;",
+  "source": "// SPDX-License-Identifier: MIT\r\npragma solidity ^0.8.0;\r\n\r\ncontract RentDisputeDAO {\r\n    // ################################################### STRUCTURE & STATE VARIABLES ################################################### //\r\n    \r\n    struct RentDispute {\r\n        uint256 id;\r\n        address tenant;\r\n        address landlord;\r\n        uint256 startDate;\r\n        uint256 endDate;\r\n        uint256 disputeAmount;\r\n        string disputeReason;\r\n        bool isResolved;\r\n    }\r\n\r\n    uint256 private numOfDisputes = 0;\r\n    mapping(uint256 => RentDispute) private disputes; // disputeId => RentDispute\r\n    mapping(address => uint256[]) private tenantDisputes; // tenant => disputeId[]\r\n    mapping(address => uint256[]) private landlordDisputes; // landlord => disputeId[]\r\n\r\n    \r\n\r\n    \r\n    \r\n    // ################################################### EVENTS ################################################### //\r\n    \r\n    \r\n    \r\n    \r\n    // ################################################### MODIFIERS ################################################### //\r\n    \r\n    \r\n    \r\n    \r\n    // ################################################### FUNCTIONS ################################################### //\r\n    \r\n    \r\n    \r\n    \r\n    // ################################################### SETTER METHODS ################################################### //\r\n    \r\n    \r\n    \r\n    // ################################################### GETTER METHODS ################################################### //\r\n}\r\n",
+  "sourcePath": "C:\\Users\\Bransome Tan Yi Hao\\OneDrive - National University of Singapore\\Desktop\\IS4302\\is4302-project\\contracts\\RentDisputeDAO.sol",
+  "ast": {
+    "absolutePath": "project:/contracts/RentDisputeDAO.sol",
+    "exportedSymbols": {
+      "RentDisputeDAO": [
+        1678
+      ]
+    },
+    "id": 1679,
+    "license": "MIT",
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 1642,
+        "literals": [
+          "solidity",
+          "^",
+          "0.8",
+          ".0"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "33:23:3"
+      },
+      {
+        "abstract": false,
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "contract",
+        "fullyImplemented": true,
+        "id": 1678,
+        "linearizedBaseContracts": [
+          1678
+        ],
+        "name": "RentDisputeDAO",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "canonicalName": "RentDisputeDAO.RentDispute",
+            "id": 1659,
+            "members": [
+              {
+                "constant": false,
+                "id": 1644,
+                "mutability": "mutable",
+                "name": "id",
+                "nodeType": "VariableDeclaration",
+                "scope": 1659,
+                "src": "270:10:3",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                },
+                "typeName": {
+                  "id": 1643,
+                  "name": "uint256",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "270:7:3",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 1646,
+                "mutability": "mutable",
+                "name": "tenant",
+                "nodeType": "VariableDeclaration",
+                "scope": 1659,
+                "src": "291:14:3",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_address",
+                  "typeString": "address"
+                },
+                "typeName": {
+                  "id": 1645,
+                  "name": "address",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "291:7:3",
+                  "stateMutability": "nonpayable",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 1648,
+                "mutability": "mutable",
+                "name": "landlord",
+                "nodeType": "VariableDeclaration",
+                "scope": 1659,
+                "src": "316:16:3",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_address",
+                  "typeString": "address"
+                },
+                "typeName": {
+                  "id": 1647,
+                  "name": "address",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "316:7:3",
+                  "stateMutability": "nonpayable",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 1650,
+                "mutability": "mutable",
+                "name": "startDate",
+                "nodeType": "VariableDeclaration",
+                "scope": 1659,
+                "src": "343:17:3",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                },
+                "typeName": {
+                  "id": 1649,
+                  "name": "uint256",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "343:7:3",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 1652,
+                "mutability": "mutable",
+                "name": "endDate",
+                "nodeType": "VariableDeclaration",
+                "scope": 1659,
+                "src": "371:15:3",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                },
+                "typeName": {
+                  "id": 1651,
+                  "name": "uint256",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "371:7:3",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 1654,
+                "mutability": "mutable",
+                "name": "disputeAmount",
+                "nodeType": "VariableDeclaration",
+                "scope": 1659,
+                "src": "397:21:3",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                },
+                "typeName": {
+                  "id": 1653,
+                  "name": "uint256",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "397:7:3",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 1656,
+                "mutability": "mutable",
+                "name": "disputeReason",
+                "nodeType": "VariableDeclaration",
+                "scope": 1659,
+                "src": "429:20:3",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_string_storage_ptr",
+                  "typeString": "string"
+                },
+                "typeName": {
+                  "id": 1655,
+                  "name": "string",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "429:6:3",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_string_storage_ptr",
+                    "typeString": "string"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 1658,
+                "mutability": "mutable",
+                "name": "isResolved",
+                "nodeType": "VariableDeclaration",
+                "scope": 1659,
+                "src": "460:15:3",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_bool",
+                  "typeString": "bool"
+                },
+                "typeName": {
+                  "id": 1657,
+                  "name": "bool",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "460:4:3",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  }
+                },
+                "visibility": "internal"
+              }
+            ],
+            "name": "RentDispute",
+            "nodeType": "StructDefinition",
+            "scope": 1678,
+            "src": "240:243:3",
+            "visibility": "public"
+          },
+          {
+            "constant": false,
+            "id": 1662,
+            "mutability": "mutable",
+            "name": "numOfDisputes",
+            "nodeType": "VariableDeclaration",
+            "scope": 1678,
+            "src": "491:33:3",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_uint256",
+              "typeString": "uint256"
+            },
+            "typeName": {
+              "id": 1660,
+              "name": "uint256",
+              "nodeType": "ElementaryTypeName",
+              "src": "491:7:3",
+              "typeDescriptions": {
+                "typeIdentifier": "t_uint256",
+                "typeString": "uint256"
+              }
+            },
+            "value": {
+              "hexValue": "30",
+              "id": 1661,
+              "isConstant": false,
+              "isLValue": false,
+              "isPure": true,
+              "kind": "number",
+              "lValueRequested": false,
+              "nodeType": "Literal",
+              "src": "523:1:3",
+              "typeDescriptions": {
+                "typeIdentifier": "t_rational_0_by_1",
+                "typeString": "int_const 0"
+              },
+              "value": "0"
+            },
+            "visibility": "private"
+          },
+          {
+            "constant": false,
+            "id": 1667,
+            "mutability": "mutable",
+            "name": "disputes",
+            "nodeType": "VariableDeclaration",
+            "scope": 1678,
+            "src": "531:48:3",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_mapping$_t_uint256_$_t_struct$_RentDispute_$1659_storage_$",
+              "typeString": "mapping(uint256 => struct RentDisputeDAO.RentDispute)"
+            },
+            "typeName": {
+              "id": 1666,
+              "keyType": {
+                "id": 1663,
+                "name": "uint256",
+                "nodeType": "ElementaryTypeName",
+                "src": "539:7:3",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                }
+              },
+              "nodeType": "Mapping",
+              "src": "531:31:3",
+              "typeDescriptions": {
+                "typeIdentifier": "t_mapping$_t_uint256_$_t_struct$_RentDispute_$1659_storage_$",
+                "typeString": "mapping(uint256 => struct RentDisputeDAO.RentDispute)"
+              },
+              "valueType": {
+                "id": 1665,
+                "nodeType": "UserDefinedTypeName",
+                "pathNode": {
+                  "id": 1664,
+                  "name": "RentDispute",
+                  "nodeType": "IdentifierPath",
+                  "referencedDeclaration": 1659,
+                  "src": "550:11:3"
+                },
+                "referencedDeclaration": 1659,
+                "src": "550:11:3",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_struct$_RentDispute_$1659_storage_ptr",
+                  "typeString": "struct RentDisputeDAO.RentDispute"
+                }
+              }
+            },
+            "visibility": "private"
+          },
+          {
+            "constant": false,
+            "id": 1672,
+            "mutability": "mutable",
+            "name": "tenantDisputes",
+            "nodeType": "VariableDeclaration",
+            "scope": 1678,
+            "src": "614:52:3",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_mapping$_t_address_$_t_array$_t_uint256_$dyn_storage_$",
+              "typeString": "mapping(address => uint256[])"
+            },
+            "typeName": {
+              "id": 1671,
+              "keyType": {
+                "id": 1668,
+                "name": "address",
+                "nodeType": "ElementaryTypeName",
+                "src": "622:7:3",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_address",
+                  "typeString": "address"
+                }
+              },
+              "nodeType": "Mapping",
+              "src": "614:29:3",
+              "typeDescriptions": {
+                "typeIdentifier": "t_mapping$_t_address_$_t_array$_t_uint256_$dyn_storage_$",
+                "typeString": "mapping(address => uint256[])"
+              },
+              "valueType": {
+                "baseType": {
+                  "id": 1669,
+                  "name": "uint256",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "633:7:3",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  }
+                },
+                "id": 1670,
+                "nodeType": "ArrayTypeName",
+                "src": "633:9:3",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_array$_t_uint256_$dyn_storage_ptr",
+                  "typeString": "uint256[]"
+                }
+              }
+            },
+            "visibility": "private"
+          },
+          {
+            "constant": false,
+            "id": 1677,
+            "mutability": "mutable",
+            "name": "landlordDisputes",
+            "nodeType": "VariableDeclaration",
+            "scope": 1678,
+            "src": "698:54:3",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_mapping$_t_address_$_t_array$_t_uint256_$dyn_storage_$",
+              "typeString": "mapping(address => uint256[])"
+            },
+            "typeName": {
+              "id": 1676,
+              "keyType": {
+                "id": 1673,
+                "name": "address",
+                "nodeType": "ElementaryTypeName",
+                "src": "706:7:3",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_address",
+                  "typeString": "address"
+                }
+              },
+              "nodeType": "Mapping",
+              "src": "698:29:3",
+              "typeDescriptions": {
+                "typeIdentifier": "t_mapping$_t_address_$_t_array$_t_uint256_$dyn_storage_$",
+                "typeString": "mapping(address => uint256[])"
+              },
+              "valueType": {
+                "baseType": {
+                  "id": 1674,
+                  "name": "uint256",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "717:7:3",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  }
+                },
+                "id": 1675,
+                "nodeType": "ArrayTypeName",
+                "src": "717:9:3",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_array$_t_uint256_$dyn_storage_ptr",
+                  "typeString": "uint256[]"
+                }
+              }
+            },
+            "visibility": "private"
+          }
+        ],
+        "scope": 1679,
+        "src": "60:1467:3"
+      }
+    ],
+    "src": "33:1496:3"
+  },
+  "compiler": {
+    "name": "solc",
+    "version": "0.8.1+commit.df193b15.Emscripten.clang"
+  },
+  "networks": {},
+  "schemaVersion": "3.4.16",
+  "updatedAt": "2024-04-10T05:57:35.590Z",
+  "devdoc": {
+    "kind": "dev",
+    "methods": {},
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {},
+    "version": 1
+  }
+}
