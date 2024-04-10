@@ -6,10 +6,10 @@ import "./LeaseToken.sol";
 contract PaymentEscrow {
     // ################################################### STRUCTURE & STATE VARIABLES ################################################### //
     enum PaymentStatus {
-        PENDING,
-        PAID,
-        RELEASED,
-        REFUNDED
+        PENDING, // Payment has been created but not yet made
+        PAID, // Payment has been made but not yet released
+        RELEASED, // Payment has been released
+        REFUNDED // Payment has been refunded
     }
 
     struct Payment {
@@ -28,7 +28,7 @@ contract PaymentEscrow {
 
     LeaseToken leaseTokenContract;
 
-    mapping(uint256 => Payment) public payments;
+    mapping(uint256 => Payment) public payments; // Mapping of payment ID to payment details
 
     // The owner of the contract (PaymentEscrow), who can set the protection fee (for landlord) and commission fee (for platform)
     address private owner;
@@ -62,11 +62,13 @@ contract PaymentEscrow {
 
     // ################################################### MODIFIERS ################################################### //
 
+    // Modifier to check if the caller is the owner of the contract
     modifier onlyOwner() {
         require(msg.sender == owner, "Only owner can call this function");
         _;
     }
 
+    // Modifier to check if the caller is the RentalMarketplace contract
     modifier onlyRentalMarketplace() {
         require(
             msg.sender == rentalMarketplaceAddress,
@@ -75,6 +77,7 @@ contract PaymentEscrow {
         _;
     }
 
+    // Modifier to check if the caller is the RentDisputeDAO contract
     modifier onlyRentDisputeDAO() {
         require(
             msg.sender == rentDisputeDAOAddress,
@@ -83,6 +86,7 @@ contract PaymentEscrow {
         _;
     }
 
+    // Modifier to check if the caller is the RentalMarketplace or RentDisputeDAO contract
     modifier onlyRentalMarketplaceOrRentDisputeDAO() {
         require(
             msg.sender == rentalMarketplaceAddress ||
@@ -92,6 +96,7 @@ contract PaymentEscrow {
         _;
     }
 
+    // Modifier to check if the payer has sufficient balance to make the payment
     modifier checkSufficientBalance(address _payer, uint256 _amount) {
         require(
             leaseTokenContract.checkLeaseToken(_payer) >= _amount,
@@ -100,11 +105,13 @@ contract PaymentEscrow {
         _;
     }
 
+    // Modifier to check if the payment exists
     modifier PaymentExists(uint256 _paymentId) {
         require(_paymentId < numOfPayments, "Payment does not exist");
         _;
     }
 
+    // Modifier to check if the payment is pending
     modifier PaymentPending(uint256 _paymentId) {
         require(
             payments[_paymentId].status == PaymentStatus.PENDING,
@@ -113,6 +120,7 @@ contract PaymentEscrow {
         _;
     }
 
+    // Modifier to check if the payment has been made
     modifier PaymentPaid(uint256 _paymentId) {
         require(
             payments[_paymentId].status == PaymentStatus.PAID,
@@ -121,6 +129,7 @@ contract PaymentEscrow {
         _;
     }
 
+    // Modifier to check if the payment has been released
     modifier PaymentReleased(uint256 _paymentId) {
         require(
             payments[_paymentId].status == PaymentStatus.RELEASED,
@@ -129,6 +138,7 @@ contract PaymentEscrow {
         _;
     }
 
+    // Modifier to check if the payment has been refunded
     modifier PaymentRefunded(uint256 _paymentId) {
         require(
             payments[_paymentId].status == PaymentStatus.REFUNDED,
@@ -137,16 +147,19 @@ contract PaymentEscrow {
         _;
     }
 
+    // Modifier to check if the protection fee is valid
     modifier invalidProtectionFee(uint256 _protectionFee) {
         require(_protectionFee > 0, "Protection fee must be greater than 0");
         _;
     }
 
+    // Modifier to check if the commission fee is valid
     modifier invalidCommissionFee(uint256 _commissionFee) {
         require(_commissionFee > 0, "Commission fee must be greater than 0");
         _;
     }
 
+    // Modifier to check if the RentalMarketplace address is valid
     modifier invalidRentalMarketplaceAddress(
         address _rentalMarketplaceAddress
     ) {
@@ -157,6 +170,7 @@ contract PaymentEscrow {
         _;
     }
 
+    // Modifier to check if the RentDisputeDAO address is valid
     modifier invalidRentDisputeDAOAddress(address _rentDisputeDAOAddress) {
         require(
             _rentDisputeDAOAddress != address(0),
@@ -167,7 +181,7 @@ contract PaymentEscrow {
 
     // ################################################### FUNCTIONS ################################################### //
 
-    // Function to create a payment transaction
+    // Function to create a payment transaction between the payer and payee
     function createPayment(
         address _payer,
         address _payee,
@@ -182,14 +196,14 @@ contract PaymentEscrow {
             _payer,
             _payee,
             _amount,
-            PaymentStatus.PENDING
+            PaymentStatus.PENDING // Payment is pending until it is made
         );
         numOfPayments++;
         emit paymentCreated(_payer, _payee, _amount);
-        return numOfPayments - 1; // Return the payment ID
+        return numOfPayments; // Return the payment ID (index starts from 1 since 0 is used to denote non-existence of payment transaction)
     }
 
-    // Function to transfer the payment amount from the tenant to the PaymentEscrow
+    // Function to transfer the payment amount from the payer to the PaymentEscrow
     function pay(
         uint256 _paymentId
     )
@@ -200,20 +214,20 @@ contract PaymentEscrow {
     {
         Payment storage payment = payments[_paymentId];
 
-        // Tenant approves PaymentEscrow to transfer the payment amount to the Landlord
+        // Payer approves PaymentEscrow to transfer the payment amount to the payee
         leaseTokenContract.approveLeaseToken(payment.payer, address(this), payment.amount);
-        // Tenant transfers the payment amount to PaymentEscrow
+        // Payer transfers the payment amount to PaymentEscrow
         leaseTokenContract.transferLeaseTokenFrom(
             address(this),
             payment.payer,
             address(this),
             payment.amount
         );
-        payment.status = PaymentStatus.PAID;
+        payment.status = PaymentStatus.PAID; // Payment has been made
         emit paymentPaid(payment.payer, payment.payee, payment.amount);
     }
 
-    // Function to release the payment amount from the PaymentEscrow to the landlord
+    // Function to release the payment amount from the PaymentEscrow to the Payee
     function release(
         uint256 _paymentId
     )
@@ -224,7 +238,7 @@ contract PaymentEscrow {
     {
         Payment storage payment = payments[_paymentId];
 
-        // PaymentEscrow transfers the payment amount to the tenant (minus the commission fee), commission fee is transferred to the platform
+        // PaymentEscrow transfers the payment amount to the payee (minus the commission fee), commission fee is transferred to the platform
         leaseTokenContract.transferLeaseToken(
             address(this),
             payment.payee,
@@ -234,7 +248,7 @@ contract PaymentEscrow {
         emit paymentReleased(payment.payer, payment.payee, payment.amount);
     }
 
-    // Function to refund the payment amount from the PaymentEscrow to the tenant
+    // Function to refund the payment amount from the PaymentEscrow to the Payer (after PaymentEscrow has received the payment amount from the Payer)
     function refund(
         uint256 _paymentId
     )
@@ -244,15 +258,16 @@ contract PaymentEscrow {
         PaymentPaid(_paymentId)
     {
         Payment storage payment = payments[_paymentId];
-        // PaymentEscrow transfers the payment amount back to the landlord
+        // PaymentEscrow transfers the payment amount back to the Payer
         leaseTokenContract.transferLeaseToken(
             address(this),
-            payment.payer,
+            payment.payer, // Refund the payment amount to the Payer
             payment.amount
         );
         payment.status = PaymentStatus.REFUNDED;
         emit paymentRefunded(payment.payer, payment.payee, payment.amount);
     }
+
 
     // Function to withdraw the tokens to the owner of the contract
     function withdrawToken() public onlyOwner {
