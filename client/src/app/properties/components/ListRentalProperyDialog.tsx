@@ -11,7 +11,11 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { useState } from "react";
 
-export default function ListRentalPropertyDialog() {
+export default function ListRentalPropertyDialog({
+  rentalPropertyId,
+}: {
+  rentalPropertyId: number;
+}) {
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
 

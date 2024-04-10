@@ -61,6 +61,7 @@ export const addRentalProperty = async (data: AddRentalPropertyParams) => {
       leaseDuration
     );
     await tx.wait();
+    return Promise.resolve(tx);
   } catch (error) {
     reportError(error);
     return Promise.reject(error);
@@ -156,6 +157,7 @@ export const updateRentalPropertyById = async (
     } = props;
 
     //TODO: do all in one
+    //TODO: add tx.wait()
     await rentalPropertyContract.updateLocation(id, location);
     await rentalPropertyContract.updatePostalCode(id, postalCode);
     await rentalPropertyContract.updateUnitNumber(id, unitNumber);
@@ -167,6 +169,26 @@ export const updateRentalPropertyById = async (
     await rentalPropertyContract.updateNumOfTenants(id, numOfTenants);
     await rentalPropertyContract.updateRentalPrice(id, rentalPrice);
     await rentalPropertyContract.updateLeaseDuration(id, leaseDuration);
+    // return Promise.resolve(tx);
+  } catch (error) {
+    reportError(error);
+    return Promise.reject(error);
+  }
+};
+
+export const deleteRentalPropertyById = async (id: number) => {
+  if (!ethereum) {
+    reportError("Please install Metamask");
+    return Promise.reject(new Error("Metamask not installed"));
+  }
+
+  try {
+    const rentalPropertyContract = await getContract(
+      DeployedContract.RentalPropertyContract
+    );
+    const tx = await rentalPropertyContract.deleteRentalProperty(id);
+    await tx.wait();
+    return Promise.resolve(tx);
   } catch (error) {
     reportError(error);
     return Promise.reject(error);
