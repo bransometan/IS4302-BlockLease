@@ -70,6 +70,7 @@ contract ERC20 {
     event Transfer(address indexed from, address indexed to, uint256 value);
     event Approval(address indexed owner, address indexed spender, uint256 value);
     event Mint(address indexed to, uint256 amount);
+    event Burn(address indexed from, uint256 amount);
     event MintFinished();
 
   
@@ -200,6 +201,17 @@ contract ERC20 {
     emit Transfer(address(0), _to, _amount);
     return true;
   }
+
+    /**
+  * @dev Function to burn tokens
+  */
+  function burn(address _tokenOwner, uint256 _amount) onlyOwner public returns (bool) {
+    totalSupply_ = totalSupply_.sub(_amount);
+    balances[_tokenOwner] = balances[_tokenOwner].sub(_amount);
+    emit Burn(_tokenOwner, _amount);
+    return true;
+  }
+
 
   /**
    * @dev Function to stop minting new tokens.

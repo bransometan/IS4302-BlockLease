@@ -37,8 +37,8 @@ contract RentalMarketplace {
         private rentalApplications;
     // This is to keep track of the number of applications for a rental property (RentalProperty id to number of applications mapping)
     mapping(uint256 => uint256) private rentalApplicationCounts;
-    // This is to keep track if a tenant has already applied for a rental property
-    mapping(uint256 => mapping(address => bool)) private hasApplied;
+    // This is to keep track if a tenant has already applied for a rental property (Tenant can only apply for one rental property at a time)
+    mapping(address => bool) private hasApplied;
 
     constructor(address rentalPropertyAddress, address paymentEscrowAddress) {
         rentalPropertyContract = RentalProperty(rentalPropertyAddress);
@@ -53,7 +53,7 @@ contract RentalMarketplace {
         uint256 rentalPropertyId,
         uint256 applicationId
     );
-    event RentalApplicationRejected(
+    event RentalApplicationCancelOrRejected(
         uint256 rentalPropertyId,
         uint256 applicationId
     );
@@ -179,24 +179,6 @@ contract RentalMarketplace {
         _;
     }
 
-    // Modifier to check the tenant has not applied for the rental property
-    modifier tenantNotApplied(uint256 rentalPropertyId) {
-        require(
-            !hasApplied[rentalPropertyId][msg.sender],
-            "Tenant has already applied for this rental property"
-        );
-        _;
-    }
-
-    // Modifier to check the tenant has applied for the rental property
-    modifier tenantApplied(uint256 rentalPropertyId) {
-        require(
-            hasApplied[rentalPropertyId][msg.sender],
-            "Tenant has not applied for this rental property"
-        );
-        _;
-    }
-
     // Modifier to check Deposit LeaseToken is greater than 0
     modifier depositFeeGreaterThanZero(uint256 depositFee) {
         require(depositFee > 0, "Deposit LeaseToken must be greater than 0");
@@ -274,11 +256,14 @@ contract RentalMarketplace {
         public
         rentalPropertyListed(rentalPropertyId)
         rentalPropertyNotFull(rentalPropertyId)
-        tenantNotApplied(rentalPropertyId)
     {
         require(
             msg.sender != rentalPropertyContract.getLandlord(rentalPropertyId),
             "Landlord cannot apply for own rental property"
+        );
+        require(
+            !hasApplied[msg.sender],
+            "Tenant has already applied for a rental property"
         );
 
         uint256 applicationId = rentalApplicationCounts[rentalPropertyId];
@@ -292,7 +277,7 @@ contract RentalMarketplace {
             description,
             0,
             RentStatus.PENDING,
-            new uint256[](1000) // Limit of 1000 payment transactions
+            new uint256[](0)
         );
 
         // Deposit Fee (LeaseToken) required for the rental property
@@ -311,33 +296,32 @@ contract RentalMarketplace {
 
         // Increment the application count
         rentalApplicationCounts[rentalPropertyId]++;
-        // Tenant has applied for the rental property
-        hasApplied[rentalPropertyId][msg.sender] = true;
+        // Set the tenant has applied for a rental property
+        hasApplied[msg.sender] = true;
         // Landlord cannot update/delete the rental property while there is an ongoing application
         rentalPropertyContract.setUpdateStatus(rentalPropertyId, false);
         emit RentalApplicationSubmitted(rentalPropertyId, applicationId);
     }
 
-    // Landlord can reject a rental application.
-    function rejectRentalApplication(
+    // Tenant can cancel or landlord can reject a rental application.
+    function cancelOrRejectRentalApplication(
         uint256 rentalPropertyId,
         uint256 applicationId
     )
         public
-        landlordOnly(rentalPropertyId)
         rentalApplicationExist(rentalPropertyId, applicationId)
         rentalApplicationPending(rentalPropertyId, applicationId)
     {
         // PaymentEscrow Contract refund the deposit (LeaseToken) to the tenant if the rental application is rejected (first payment transaction id)
         // First payment transaction id in the array is always the deposit
         paymentEscrowContract.refund(
-            rentalApplications[rentalPropertyId][applicationId].paymentIds[0]
+              rentalApplications[rentalPropertyId][applicationId].paymentIds[0]
         );
 
         // Remove the rental application from the rental property and update corresponding mappings
         removeApplication(rentalPropertyId, applicationId);
 
-        emit RentalApplicationRejected(rentalPropertyId, applicationId);
+        emit RentalApplicationCancelOrRejected(rentalPropertyId, applicationId);
     }
 
     //Landlord can accept a rental application to start the rental process.
@@ -370,13 +354,16 @@ contract RentalMarketplace {
     )
         public
         rentalPropertyListed(rentalPropertyId)
-        tenantApplied(rentalPropertyId)
         rentalApplicationExist(rentalPropertyId, applicationId)
         rentalApplicationOngoing(rentalPropertyId, applicationId)
     {
         require(
             msg.sender != rentalPropertyContract.getLandlord(rentalPropertyId),
             "Landlord cannot make payment for own rental property"
+        );
+         require(
+            hasApplied[msg.sender],
+            "Tenant has not applied for this rental property"
         );
         RentalApplication storage rentalApplication = rentalApplications[
             rentalPropertyId
@@ -449,13 +436,16 @@ contract RentalMarketplace {
     )
         public
         rentalPropertyListed(rentalPropertyId)
-        tenantApplied(rentalPropertyId)
         rentalApplicationExist(rentalPropertyId, applicationId)
         rentalApplicationCompleted(rentalPropertyId, applicationId)
     {
         require(
             msg.sender != rentalPropertyContract.getLandlord(rentalPropertyId),
             "Landlord cannot move out of own rental property"
+        );
+        require(
+            hasApplied[msg.sender],
+            "Tenant has not applied for this rental property"
         );
 
         // PaymentEscrow Contract refund the deposit fee balance (LeaseToken) to the tenant if the rental is completed
@@ -494,8 +484,8 @@ contract RentalMarketplace {
     {
         // Application count is reduced by 1
         rentalApplicationCounts[rentalPropertyId]--;
-        // Tenant can reapply for the rental property
-        hasApplied[rentalPropertyId][
+        // Tenant can reapply for another rental property
+        hasApplied[
             rentalApplications[rentalPropertyId][applicationId].tenantAddress
         ] = false;
         // Remove the rental application
@@ -565,51 +555,25 @@ contract RentalMarketplace {
 
     //Check if a tenant has applied for a rental property.
     function getHasApplied(
-        uint256 rentalPropertyId,
         address tenantAddress
     ) public view returns (bool) {
-        return hasApplied[rentalPropertyId][tenantAddress];
+        return hasApplied[tenantAddress];
     }
 
-    //Get count of rental applications for a tenant.
-    function getRentalApplicationCountByTenant(
+    //Get the Rental Application that a tenant has applied for.
+    function getTenantRentalApplication(
         address tenantAddress
-    ) public view returns (uint256) {
-        uint256 count = 0;
-        for (
-            uint256 i = 0;
-            i < rentalPropertyContract.getNumRentalProperty();
-            i++
-        ) {
-            if (hasApplied[i][tenantAddress]) {
-                count++;
+    ) public view returns (RentalApplication memory) {
+        for (uint256 i = 0; i < rentalPropertyContract.getNumRentalProperty(); i++) {
+            for (uint256 j = 0; j < rentalApplicationCounts[i]; j++) {
+                if (rentalApplications[i][j].tenantAddress == tenantAddress) {
+                    return rentalApplications[i][j];
+                }
             }
         }
-        return count;
+        return RentalApplication(0, 0, address(0), "", "", "", "", 0, RentStatus.PENDING, new uint256[](0));
     }
-
-    //Get all rental properties that a tenant has applied for.
-    function getRentalPropertiesAppliedByTenant(
-        address tenantAddress
-    ) public view returns (RentalApplication[] memory) {
-        uint256 count = getRentalApplicationCountByTenant(tenantAddress);
-
-        RentalApplication[] memory applications = new RentalApplication[](
-            count
-        );
-        uint256 index = 0;
-        for (
-            uint256 i = 0;
-            i < rentalPropertyContract.getNumRentalProperty();
-            i++
-        ) {
-            if (hasApplied[i][tenantAddress]) {
-                applications[index] = rentalApplications[i][i];
-                index++;
-            }
-        }
-        return applications;
-    }
+   
 
     //Get the deposit required for a rental property.
     function getDepositAmount(
@@ -617,4 +581,5 @@ contract RentalMarketplace {
     ) public view returns (uint256) {
         return rentalPropertyDeposits[rentalPropertyId];
     }
+
 }
