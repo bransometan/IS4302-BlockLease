@@ -32,7 +32,7 @@ import { addRentalProperty } from "@/services/rentalProperty";
 import { PropertyType } from "@/types/contracts";
 import { RootState } from "@/types/state";
 import { zodResolver } from "@hookform/resolvers/zod";
-import React from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useSelector } from "react-redux";
 import { z } from "zod";
@@ -55,6 +55,7 @@ const formSchema = z.object({
 });
 
 export default function AddRentalPropertyForm() {
+  const [open, setOpen] = useState(false);
   const { toast } = useToast();
   const { wallet } = useSelector((states: RootState) => states.globalStates);
 
@@ -85,7 +86,9 @@ export default function AddRentalPropertyForm() {
         title: "Success!",
         description: "Rental property successfully added",
       });
+      setOpen(false);
       form.reset();
+      window.location.reload();
     } catch (error) {
       toast({
         variant: "destructive",
@@ -97,7 +100,7 @@ export default function AddRentalPropertyForm() {
   }
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button>Add Rental Property</Button>
       </DialogTrigger>

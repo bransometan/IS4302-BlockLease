@@ -8,11 +8,8 @@ import {
 } from "@/services/rentalProperty";
 import { RentalPropertyStruct } from "@/types/contracts";
 import MyPropertyCard from "./components/MyPropertyCard";
-import { useSelector } from "react-redux";
-import { RootState } from "@/types/state";
 
 export default function MyProperties() {
-  const { wallet } = useSelector((states: RootState) => states.globalStates);
   const [listedRentalProperties, setListedRentalProperties] =
     useState<RentalPropertyStruct[]>();
   const [unlistedRentalProperties, setUnlistedRentalProperties] =
@@ -20,12 +17,11 @@ export default function MyProperties() {
 
   useEffect(() => {
     const getRentalProperties = async () => {
-      const listedRentalProperties = await getListedRentalPropertiesByLandlord(
-        wallet
-      );
+      const listedRentalProperties =
+        await getListedRentalPropertiesByLandlord();
       setListedRentalProperties(listedRentalProperties);
       const unlistedRentalProperties =
-        await getUnlistedRentalPropertiesByLandlord(wallet);
+        await getUnlistedRentalPropertiesByLandlord();
       setUnlistedRentalProperties(unlistedRentalProperties);
     };
     getRentalProperties();
@@ -37,7 +33,7 @@ export default function MyProperties() {
         <h1 className="font-bold">My Properties</h1>
         <AddRentalPropertyForm />
       </div>
-      <div className="space-y-2">
+      <div className="space-y-4">
         <h1 className="font-bold">Listed Properties</h1>
         <div className="grid grid-cols-3">
           {listedRentalProperties?.map((rentalProperty, i) => {
@@ -45,9 +41,9 @@ export default function MyProperties() {
           })}
         </div>
       </div>
-      <div className="space-y-2">
+      <div className="space-y-4">
         <h1 className="font-bold">Unlisted Properties</h1>
-        <div className="grid grid-cols-3">
+        <div className="grid grid-cols-3 gap-4">
           {unlistedRentalProperties?.map((rentalProperty, i) => {
             return <MyPropertyCard key={i} rentalProperty={rentalProperty} />;
           })}

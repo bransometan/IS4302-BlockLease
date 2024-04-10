@@ -57,17 +57,22 @@ export const addRentalProperty = async (data: AddRentalPropertyParams) => {
 
 /**
  * Returns all listed rental property by landlord
- * @param address Landlord wallet used to list property
  * @returns rental properties
  */
-export const getListedRentalPropertiesByLandlord = async (
-  address: string
-): Promise<RentalPropertyStruct[]> => {
+export const getListedRentalPropertiesByLandlord = async (): Promise<
+  RentalPropertyStruct[]
+> => {
+  if (!ethereum) {
+    reportError("Please install Metamask");
+    return Promise.reject(new Error("Metamask not installed"));
+  }
+  const accounts = await ethereum.request?.({ method: "eth_accounts" });
+
   const rentalPropertyContract = await getContract(
     DeployedContract.RentalPropertyContract
   );
   const rentalProperties: RentalPropertyStruct[] =
-    await rentalPropertyContract.getLandlordListedRentalProperties(address);
+    await rentalPropertyContract.getLandlordListedRentalProperties(accounts[0]);
   return rentalProperties.map((rentalProperty) =>
     _structureRentalProperty(rentalProperty)
   );
@@ -75,17 +80,24 @@ export const getListedRentalPropertiesByLandlord = async (
 
 /**
  * Returns all unlisted rental property by landlord
- * @param address Landlord wallet used to list property
  * @returns rental properties
  */
-export const getUnlistedRentalPropertiesByLandlord = async (
-  address: string
-): Promise<RentalPropertyStruct[]> => {
+export const getUnlistedRentalPropertiesByLandlord = async (): Promise<
+  RentalPropertyStruct[]
+> => {
+  if (!ethereum) {
+    reportError("Please install Metamask");
+    return Promise.reject(new Error("Metamask not installed"));
+  }
+  const accounts = await ethereum.request?.({ method: "eth_accounts" });
+
   const rentalPropertyContract = await getContract(
     DeployedContract.RentalPropertyContract
   );
   const rentalProperties: RentalPropertyStruct[] =
-    await rentalPropertyContract.getLandlordUnlistedRentalProperties(address);
+    await rentalPropertyContract.getLandlordUnlistedRentalProperties(
+      accounts[0]
+    );
   return rentalProperties.map((rentalProperty) =>
     _structureRentalProperty(rentalProperty)
   );
