@@ -33,21 +33,15 @@ const MyPropertyActionsDropdown = ({
           <ul className="space-y-1">
             {!rentalProperty.isListed ? (
               <>
-                <li>
-                  <ListRentalPropertyDialog
-                    rentalPropertyId={rentalProperty.rentalPropertyId}
-                  />
-                </li>
+                <ListRentalPropertyDialog
+                  rentalPropertyId={rentalProperty.rentalPropertyId}
+                />
                 <Separator />
-                <li>
-                  <EditRentalPropertyForm rentalProperty={rentalProperty} />
-                </li>
+                <EditRentalPropertyForm rentalProperty={rentalProperty} />
                 <Separator />
-                <li>
-                  <DeleteRentalPropertyDialog
-                    rentalPropertyId={rentalProperty.rentalPropertyId}
-                  />
-                </li>
+                <DeleteRentalPropertyDialog
+                  rentalPropertyId={rentalProperty.rentalPropertyId}
+                />
               </>
             ) : (
               <></>
