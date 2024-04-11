@@ -512,7 +512,7 @@ contract RentalProperty {
     function setUpdateStatus(
         uint256 rentalPropertyId,
         bool newUpdateStatus
-    ) public validRentalPropertyId(rentalPropertyId) {
+    ) external validRentalPropertyId(rentalPropertyId) {
         rentalProperties[rentalPropertyId].updateStatus = newUpdateStatus;
     }
 
@@ -521,19 +521,19 @@ contract RentalProperty {
     function setListedStatus(
         uint256 rentalPropertyId,
         bool newListedStatus
-    ) public validRentalPropertyId(rentalPropertyId) {
+    ) external validRentalPropertyId(rentalPropertyId) {
         rentalProperties[rentalPropertyId].isListed = newListedStatus;
     }
 
     //Function to increment the number of listed rental properties
     //Not restricted to landlord as this function is used in RentalMarketplace to increment the number of listed rental properties
-    function incrementListedRentalProperty() public {
+    function incrementListedRentalProperty() external {
         numListedRentalProperty++;
     }
 
     //Function to decrement the number of listed rental properties
     //Not restricted to landlord as this function is used in RentalMarketplace to decrement the number of listed rental properties
-    function decrementListedRentalProperty() public {
+    function decrementListedRentalProperty() external {
         numListedRentalProperty--;
     }
 
@@ -542,7 +542,7 @@ contract RentalProperty {
     function setPaymentId(
         uint256 rentalPropertyId,
         uint256 newPaymentId
-    ) public validRentalPropertyId(rentalPropertyId) {
+    ) external validRentalPropertyId(rentalPropertyId) {
         rentalProperties[rentalPropertyId].paymentId = newPaymentId;
     }
 

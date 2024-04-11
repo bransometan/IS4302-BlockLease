@@ -18,6 +18,7 @@ contract PaymentEscrow {
         uint256 amount;
         PaymentStatus status;
     }
+    
 
     // The number of payment transactions that have been made
     uint256 private numOfPayments = 0;
@@ -25,6 +26,8 @@ contract PaymentEscrow {
     uint256 private protectionFee;
     // Tenant or landlord who wants to initiate a dispute must stake a reward (in tokens) to incentivize voters to vote in the dispute
     uint256 private voterReward;
+    // Reviewer who will vote on the dispute must stake a vote price (in tokens) to vote in the dispute
+    uint256 private votePrice;
 
     LeaseToken leaseTokenContract;
 
@@ -40,11 +43,13 @@ contract PaymentEscrow {
     constructor(
         address _leaseTokenAddress,
         uint256 _protectionFee,
-        uint256 _voterReward
+        uint256 _voterReward,
+        uint256 _votePrice
     ) {
         leaseTokenContract = LeaseToken(_leaseTokenAddress);
         protectionFee = _protectionFee;
         voterReward = _voterReward;
+        votePrice = _votePrice;
         owner = msg.sender;
     }
 
@@ -156,6 +161,12 @@ contract PaymentEscrow {
     // Modifier to check if voter reward is valid
     modifier invalidVoterReward(uint256 _voterReward) {
         require(_voterReward > 0, "Voter reward must be greater than 0");
+        _;
+    }
+
+    // Modifier to check if the vote price is valid
+    modifier invalidVotePrice(uint256 _votePrice) {
+        require(_votePrice > 0, "Vote price must be greater than 0");
         _;
     }
 
@@ -302,6 +313,13 @@ contract PaymentEscrow {
         voterReward = _voterReward;
     }
 
+    // Function to set the vote price
+    function setVotePrice(
+        uint256 _votePrice
+    ) public onlyOwner {
+        votePrice = _votePrice;
+    }
+
     // Function to set the RentalMarketplace address (Access Control)
     function setRentalMarketplaceAddress(
         address _rentalMarketplaceAddress
@@ -322,6 +340,18 @@ contract PaymentEscrow {
         emit rentDisputeDAOAddressSet(_rentDisputeDAOAddress);
     }
 
+    // Function to update the payment details (in case of disputes)
+    // Only RentDisputeDAO can call this function
+    function updatePayment(
+        uint256 _paymentId,
+        address _payer,
+        address _payee,
+        uint256 _amount,
+        PaymentStatus _status
+    ) public onlyRentDisputeDAO() {
+        payments[_paymentId] = Payment(_payer, _payee, _amount, _status);
+    }
+
     // ################################################### GETTER METHODS ################################################### //
 
     // Function to get the protection fee
@@ -332,6 +362,11 @@ contract PaymentEscrow {
     // Function to get the voter reward
     function getVoterReward() public view returns (uint256) {
         return voterReward;
+    }
+
+    // Function to get the vote price
+    function getVotePrice() public view returns (uint256) {
+        return votePrice;
     }
 
     // Function to get the payment details
