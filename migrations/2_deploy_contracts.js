@@ -10,7 +10,7 @@ const VOTE_PRICE = 1;
 const MINIMUM_VOTES = 3;
 
 module.exports = async (deployer, network, accounts) => {
-  deployer.deploy(LeaseToken).then(function () {
+  await deployer.deploy(LeaseToken).then(function () {
     return deployer.deploy(
       PaymentEscrow,
       LeaseToken.address,
@@ -21,7 +21,7 @@ module.exports = async (deployer, network, accounts) => {
   });
   const escrowContract = await PaymentEscrow.deployed();
 
-  deployer.deploy(RentalProperty).then(function () {
+  await deployer.deploy(RentalProperty).then(function () {
     return deployer.deploy(
       RentalMarketplace,
       RentalProperty.address,
@@ -29,7 +29,7 @@ module.exports = async (deployer, network, accounts) => {
     );
   });
 
-  deployer.deploy(
+  await deployer.deploy(
     RentDisputeDAO,
     RentalProperty.address,
     PaymentEscrow.address,
