@@ -194,6 +194,27 @@ export const deleteRentalPropertyById = async (id: number) => {
   }
 };
 
+export const getAllListedRentalProperties = async () => {
+  if (!ethereum) {
+    reportError("Please install Metamask");
+    return Promise.reject(new Error("Metamask not installed"));
+  }
+
+  try {
+    const rentalPropertyContract = await getContract(
+      DeployedContract.RentalPropertyContract
+    );
+    const listedRentalProperties: RentalPropertyStruct[] =
+      await rentalPropertyContract.getAllListedRentalProperties();
+    return listedRentalProperties.map((rentalProperty) =>
+      _structureRentalProperty(rentalProperty)
+    );
+  } catch (error) {
+    reportError(error);
+    return Promise.reject(error);
+  }
+};
+
 /**
  * Process rental property for display on frontend
  * @param rentalProperty

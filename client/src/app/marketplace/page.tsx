@@ -1,5 +1,30 @@
-import React from "react";
+"use client";
+
+import { getAllListedRentalProperties } from "@/services/rentalProperty";
+import { RentalPropertyStruct } from "@/types/contracts";
+import React, { useEffect, useState } from "react";
+import RentalPropertyCard from "./components/RentalPropertyCard";
 
 export default function Marketplace() {
-  return <div>Marketplace</div>;
+  const [rentalProperties, setRentalProperties] =
+    useState<RentalPropertyStruct[]>();
+
+  useEffect(() => {
+    const getRentalProperties = async () => {
+      const rentalProperties = await getAllListedRentalProperties();
+      setRentalProperties(rentalProperties);
+    };
+    getRentalProperties();
+  }, []);
+
+  return (
+    <div className="space-y-4">
+      <h1 className="font-bold">Marketplace</h1>
+      <div className="grid grid-cols-3">
+        {rentalProperties?.map((rentalProperty, i) => {
+          return <RentalPropertyCard key={i} rentalProperty={rentalProperty} />;
+        })}
+      </div>
+    </div>
+  );
 }
