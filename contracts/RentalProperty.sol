@@ -473,7 +473,18 @@ contract RentalProperty {
         landlordOnly(rentalPropertyId)
         validRentalPropertyId(rentalPropertyId)
         validUpdateStatus(rentalPropertyId)
-    {
+    {   
+
+        // Reason for using require statements here instead of modifiers is to avoid "CompilerError: Stack too deep, try removing local variables"
+        // The EVM imposes a limit of 16 local variables, including function parameters and return variables.
+
+        // require new number of tenants to be greater than 0 
+        require(newNumOfTenants > 0, "Number of tenants must be greater than 0");
+        // require new rental price to be greater than 0
+        require(newRentalPrice > 0, "Rental Price must be greater than 0");
+        // require new lease duration to be greater than 0
+        require(newLeaseDuration > 0, "Lease Duration must be greater than 0");
+
         rentalProperties[rentalPropertyId].location = newLocation;
         rentalProperties[rentalPropertyId].postalCode = newPostalCode;
         rentalProperties[rentalPropertyId].unitNumber = newUnitNumber;
