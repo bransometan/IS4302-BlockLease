@@ -567,71 +567,37 @@ contract RentalMarketplace {
         return hasApplied[tenantAddress];
     }
 
-    //Get count of rental applications for landlord.
-    function getLandlordRentalApplicationCount(address landlordAddress)
-        public
-        view
-        returns (uint256)
-    {
-        uint256 count = 0;
-        for (
-            uint256 i = 0;
-            i < rentalPropertyContract.getNumRentalProperty();
-            i++
-        ) {
-            for (uint256 j = 0; j < rentalApplicationCounts[i]; j++) {
-                if (
-                    rentalApplications[i][j].landlordAddress == landlordAddress
-                ) {
-                    count++;
-                }
-            }
-        }
-        return count;
-    }
-
-    //Get all rental applications for a landlord.
-    function getLandlordRentalApplications(address landlordAddress)
+    //Get all rental applications for a rental property.
+    function getAllRentalApplicationsFromRentalProperty(uint256 rentalPropertyId)
         public
         view
         returns (RentalApplication[] memory)
     {
-        uint256 numOfLandlordRentalApplication = getLandlordRentalApplicationCount(landlordAddress);
-        RentalApplication[] memory rentalApplicationsList = new RentalApplication[](
-            numOfLandlordRentalApplication
+        RentalApplication[] memory rentalApplicationList = new RentalApplication[](
+            rentalApplicationCounts[rentalPropertyId]
         );
-        uint256 count = 0;
-        for (
-            uint256 i = 0;
-            i < rentalPropertyContract.getNumRentalProperty();
-            i++
-        ) {
+        for (uint256 i = 0; i < rentalApplicationCounts[rentalPropertyId]; i++) {
+            rentalApplicationList[i] = rentalApplications[rentalPropertyId][i];
+        }
+        return rentalApplicationList;
+    }
+
+    // Get a tenant application for a rental property
+    function getRentalApplicationByTenant(address tenantAddress)
+        public
+        view
+        returns (RentalApplication memory)
+    {
+        for (uint256 i = 0; i < rentalPropertyContract.getNumRentalProperty(); i++) {
             for (uint256 j = 0; j < rentalApplicationCounts[i]; j++) {
                 if (
-                    rentalApplications[i][j].landlordAddress == landlordAddress
+                    rentalApplications[i][j].tenantAddress == tenantAddress
                 ) {
-                    rentalApplicationsList[count] = rentalApplications[i][j];
-                    count++;
+                    return rentalApplications[i][j];
                 }
             }
         }
-        return rentalApplicationsList;
-    }
-    
-    //Get the application id for a rental application for a tenant.
-    function getTenantApplicationId(
-        uint256 rentalPropertyId,
-        address tenantAddress
-    ) public view returns (uint256) {
-        for (uint256 i = 0; i < rentalApplicationCounts[rentalPropertyId]; i++) {
-            if (
-                rentalApplications[rentalPropertyId][i].tenantAddress ==
-                tenantAddress
-            ) {
-                return i;
-            }
-        }
-        return 0;
+        return RentalApplication(0, 0, address(0), address(0), "", "", "", "", 0, RentStatus.PENDING, new uint256[](0));
     }
 
     //Get the deposit required for a rental property.
