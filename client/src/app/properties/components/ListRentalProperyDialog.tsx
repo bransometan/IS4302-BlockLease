@@ -86,9 +86,10 @@ export default function ListRentalPropertyDialog({
             This will list your rental property on the marketplace.
           </DialogDescription>
           <DialogDescription>
-            You are also required to pay a one-time protection fee determined by
-            our Payment Escrow in order to list the rental property. This is
-            used in event of dispute.
+            You are also required to pay a
+            <b> one-time protection fee of 50 lease tokens </b>to our Payment
+            Escrow in order to list the rental property. This is used in event
+            of dispute.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -110,8 +111,7 @@ export default function ListRentalPropertyDialog({
                     <Input
                       placeholder="Enter deposit fee"
                       {...field}
-                      type="number
-                    "
+                      type="number"
                     />
                   </FormControl>
                   <FormMessage />
