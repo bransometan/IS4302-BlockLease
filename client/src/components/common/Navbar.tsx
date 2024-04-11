@@ -43,13 +43,12 @@ export default function Navbar() {
 
   return (
     <nav className="w-full fixed top-0 z-20 bg-white">
-      <div className="flex items-center justify-between p-3 px-10">
-        <ul className="m-0 p-0 overflow-hidden">
+      <div className="flex items-center justify-between p-3 px-10 ">
+        <ul className="flex m-0 p-0 overflow-hidden items-center">
           <Link href="/">
             <li className="float-left mr-8 text-lg font-bold">BlockLease</li>
           </Link>
           <SignedIn>
-            {/**TODO: Display tabs according to role */}
             {TABS.map((tab, i) => {
               if (!role) return;
               if (tab.roles.includes(role as UserRole)) {
@@ -57,7 +56,7 @@ export default function Navbar() {
                   <Link href={tab.href} key={i}>
                     <li
                       className={cn(
-                        "float-left mr-4 text-lg px-2 rounded hover:bg-gray-200",
+                        "float-left mr-4 px-2 rounded hover:bg-gray-200",
                         path.includes(`${tab.href}`) && "bg-gray-200 nav-active"
                       )}
                     >

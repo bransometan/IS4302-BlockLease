@@ -1,5 +1,6 @@
 "use client";
 
+import { getBalance } from "@/services/leaseToken";
 import { checkWallet } from "@/services/wallet";
 import { store } from "@/store";
 import React, { useEffect } from "react";
@@ -12,6 +13,7 @@ export default function ReduxProvider({
 }) {
   useEffect(() => {
     checkWallet();
+    getBalance();
   }, []);
 
   return <Provider store={store}>{children}</Provider>;

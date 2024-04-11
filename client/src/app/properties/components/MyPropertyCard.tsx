@@ -3,6 +3,7 @@ import {
   CardContent,
   CardFooter,
   CardHeader,
+  CardTitle,
 } from "@/components/ui/card";
 import {
   Popover,
@@ -67,9 +68,7 @@ export default function MyPropertyCard({
     <Card>
       <CardHeader className="font-bold relative">
         <MyPropertyActionsDropdown rentalProperty={rentalProperty} />
-        <div className="flex justify-between">
-          <h1>{rentalProperty.location} </h1>
-        </div>
+        <CardTitle>{rentalProperty.location}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-2">
         <p> {rentalProperty.description}</p>
