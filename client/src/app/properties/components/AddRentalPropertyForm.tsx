@@ -219,7 +219,8 @@ export default function AddRentalPropertyForm() {
               name="rentalPrice"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Rental Price</FormLabel>
+                  <FormLabel>Monthly Rental Price</FormLabel>
+                  <FormDescription>In lease tokens</FormDescription>
                   <FormControl>
                     <Input
                       placeholder="Enter rental price"

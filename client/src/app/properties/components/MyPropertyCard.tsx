@@ -1,4 +1,9 @@
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+} from "@/components/ui/card";
 import {
   Popover,
   PopoverContent,
@@ -59,15 +64,14 @@ export default function MyPropertyCard({
   rentalProperty: RentalPropertyStruct;
 }) {
   return (
-    <Card className="space-y-2">
+    <Card>
       <CardHeader className="font-bold relative">
         <MyPropertyActionsDropdown rentalProperty={rentalProperty} />
         <div className="flex justify-between">
           <h1>{rentalProperty.location} </h1>
-          <h1>{rentalProperty.rentalPrice} Lease Token</h1>
         </div>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-2">
         <p> {rentalProperty.description}</p>
         <hr />
         <ul className="text-sm text-muted-foreground">
@@ -85,6 +89,11 @@ export default function MyPropertyCard({
           </li>
         </ul>
       </CardContent>
+      <CardFooter>
+        <p>
+          <b>{rentalProperty.rentalPrice}</b> Lease Token/month
+        </p>
+      </CardFooter>
     </Card>
   );
 }

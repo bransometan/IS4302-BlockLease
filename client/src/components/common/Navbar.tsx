@@ -1,6 +1,6 @@
 "use client";
 
-import { checkUserRole, cn } from "@/lib/utils";
+import { checkUserRole, cn, truncate } from "@/lib/utils";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -35,7 +35,9 @@ const TABS = [
 
 export default function Navbar() {
   const path = usePathname();
-  const { wallet } = useSelector((states: RootState) => states.globalStates);
+  const { wallet, leaseTokens } = useSelector(
+    (states: RootState) => states.globalStates
+  );
   const { session } = useSession();
   const role = checkUserRole(session);
 
@@ -68,13 +70,18 @@ export default function Navbar() {
           </SignedIn>
         </ul>
         <SignedIn>
-          <div className="flex items-center space-x-4">
-            {wallet ? (
-              <Button disabled>{wallet}</Button>
-            ) : (
-              <Button onClick={connectWallet}>Connect wallet</Button>
-            )}
-            <UserButton afterSignOutUrl="/login" />
+          <div className="flex justify-between gap-4 items-center">
+            <div>
+              <p className="text-sm font-medium">{leaseTokens} lease tokens</p>
+            </div>
+            <div className="flex items-center space-x-4">
+              {wallet ? (
+                <Button disabled>{truncate(wallet, 6, 6, 6)}</Button>
+              ) : (
+                <Button onClick={connectWallet}>Connect wallet</Button>
+              )}
+              <UserButton afterSignOutUrl="/login" />
+            </div>
           </div>
         </SignedIn>
       </div>
