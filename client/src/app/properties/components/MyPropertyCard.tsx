@@ -1,4 +1,10 @@
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   Popover,
   PopoverContent,
@@ -27,21 +33,15 @@ const MyPropertyActionsDropdown = ({
           <ul className="space-y-1">
             {!rentalProperty.isListed ? (
               <>
-                <li>
-                  <ListRentalPropertyDialog
-                    rentalPropertyId={rentalProperty.rentalPropertyId}
-                  />
-                </li>
+                <ListRentalPropertyDialog
+                  rentalPropertyId={rentalProperty.rentalPropertyId}
+                />
                 <Separator />
-                <li>
-                  <EditRentalPropertyForm rentalProperty={rentalProperty} />
-                </li>
+                <EditRentalPropertyForm rentalProperty={rentalProperty} />
                 <Separator />
-                <li>
-                  <DeleteRentalPropertyDialog
-                    rentalPropertyId={rentalProperty.rentalPropertyId}
-                  />
-                </li>
+                <DeleteRentalPropertyDialog
+                  rentalPropertyId={rentalProperty.rentalPropertyId}
+                />
               </>
             ) : (
               <></>
@@ -59,15 +59,12 @@ export default function MyPropertyCard({
   rentalProperty: RentalPropertyStruct;
 }) {
   return (
-    <Card className="space-y-2">
+    <Card>
       <CardHeader className="font-bold relative">
         <MyPropertyActionsDropdown rentalProperty={rentalProperty} />
-        <div className="flex justify-between">
-          <h1>{rentalProperty.location} </h1>
-          <h1>{rentalProperty.rentalPrice} Lease Token</h1>
-        </div>
+        <CardTitle>{rentalProperty.location}</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-2">
         <p> {rentalProperty.description}</p>
         <hr />
         <ul className="text-sm text-muted-foreground">
@@ -85,6 +82,11 @@ export default function MyPropertyCard({
           </li>
         </ul>
       </CardContent>
+      <CardFooter>
+        <p>
+          <b>{rentalProperty.rentalPrice}</b> Lease Token/month
+        </p>
+      </CardFooter>
     </Card>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { checkUserRole, cn } from "@/lib/utils";
+import { checkUserRole, cn, truncate } from "@/lib/utils";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -35,19 +35,20 @@ const TABS = [
 
 export default function Navbar() {
   const path = usePathname();
-  const { wallet } = useSelector((states: RootState) => states.globalStates);
+  const { wallet, leaseTokens } = useSelector(
+    (states: RootState) => states.globalStates
+  );
   const { session } = useSession();
   const role = checkUserRole(session);
 
   return (
     <nav className="w-full fixed top-0 z-20 bg-white">
-      <div className="flex items-center justify-between p-3 px-10">
-        <ul className="m-0 p-0 overflow-hidden">
+      <div className="flex items-center justify-between p-3 px-10 ">
+        <ul className="flex m-0 p-0 overflow-hidden items-center">
           <Link href="/">
             <li className="float-left mr-8 text-lg font-bold">BlockLease</li>
           </Link>
           <SignedIn>
-            {/**TODO: Display tabs according to role */}
             {TABS.map((tab, i) => {
               if (!role) return;
               if (tab.roles.includes(role as UserRole)) {
@@ -55,7 +56,7 @@ export default function Navbar() {
                   <Link href={tab.href} key={i}>
                     <li
                       className={cn(
-                        "float-left mr-4 text-lg px-2 rounded hover:bg-gray-200",
+                        "float-left mr-4 px-2 rounded hover:bg-gray-200",
                         path.includes(`${tab.href}`) && "bg-gray-200 nav-active"
                       )}
                     >
@@ -68,13 +69,18 @@ export default function Navbar() {
           </SignedIn>
         </ul>
         <SignedIn>
-          <div className="flex items-center space-x-4">
-            {wallet ? (
-              <Button disabled>{wallet}</Button>
-            ) : (
-              <Button onClick={connectWallet}>Connect wallet</Button>
-            )}
-            <UserButton afterSignOutUrl="/login" />
+          <div className="flex justify-between gap-4 items-center">
+            <div>
+              <p className="text-sm font-medium">{leaseTokens} lease tokens</p>
+            </div>
+            <div className="flex items-center space-x-4">
+              {wallet ? (
+                <Button disabled>{truncate(wallet, 6, 6, 6)}</Button>
+              ) : (
+                <Button onClick={connectWallet}>Connect wallet</Button>
+              )}
+              <UserButton afterSignOutUrl="/login" />
+            </div>
           </div>
         </SignedIn>
       </div>

@@ -6,6 +6,31 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+/**
+ * Truncates a text based on the maxLength
+ * @param text
+ * @param startChars
+ * @param endChars
+ * @param maxLength
+ * @returns truncated string
+ */
+export function truncate(
+  text: string,
+  startChars: number,
+  endChars: number,
+  maxLength: number
+): string {
+  if (text.length > maxLength) {
+    let start = text.substring(0, startChars);
+    let end = text.substring(text.length - endChars, text.length);
+    while (start.length + end.length < maxLength) {
+      start = start + ".";
+    }
+    return [start + end, "..."].join("");
+  }
+  return text;
+}
+
 export function capitalizeFirstLetter(str: string) {
   return [str[0].toUpperCase(), str.slice(1)].join("");
 }
