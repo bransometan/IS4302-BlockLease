@@ -35,7 +35,7 @@ export default function MyProperties() {
       </div>
       <div className="space-y-4">
         <h1 className="font-bold">Listed Properties</h1>
-        <div className="grid grid-cols-3">
+        <div className="grid grid-cols-3 gap-4">
           {listedRentalProperties?.map((rentalProperty, i) => {
             return <MyPropertyCard key={i} rentalProperty={rentalProperty} />;
           })}

@@ -20,7 +20,7 @@ export default function Marketplace() {
   return (
     <div className="space-y-4">
       <h1 className="font-bold">Marketplace</h1>
-      <div className="grid grid-cols-3">
+      <div className="grid grid-cols-3 gap-4">
         {rentalProperties?.map((rentalProperty, i) => {
           return <RentalPropertyCard key={i} rentalProperty={rentalProperty} />;
         })}

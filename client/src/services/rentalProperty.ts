@@ -1,6 +1,7 @@
 import { enumValueToIndex } from "@/lib/utils";
 import { DeployedContract, getContract } from "./contractFactory";
 import { PropertyType, RentalPropertyStruct } from "@/types/contracts";
+import { getBalance } from "./leaseToken";
 
 export interface AddRentalPropertyParams {
   location: string;
@@ -206,6 +207,7 @@ export const getAllListedRentalProperties = async () => {
     );
     const listedRentalProperties: RentalPropertyStruct[] =
       await rentalPropertyContract.getAllListedRentalProperties();
+    await getBalance(); // update the balance after deduction of protection fee for listing
     return listedRentalProperties.map((rentalProperty) =>
       _structureRentalProperty(rentalProperty)
     );

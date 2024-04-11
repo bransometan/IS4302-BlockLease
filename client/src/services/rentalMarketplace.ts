@@ -12,7 +12,7 @@ export const listRentalProperty = async (
 ) => {
   if (!ethereum) {
     reportError("Please install Metamask");
-    return Promise.reject(new Error("Metamask not installed'"));
+    return Promise.reject(new Error("Metamask not installed"));
   }
 
   try {
