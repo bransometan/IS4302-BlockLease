@@ -51,3 +51,28 @@ export const getBalance = async () => {
     return Promise.reject(error);
   }
 };
+
+export const convertLeaseTokenToETH = async (leaseTokenAmount: number) => {
+  try {
+    if (!ethereum) {
+      reportError("Please install Metamask");
+      return Promise.reject(new Error("Metamask not installed'"));
+    }
+    const accounts = await ethereum.request?.({
+      method: "eth_requestAccounts",
+    });
+
+    const leaseTokenContract = await getContract(
+      DeployedContract.LeaseTokenContract
+    );
+    const tx = await leaseTokenContract.convertLeaseTokenToETH(
+      accounts?.[0],
+      leaseTokenAmount
+    );
+    await tx.wait();
+    await getBalance();
+  } catch (error) {
+    reportError(error);
+    return Promise.reject(error);
+  }
+};
