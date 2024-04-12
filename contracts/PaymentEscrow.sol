@@ -224,7 +224,7 @@ contract PaymentEscrow {
         uint256 _paymentId
     )
         public
-        onlyRentalMarketplace
+        onlyRentalMarketplaceOrRentDisputeDAO()
         PaymentExists(_paymentId)
         PaymentPending(_paymentId)
     {
@@ -246,7 +246,7 @@ contract PaymentEscrow {
         uint256 _paymentId
     )
         public
-        onlyRentalMarketplace
+        onlyRentalMarketplaceOrRentDisputeDAO()
         PaymentExists(_paymentId)
         PaymentPaid(_paymentId)
     {

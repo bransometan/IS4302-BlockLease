@@ -91,6 +91,7 @@ contract RentDisputeDAO {
         uint256 applicationId,
         uint256 landlordReward
     );
+    event DisputeDraw(uint256 rentalPropertyId, uint256 applicationId);
     event ReviewersReward(
         uint256 rentalPropertyId,
         uint256 applicationId,
@@ -306,6 +307,7 @@ contract RentDisputeDAO {
             handleDisputeRejectionReward(_disputeId);
         } else {
             disputes[_disputeId].status = DisputeStatus.DRAW;
+            handleDisputeDraw(_disputeId);
         }
 
         handleReviewersReward(_disputeId);
@@ -410,6 +412,27 @@ contract RentDisputeDAO {
             newDepositFeeBalance
         );
     }
+
+    // Handle event where the dispute is draw
+    // Refund Vote reward staked by tenant
+    function handleDisputeDraw(uint256 _disputeId) private {
+        RentDispute memory rentDispute = disputes[_disputeId];
+        require(
+            rentDispute.status == DisputeStatus.DRAW,
+            "Dispute is not draw"
+        );
+
+        // Transfer the votePrice back to the tenant
+        // Tenant will receive the voter reward staked earlier back as the dispute is a draw
+        transferPayment(
+            address(paymentEscrowContract),
+            rentDispute.tenantAddress,
+            paymentEscrowContract.getVoterReward()
+        );
+
+        emit DisputeDraw(rentDispute.rentalPropertyId, rentDispute.applicationId);
+    }
+
 
     // Handle reviewer's reward for voters who voted correctly on the dispute (i.e. winning reviewers)
     function handleReviewersReward(uint256 _disputeId) private {
