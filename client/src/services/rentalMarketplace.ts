@@ -90,6 +90,12 @@ export const getRentalApplicationByTenant = async () => {
   }
 };
 
+/**
+ * Usable by BOTH tenant or landlord
+ * @param rentalPropertyId
+ * @param applicationId
+ * @returns
+ */
 export const cancelOrRejectRentalApplication = async (
   rentalPropertyId: number,
   applicationId: number
@@ -135,6 +141,32 @@ export const getAllRentalApplicationsByRentalPropertyId = async (
     return rentalApplications.map((application) =>
       _structureRentalApplication(application)
     );
+  } catch (error) {
+    reportError(error);
+    return Promise.reject(error);
+  }
+};
+
+export const acceptRentalApplication = async (
+  rentalPropertyId: number,
+  applicationId: number
+) => {
+  if (!ethereum) {
+    reportError("Please install Metamask");
+    return Promise.reject(new Error("Metamask not installed"));
+  }
+
+  try {
+    const rentalMarketplaceContract = await getContract(
+      DeployedContract.RentalMarketplaceContract
+    );
+    const tx = await rentalMarketplaceContract.acceptRentalApplication(
+      rentalPropertyId,
+      applicationId
+    );
+    await tx.wait();
+    await getBalance(); // Since the deposit by tenant is released to landlord
+    return Promise.resolve(tx);
   } catch (error) {
     reportError(error);
     return Promise.reject(error);

@@ -10,12 +10,14 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { RentalApplicationStruct } from "@/types/structs";
+import { RentStatus, RentalApplicationStruct } from "@/types/structs";
 import { CircleEllipsis } from "lucide-react";
 import CancelRentalApplicationDialog from "./CancelRentalApplicationDialog";
 import { Separator } from "@/components/ui/separator";
 import { checkUserRole, truncate } from "@/lib/utils";
 import { useSession } from "@clerk/nextjs";
+import AcceptRentalApplicationDialog from "./AcceptRentalApplicationDialog";
+import { UserRole } from "@/constants";
 
 const RentalApplicationActionsDropdown = ({
   rentalApplication,
@@ -32,11 +34,22 @@ const RentalApplicationActionsDropdown = ({
       <PopoverContent className="text-sm absolute right-0 top-0 w-[100px]">
         <div>
           <ul className="space-y-1">
-            <CancelRentalApplicationDialog
-              rentalPropertyId={rentalApplication.rentalPropertyId}
-              applicationId={rentalApplication.applicationId}
-            />
+            {role === UserRole.Landlord &&
+              rentalApplication.status === RentStatus.PENDING && (
+                <AcceptRentalApplicationDialog
+                  rentalPropertyId={rentalApplication.rentalPropertyId}
+                  applicationId={rentalApplication.applicationId}
+                />
+              )}
             <Separator />
+            {((role === UserRole.Landlord &&
+              rentalApplication.status === RentStatus.PENDING) ||
+              role === UserRole.Tenant) && (
+              <CancelRentalApplicationDialog
+                rentalPropertyId={rentalApplication.rentalPropertyId}
+                applicationId={rentalApplication.applicationId}
+              />
+            )}
           </ul>
         </div>
       </PopoverContent>

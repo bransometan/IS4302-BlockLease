@@ -1,7 +1,11 @@
 "use client";
 
 import { getRentalPropertyById } from "@/services/rentalProperty";
-import { RentalApplicationStruct, RentalPropertyStruct } from "@/types/structs";
+import {
+  RentStatus,
+  RentalApplicationStruct,
+  RentalPropertyStruct,
+} from "@/types/structs";
 import { useParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import MyPropertyCard from "../components/MyPropertyCard";
@@ -12,7 +16,9 @@ import RentalApplicationCard from "@/app/applications/components/RentalApplicati
 
 export default function RentalPropertyOverview() {
   const [rentalProperty, setRentalProperty] = useState<RentalPropertyStruct>();
-  const [applications, setApplications] = useState<RentalApplicationStruct[]>();
+  const [pendingApplications, setPendingApplications] =
+    useState<RentalApplicationStruct[]>();
+  const [tenants, setTenants] = useState<RentalApplicationStruct[]>();
   const params = useParams();
   const rentalPropertyId = params.propertyId as string;
 
@@ -28,8 +34,12 @@ export default function RentalPropertyOverview() {
       const applications = await getAllRentalApplicationsByRentalPropertyId(
         Number(rentalPropertyId)
       );
-      console.log(applications);
-      setApplications(applications);
+      setPendingApplications(
+        applications.filter((app) => app.status === RentStatus.PENDING)
+      );
+      setTenants(
+        applications.filter((app) => app.status === RentStatus.ONGOING)
+      );
     };
     getRentalPropertyInfo();
   }, []);
@@ -47,14 +57,23 @@ export default function RentalPropertyOverview() {
       <h1 className="font-bold">Overview</h1>
       <MyPropertyCard rentalProperty={rentalProperty} />
       <h1 className="font-bold">My Tenants</h1>
-      <h1 className="font-bold">My Applications</h1>
       <div className="grid grid-cols-3">
-        {applications ? (
-          applications.map((application) => (
+        {tenants ? (
+          tenants.map((application) => (
             <RentalApplicationCard rentalApplication={application} />
           ))
         ) : (
-          <p>You current have no applications</p>
+          <p>You currently have no tenants</p>
+        )}
+      </div>
+      <h1 className="font-bold">Pending Applications</h1>
+      <div className="grid grid-cols-3">
+        {pendingApplications ? (
+          pendingApplications.map((application) => (
+            <RentalApplicationCard rentalApplication={application} />
+          ))
+        ) : (
+          <p>You currently have no pending applications</p>
         )}
       </div>
     </div>
