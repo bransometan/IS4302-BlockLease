@@ -163,6 +163,15 @@ contract RentDisputeDAO {
         _;
     }
 
+    //Tenant has made a dispute for the rental property
+    modifier tenantDisputed(uint256 _rentalPropertyId, address _tenant) {
+        require(
+            tenantDispute[_rentalPropertyId][_tenant],
+            "Tenant has not made a dispute for this rental property"
+        );
+        _;
+    }
+
     // ################################################### FUNCTIONS ################################################### //
 
     function createRentDispute(
@@ -297,7 +306,7 @@ contract RentDisputeDAO {
     function resetTenantDispute(
         uint256 _rentalPropertyId,
         address _tenant
-    ) public tenantNotDisputed(_rentalPropertyId, _tenant) {
+    ) public tenantDisputed(_rentalPropertyId, _tenant) {
         tenantDispute[_rentalPropertyId][_tenant] = false;
     }
 
