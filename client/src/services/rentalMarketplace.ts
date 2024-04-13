@@ -116,6 +116,31 @@ export const cancelOrRejectRentalApplication = async (
   }
 };
 
+export const getAllRentalApplicationsByRentalPropertyId = async (
+  rentalPropertyId: number
+) => {
+  if (!ethereum) {
+    reportError("Please install Metamask");
+    return Promise.reject(new Error("Metamask not installed"));
+  }
+
+  try {
+    const rentalMarketplaceContract = await getContract(
+      DeployedContract.RentalMarketplaceContract
+    );
+    const rentalApplications: RentalApplicationStruct[] =
+      await rentalMarketplaceContract.getAllRentalApplicationsFromRentalProperty(
+        rentalPropertyId
+      );
+    return rentalApplications.map((application) =>
+      _structureRentalApplication(application)
+    );
+  } catch (error) {
+    reportError(error);
+    return Promise.reject(error);
+  }
+};
+
 const _structureRentalApplication = (
   rentalApplication: any
 ): RentalApplicationStruct => {

@@ -14,13 +14,16 @@ import { RentalApplicationStruct } from "@/types/structs";
 import { CircleEllipsis } from "lucide-react";
 import CancelRentalApplicationDialog from "./CancelRentalApplicationDialog";
 import { Separator } from "@/components/ui/separator";
-import { truncate } from "@/lib/utils";
+import { checkUserRole, truncate } from "@/lib/utils";
+import { useSession } from "@clerk/nextjs";
 
 const RentalApplicationActionsDropdown = ({
   rentalApplication,
 }: {
   rentalApplication: RentalApplicationStruct;
 }) => {
+  const { session } = useSession();
+  const role = checkUserRole(session);
   return (
     <Popover>
       <PopoverTrigger className="absolute right-1 top-1">
