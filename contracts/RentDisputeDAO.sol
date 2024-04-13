@@ -298,7 +298,7 @@ contract RentDisputeDAO {
     // Manually trigger the resolveRentDispute function (for testing purposes only)
     function triggerResolveRentDispute(
         uint256 _disputeId
-    ) public disputeExist(_disputeId) {
+    ) public disputeExist(_disputeId) disputePending(_disputeId) {
         resolveRentDispute(_disputeId);
     }
 
@@ -315,7 +315,7 @@ contract RentDisputeDAO {
     // Resolve a rent dispute
     function resolveRentDispute(
         uint256 _disputeId
-    ) private disputeExist(_disputeId) {
+    ) private disputeExist(_disputeId) disputePending(_disputeId) {
         uint256 approveCount = 0;
         uint256 rejectCount = 0;
 
@@ -369,7 +369,7 @@ contract RentDisputeDAO {
     // Landlord loses (1 / Total number of tenants in the rental property) * Rental Property Protection Fee as penalty
     function handleDisputeApprovalReward(
         uint256 _disputeId
-    ) private disputeExist(_disputeId) {
+    ) private disputeExist(_disputeId) disputeApproved(_disputeId) {
         RentDispute memory rentDispute = disputes[_disputeId];
         RentalMarketplace.RentalApplication
             memory rentalApplication = rentalMarketplaceContract
@@ -425,7 +425,7 @@ contract RentDisputeDAO {
     // Tenant will lose 50% of the Rental Property Deposit Fee as penalty
     function handleDisputeRejectionReward(
         uint256 _disputeId
-    ) private disputeExist(_disputeId) {
+    ) private disputeExist(_disputeId) disputeRejected(_disputeId){
         RentDispute memory rentDispute = disputes[_disputeId];
         require(
             rentDispute.status == DisputeStatus.REJECTED,
@@ -455,7 +455,7 @@ contract RentDisputeDAO {
     // Refund Vote reward staked by tenant
     function handleDisputeDraw(
         uint256 _disputeId
-    ) private disputeExist(_disputeId) {
+    ) private disputeExist(_disputeId) disputeDraw(_disputeId) {
         RentDispute memory rentDispute = disputes[_disputeId];
         require(
             rentDispute.status == DisputeStatus.DRAW,
