@@ -6,7 +6,7 @@ import {
   getListedRentalPropertiesByLandlord,
   getUnlistedRentalPropertiesByLandlord,
 } from "@/services/rentalProperty";
-import { RentalPropertyStruct } from "@/types/contracts";
+import { RentalPropertyStruct } from "@/types/structs";
 import MyPropertyCard from "./components/MyPropertyCard";
 
 export default function MyProperties() {

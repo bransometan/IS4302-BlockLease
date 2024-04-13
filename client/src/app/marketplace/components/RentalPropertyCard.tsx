@@ -10,16 +10,22 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Separator } from "@/components/ui/separator";
-import { RentalPropertyStruct } from "@/types/contracts";
+import { UserRole } from "@/constants";
+import { checkUserRole } from "@/lib/utils";
+import { RentalPropertyStruct } from "@/types/structs";
+import { useSession } from "@clerk/nextjs";
 import { CircleEllipsis } from "lucide-react";
 import React from "react";
+import ApplyRentalPropertyForm from "./ApplyRentalPropertyForm";
 
 const RentalPropertyActionsDropdown = ({
   rentalProperty,
 }: {
   rentalProperty: RentalPropertyStruct;
 }) => {
+  const { session } = useSession();
+  const role = checkUserRole(session);
+
   return (
     <Popover>
       <PopoverTrigger className="absolute right-1 top-1">
@@ -27,7 +33,13 @@ const RentalPropertyActionsDropdown = ({
       </PopoverTrigger>
       <PopoverContent className="text-sm absolute right-0 top-0 w-[100px]">
         <div>
-          <ul className="space-y-1"></ul>
+          <ul className="space-y-1">
+            {role === UserRole.Tenant && (
+              <ApplyRentalPropertyForm
+                rentalPropertyId={rentalProperty.rentalPropertyId}
+              />
+            )}
+          </ul>
         </div>
       </PopoverContent>
     </Popover>

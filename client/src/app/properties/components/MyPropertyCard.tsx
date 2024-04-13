@@ -11,7 +11,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
-import { RentalPropertyStruct } from "@/types/contracts";
+import { RentalPropertyStruct } from "@/types/structs";
 import { CircleEllipsis } from "lucide-react";
 import React from "react";
 import EditRentalPropertyForm from "./EditRentalPropertyForm";

@@ -29,7 +29,7 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
 import { updateRentalPropertyById } from "@/services/rentalProperty";
-import { PropertyType, RentalPropertyStruct } from "@/types/contracts";
+import { PropertyType, RentalPropertyStruct } from "@/types/structs";
 import { RootState } from "@/types/state";
 import { zodResolver } from "@hookform/resolvers/zod";
 import React, { useState } from "react";
