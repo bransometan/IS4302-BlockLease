@@ -17,6 +17,11 @@ const TABS = [
     roles: [UserRole.Admin, UserRole.Landlord, UserRole.Tenant],
   },
   {
+    href: "/applications",
+    name: "My Applications",
+    roles: [UserRole.Tenant],
+  },
+  {
     href: "/properties",
     name: "My Properties",
     roles: [UserRole.Admin, UserRole.Landlord],

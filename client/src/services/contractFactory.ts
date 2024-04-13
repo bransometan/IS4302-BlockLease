@@ -2,7 +2,7 @@ import { Addressable, Interface, InterfaceAbi, ethers } from "ethers";
 import { GANACHE_NETWORK_ID } from "@/constants";
 import RentalPropertyContract from "../../../build/contracts/RentalProperty.json";
 import RentalMarketplaceContract from "../../../build/contracts/RentalMarketplace.json";
-import RentalDisputeDAOContract from "../../../build/contracts/RentalDisputeDAO.json";
+import RentDisputeDAOContract from "../../../build/contracts/RentDisputeDAO.json";
 import LeaseTokenContract from "../../../build/contracts/LeaseToken.json";
 import PaymentEscrowContract from "../../../build/contracts/PaymentEscrow.json";
 

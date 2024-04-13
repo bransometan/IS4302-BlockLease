@@ -1,6 +1,6 @@
 import { enumValueToIndex } from "@/lib/utils";
 import { DeployedContract, getContract } from "./contractFactory";
-import { PropertyType, RentalPropertyStruct } from "@/types/contracts";
+import { PropertyType, RentalPropertyStruct } from "@/types/structs";
 import { getBalance } from "./leaseToken";
 
 export interface AddRentalPropertyParams {
@@ -205,7 +205,7 @@ export const getAllListedRentalProperties = async () => {
     const rentalPropertyContract = await getContract(
       DeployedContract.RentalPropertyContract
     );
-    const listedRentalProperties: RentalPropertyStruct[] =
+    const listedRentalProperties: any[] =
       await rentalPropertyContract.getAllListedRentalProperties();
     await getBalance(); // update the balance after deduction of protection fee for listing
     return listedRentalProperties.map((rentalProperty) =>
@@ -222,7 +222,7 @@ export const getAllListedRentalProperties = async () => {
  * @param rentalProperty
  * @returns processed RentalProperty
  */
-const _structureRentalProperty = (rentalProperty: RentalPropertyStruct) => {
+const _structureRentalProperty = (rentalProperty: any) => {
   // Solidity end returns BigNumber, so need convert to Number
   return {
     rentalPropertyId: Number(rentalProperty.rentalPropertyId),

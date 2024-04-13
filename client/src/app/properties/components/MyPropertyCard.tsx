@@ -11,12 +11,14 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
-import { RentalPropertyStruct } from "@/types/contracts";
+import { RentalPropertyStruct } from "@/types/structs";
 import { CircleEllipsis } from "lucide-react";
 import React from "react";
 import EditRentalPropertyForm from "./EditRentalPropertyForm";
 import DeleteRentalPropertyDialog from "./DeleteRentalProperyDialog";
 import ListRentalPropertyDialog from "./ListRentalProperyDialog";
+import Link from "next/link";
+import { useParams } from "next/navigation";
 
 const MyPropertyActionsDropdown = ({
   rentalProperty,
@@ -44,7 +46,9 @@ const MyPropertyActionsDropdown = ({
                 />
               </>
             ) : (
-              <></>
+              <>
+                <p>Unlist</p>
+              </>
             )}
           </ul>
         </div>
@@ -58,35 +62,71 @@ export default function MyPropertyCard({
 }: {
   rentalProperty: RentalPropertyStruct;
 }) {
+  const params = useParams();
+  const propertyId = params.propertyId;
   return (
     <Card>
-      <CardHeader className="font-bold relative">
-        <MyPropertyActionsDropdown rentalProperty={rentalProperty} />
-        <CardTitle>{rentalProperty.location}</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-2">
-        <p> {rentalProperty.description}</p>
-        <hr />
-        <ul className="text-sm text-muted-foreground">
-          <li>
-            <p>Lease duration (months): {rentalProperty.leaseDuration}</p>
-          </li>
-          <li>
-            <p>Number of tenants: {rentalProperty.numOfTenants}</p>
-          </li>
-          <li>
-            <p>Postal code: {rentalProperty.postalCode}</p>
-          </li>
-          <li>
-            <p>Property type: {rentalProperty.propertyType}</p>
-          </li>
-        </ul>
-      </CardContent>
-      <CardFooter>
-        <p>
-          <b>{rentalProperty.rentalPrice}</b> Lease Token/month
-        </p>
-      </CardFooter>
+      {!propertyId ? (
+        <Link href={`/properties/${rentalProperty.rentalPropertyId}`}>
+          <CardHeader className="font-bold relative">
+            <MyPropertyActionsDropdown rentalProperty={rentalProperty} />
+            <CardTitle>{rentalProperty.location}</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <p> {rentalProperty.description}</p>
+            <hr />
+            <ul className="text-sm text-muted-foreground">
+              <li>
+                <p>Lease duration (months): {rentalProperty.leaseDuration}</p>
+              </li>
+              <li>
+                <p>Number of tenants: {rentalProperty.numOfTenants}</p>
+              </li>
+              <li>
+                <p>Postal code: {rentalProperty.postalCode}</p>
+              </li>
+              <li>
+                <p>Property type: {rentalProperty.propertyType}</p>
+              </li>
+            </ul>
+          </CardContent>
+          <CardFooter>
+            <p>
+              <b>{rentalProperty.rentalPrice}</b> Lease Token/month
+            </p>
+          </CardFooter>
+        </Link>
+      ) : (
+        <>
+          <CardHeader className="font-bold relative">
+            <MyPropertyActionsDropdown rentalProperty={rentalProperty} />
+            <CardTitle>{rentalProperty.location}</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <p> {rentalProperty.description}</p>
+            <hr />
+            <ul className="text-sm text-muted-foreground">
+              <li>
+                <p>Lease duration (months): {rentalProperty.leaseDuration}</p>
+              </li>
+              <li>
+                <p>Number of tenants: {rentalProperty.numOfTenants}</p>
+              </li>
+              <li>
+                <p>Postal code: {rentalProperty.postalCode}</p>
+              </li>
+              <li>
+                <p>Property type: {rentalProperty.propertyType}</p>
+              </li>
+            </ul>
+          </CardContent>
+          <CardFooter>
+            <p>
+              <b>{rentalProperty.rentalPrice}</b> Lease Token/month
+            </p>
+          </CardFooter>
+        </>
+      )}
     </Card>
   );
 }

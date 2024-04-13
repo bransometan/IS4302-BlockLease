@@ -1,7 +1,7 @@
 "use client";
 
 import { getAllListedRentalProperties } from "@/services/rentalProperty";
-import { RentalPropertyStruct } from "@/types/contracts";
+import { RentalPropertyStruct } from "@/types/structs";
 import React, { useEffect, useState } from "react";
 import RentalPropertyCard from "./components/RentalPropertyCard";
 
