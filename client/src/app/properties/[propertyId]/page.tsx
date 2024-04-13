@@ -60,7 +60,10 @@ export default function RentalPropertyOverview() {
       {tenants && tenants.length ? (
         <div className="grid grid-cols-3">
           {tenants.map((application) => (
-            <RentalApplicationCard rentalApplication={application} />
+            <RentalApplicationCard
+              rentalApplication={application}
+              rentalProperty={rentalProperty}
+            />
           ))}
         </div>
       ) : (
@@ -70,7 +73,10 @@ export default function RentalPropertyOverview() {
       {pendingApplications && pendingApplications.length ? (
         <div className="grid grid-cols-3">
           {pendingApplications.map((application) => (
-            <RentalApplicationCard rentalApplication={application} />
+            <RentalApplicationCard
+              rentalApplication={application}
+              rentalProperty={rentalProperty}
+            />
           ))}
         </div>
       ) : (

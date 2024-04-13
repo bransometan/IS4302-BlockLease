@@ -10,7 +10,11 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { RentStatus, RentalApplicationStruct } from "@/types/structs";
+import {
+  RentStatus,
+  RentalApplicationStruct,
+  RentalPropertyStruct,
+} from "@/types/structs";
 import { CircleEllipsis } from "lucide-react";
 import CancelRentalApplicationDialog from "./CancelRentalApplicationDialog";
 import { Separator } from "@/components/ui/separator";
@@ -18,14 +22,18 @@ import { checkUserRole, truncate } from "@/lib/utils";
 import { useSession } from "@clerk/nextjs";
 import AcceptRentalApplicationDialog from "./AcceptRentalApplicationDialog";
 import { UserRole } from "@/constants";
+import MakePaymentDialog from "./MakePaymentDialog";
 
 const RentalApplicationActionsDropdown = ({
   rentalApplication,
+  rentalProperty,
 }: {
   rentalApplication: RentalApplicationStruct;
+  rentalProperty: RentalPropertyStruct;
 }) => {
   const { session } = useSession();
   const role = checkUserRole(session);
+
   return (
     <Popover>
       <PopoverTrigger className="absolute right-1 top-1">
@@ -41,15 +49,22 @@ const RentalApplicationActionsDropdown = ({
                   applicationId={rentalApplication.applicationId}
                 />
               )}
-            <Separator />
             {((role === UserRole.Landlord &&
               rentalApplication.status === RentStatus.PENDING) ||
-              role === UserRole.Tenant) && (
+              (role === UserRole.Tenant &&
+                rentalApplication.status === RentStatus.PENDING)) && (
               <CancelRentalApplicationDialog
                 rentalPropertyId={rentalApplication.rentalPropertyId}
                 applicationId={rentalApplication.applicationId}
               />
             )}
+            {role === UserRole.Tenant &&
+              rentalApplication.status === RentStatus.ONGOING && (
+                <MakePaymentDialog
+                  rentalProperty={rentalProperty}
+                  application={rentalApplication}
+                />
+              )}
           </ul>
         </div>
       </PopoverContent>
@@ -59,14 +74,17 @@ const RentalApplicationActionsDropdown = ({
 
 export default function RentalApplicationCard({
   rentalApplication,
+  rentalProperty,
 }: {
   rentalApplication: RentalApplicationStruct;
+  rentalProperty: RentalPropertyStruct;
 }) {
   return (
     <Card>
       <CardHeader className="font-bold relative">
         <RentalApplicationActionsDropdown
           rentalApplication={rentalApplication}
+          rentalProperty={rentalProperty}
         />
         <CardTitle>Application Id: {rentalApplication.applicationId}</CardTitle>
         <CardTitle>

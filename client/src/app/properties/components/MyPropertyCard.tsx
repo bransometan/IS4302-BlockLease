@@ -66,12 +66,12 @@ export default function MyPropertyCard({
   const propertyId = params.propertyId;
   return (
     <Card>
+      <CardHeader className="font-bold relative">
+        <MyPropertyActionsDropdown rentalProperty={rentalProperty} />
+        <CardTitle>{rentalProperty.location}</CardTitle>
+      </CardHeader>
       {!propertyId ? (
         <Link href={`/properties/${rentalProperty.rentalPropertyId}`}>
-          <CardHeader className="font-bold relative">
-            <MyPropertyActionsDropdown rentalProperty={rentalProperty} />
-            <CardTitle>{rentalProperty.location}</CardTitle>
-          </CardHeader>
           <CardContent className="space-y-2">
             <p> {rentalProperty.description}</p>
             <hr />
@@ -98,10 +98,6 @@ export default function MyPropertyCard({
         </Link>
       ) : (
         <>
-          <CardHeader className="font-bold relative">
-            <MyPropertyActionsDropdown rentalProperty={rentalProperty} />
-            <CardTitle>{rentalProperty.location}</CardTitle>
-          </CardHeader>
           <CardContent className="space-y-2">
             <p> {rentalProperty.description}</p>
             <hr />

@@ -173,6 +173,32 @@ export const acceptRentalApplication = async (
   }
 };
 
+export const makePayment = async (
+  rentalPropertyId: number,
+  applicationId: number
+) => {
+  if (!ethereum) {
+    reportError("Please install Metamask");
+    return Promise.reject(new Error("Metamask not installed"));
+  }
+
+  try {
+    const rentalMarketplaceContract = await getContract(
+      DeployedContract.RentalMarketplaceContract
+    );
+    const tx = await rentalMarketplaceContract.makePayment(
+      rentalPropertyId,
+      applicationId
+    );
+    await tx.wait();
+    await getBalance(); // Since payment in Lease Tokens is made
+    return Promise.resolve(tx);
+  } catch (error) {
+    reportError(error);
+    return Promise.reject(error);
+  }
+};
+
 const _structureRentalApplication = (
   rentalApplication: any
 ): RentalApplicationStruct => {

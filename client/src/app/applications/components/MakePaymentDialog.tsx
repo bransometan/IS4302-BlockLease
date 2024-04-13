@@ -9,25 +9,29 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/use-toast";
-import { acceptRentalApplication } from "@/services/rentalMarketplace";
+import { makePayment } from "@/services/rentalMarketplace";
+import { RentalApplicationStruct, RentalPropertyStruct } from "@/types/structs";
 import { useState } from "react";
 
-export default function AcceptRentalApplicationDialog({
-  rentalPropertyId,
-  applicationId,
+export default function MakePaymentDialog({
+  rentalProperty,
+  application,
 }: {
-  rentalPropertyId: number;
-  applicationId: number;
+  rentalProperty: RentalPropertyStruct;
+  application: RentalApplicationStruct;
 }) {
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
 
-  async function handleAccept() {
+  async function handlePayment() {
     try {
-      await acceptRentalApplication(rentalPropertyId, applicationId);
+      await makePayment(
+        rentalProperty.rentalPropertyId,
+        application.applicationId
+      );
       toast({
         title: "Success",
-        description: "Rental application successfully accepted",
+        description: "Rental payment successfully made",
       });
       window.location.reload(); // Update state since application is accepted
     } catch (error) {
@@ -46,22 +50,25 @@ export default function AcceptRentalApplicationDialog({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <li className="hover:bg-gray-100 hover:cursor-pointer rounded px-2">
-          Accept
+          Make Payment
         </li>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Accept Rental Application</DialogTitle>
+          <DialogTitle>Make Rental Payment</DialogTitle>
           <DialogDescription>
-            The deposit fee provided by the prospective tenant will be released
-            to you once you accept this rental application.
+            You will be making a payment of{" "}
+            <b>{rentalProperty.rentalPrice} lease tokens</b>. After this you
+            will have{" "}
+            {rentalProperty.leaseDuration - application.monthsPaid - 1} payments
+            left.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
           <Button variant="ghost" onClick={() => setOpen(false)}>
             Cancel
           </Button>
-          <Button type="submit" onClick={handleAccept}>
+          <Button type="submit" onClick={handlePayment}>
             Confirm
           </Button>
         </DialogFooter>
