@@ -38,7 +38,7 @@ export default function RentalPropertyOverview() {
         applications.filter((app) => app.status === RentStatus.PENDING)
       );
       setTenants(
-        applications.filter((app) => app.status === RentStatus.ONGOING)
+        applications.filter((app) => app.status !== RentStatus.PENDING)
       );
     };
     getRentalPropertyInfo();
