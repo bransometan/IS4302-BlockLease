@@ -99,7 +99,7 @@ contract RentDisputeDAO {
     );
 
     // ################################################### MODIFIERS ################################################### //
-    
+
     //Dispute status is pending
     modifier disputePending(uint256 _disputeId) {
         require(
@@ -145,6 +145,15 @@ contract RentDisputeDAO {
         _;
     }
 
+    // Dispute Exists
+    modifier disputeExist(uint256 _disputeId) {
+        require(
+            _disputeId > 0 && _disputeId <= numOfDisputes,
+            "Invalid dispute Id"
+        );
+        _;
+    }
+
     //Tenant has not made a dispute for the rental property
     modifier tenantNotDisputed(uint256 _rentalPropertyId, address _tenant) {
         require(
@@ -154,7 +163,6 @@ contract RentDisputeDAO {
         _;
     }
 
-
     // ################################################### FUNCTIONS ################################################### //
 
     function createRentDispute(
@@ -162,9 +170,7 @@ contract RentDisputeDAO {
         uint256 _applicationId,
         DisputeType _disputeType,
         string memory _disputeReason
-    ) public
-        tenantNotDisputed(_rentalPropertyId, msg.sender)
-        {
+    ) public tenantNotDisputed(_rentalPropertyId, msg.sender) {
         RentalMarketplace.RentalApplication
             memory rentalApplication = rentalMarketplaceContract
                 .getRentalApplication(_rentalPropertyId, _applicationId);
@@ -227,10 +233,15 @@ contract RentDisputeDAO {
     }
 
     // Reviewer can vote on a dispute
-    function voteOnRentDispute(uint256 _disputeId, Vote _vote) public
+    function voteOnRentDispute(
+        uint256 _disputeId,
+        Vote _vote
+    )
+        public
+        disputeExist(_disputeId)
         disputePending(_disputeId)
         voterNotVoted(_disputeId, msg.sender)
-        {
+    {
         RentalMarketplace.RentalApplication
             memory rentalApplication = rentalMarketplaceContract
                 .getRentalApplication(
@@ -273,15 +284,29 @@ contract RentDisputeDAO {
         }
     }
 
+    // ################################################### TESTING METHODS ################################################### //
+
     // Manually trigger the resolveRentDispute function (for testing purposes only)
-    function triggerResolveRentDispute(uint256 _disputeId) public {
+    function triggerResolveRentDispute(
+        uint256 _disputeId
+    ) public disputeExist(_disputeId) {
         resolveRentDispute(_disputeId);
+    }
+
+    // Set tenantDispute to false for the rental property (for testing purposes only)
+    function resetTenantDispute(
+        uint256 _rentalPropertyId,
+        address _tenant
+    ) public tenantNotDisputed(_rentalPropertyId, _tenant) {
+        tenantDispute[_rentalPropertyId][_tenant] = false;
     }
 
     // ################################################### INTERNAL METHODS ################################################### //
 
     // Resolve a rent dispute
-    function resolveRentDispute(uint256 _disputeId) private {
+    function resolveRentDispute(
+        uint256 _disputeId
+    ) private disputeExist(_disputeId) {
         uint256 approveCount = 0;
         uint256 rejectCount = 0;
 
@@ -319,7 +344,7 @@ contract RentDisputeDAO {
         }
         // Clear voters for the dispute
         delete votersInDispute[_disputeId];
-        
+
         // Update the rental application status to COMPLETED
         rentalMarketplaceContract.updateRentalApplicationStatus(
             disputes[_disputeId].rentalPropertyId,
@@ -333,7 +358,9 @@ contract RentDisputeDAO {
     // Handle rewards for tenant if the dispute is approved (i.e. tenant wins)
     // Tenant receives (1 / Total number of tenants in the rental property) * Rental Property Protection Fee as reward
     // Landlord loses (1 / Total number of tenants in the rental property) * Rental Property Protection Fee as penalty
-    function handleDisputeApprovalReward(uint256 _disputeId) private {
+    function handleDisputeApprovalReward(
+        uint256 _disputeId
+    ) private disputeExist(_disputeId) {
         RentDispute memory rentDispute = disputes[_disputeId];
         RentalMarketplace.RentalApplication
             memory rentalApplication = rentalMarketplaceContract
@@ -387,7 +414,9 @@ contract RentDisputeDAO {
     // Handle rewards for landlord if the dispute is rejected (i.e. landlord wins)
     // Landlord will keep 50% of the Rental Property Deposit Fee (initially paid by tenant as deposit when applying for rental property) as reward
     // Tenant will lose 50% of the Rental Property Deposit Fee as penalty
-    function handleDisputeRejectionReward(uint256 _disputeId) private {
+    function handleDisputeRejectionReward(
+        uint256 _disputeId
+    ) private disputeExist(_disputeId) {
         RentDispute memory rentDispute = disputes[_disputeId];
         require(
             rentDispute.status == DisputeStatus.REJECTED,
@@ -415,7 +444,9 @@ contract RentDisputeDAO {
 
     // Handle event where the dispute is draw
     // Refund Vote reward staked by tenant
-    function handleDisputeDraw(uint256 _disputeId) private {
+    function handleDisputeDraw(
+        uint256 _disputeId
+    ) private disputeExist(_disputeId) {
         RentDispute memory rentDispute = disputes[_disputeId];
         require(
             rentDispute.status == DisputeStatus.DRAW,
@@ -430,12 +461,16 @@ contract RentDisputeDAO {
             paymentEscrowContract.getVoterReward()
         );
 
-        emit DisputeDraw(rentDispute.rentalPropertyId, rentDispute.applicationId);
+        emit DisputeDraw(
+            rentDispute.rentalPropertyId,
+            rentDispute.applicationId
+        );
     }
 
-
     // Handle reviewer's reward for voters who voted correctly on the dispute (i.e. winning reviewers)
-    function handleReviewersReward(uint256 _disputeId) private {
+    function handleReviewersReward(
+        uint256 _disputeId
+    ) private disputeExist(_disputeId) {
         RentDispute memory rentDispute = disputes[_disputeId];
 
         require(
@@ -445,26 +480,36 @@ contract RentDisputeDAO {
 
         // Get the total number of reviewers in the dispute
         uint256 totalReviewers = votersInDispute[_disputeId].length;
-        
+
         // Get the total vote price for the dispute
         // Total vote price will be distributed among the winning reviewers
         // Total vote price will be refunded to the reviewers if the dispute is a draw
-        uint256 totalVotePrice = paymentEscrowContract.getVotePrice() * totalReviewers;
-        
+        uint256 totalVotePrice = paymentEscrowContract.getVotePrice() *
+            totalReviewers;
+
         // If the dispute is approved, transfer the reward to the reviewers who voted correctly
         if (rentDispute.status == DisputeStatus.APPROVED) {
             uint256 totalCorrectVotes = 0;
             for (uint256 i = 0; i < totalReviewers; i++) {
-                if (votesForDispute[_disputeId][votersInDispute[_disputeId][i]] == Vote.APPROVE) {
+                if (
+                    votesForDispute[_disputeId][
+                        votersInDispute[_disputeId][i]
+                    ] == Vote.APPROVE
+                ) {
                     totalCorrectVotes++;
                 }
             }
             // Total rewards for the reviewers will be the sum of the voter reward and the total vote price
-            uint256 totalRewards = paymentEscrowContract.getVoterReward() + totalVotePrice;
+            uint256 totalRewards = paymentEscrowContract.getVoterReward() +
+                totalVotePrice;
             // Total rewards will be distributed among the reviewers who voted correctly
             uint256 rewardPerCorrectVote = totalRewards / totalCorrectVotes;
             for (uint256 i = 0; i < totalReviewers; i++) {
-                if (votesForDispute[_disputeId][votersInDispute[_disputeId][i]] == Vote.APPROVE) {
+                if (
+                    votesForDispute[_disputeId][
+                        votersInDispute[_disputeId][i]
+                    ] == Vote.APPROVE
+                ) {
                     transferPayment(
                         address(paymentEscrowContract),
                         votersInDispute[_disputeId][i],
@@ -472,21 +517,30 @@ contract RentDisputeDAO {
                     );
                 }
             }
-        } 
+        }
         // If the dispute is rejected, transfer the reward to the reviewers who voted correctly
         else if (rentDispute.status == DisputeStatus.REJECTED) {
             uint256 totalCorrectVotes = 0;
             for (uint256 i = 0; i < totalReviewers; i++) {
-                if (votesForDispute[_disputeId][votersInDispute[_disputeId][i]] == Vote.REJECT) {
+                if (
+                    votesForDispute[_disputeId][
+                        votersInDispute[_disputeId][i]
+                    ] == Vote.REJECT
+                ) {
                     totalCorrectVotes++;
                 }
             }
             // Total rewards for the reviewers will be the sum of the voter reward and the total vote price
-            uint256 totalRewards = paymentEscrowContract.getVoterReward() + totalVotePrice;
+            uint256 totalRewards = paymentEscrowContract.getVoterReward() +
+                totalVotePrice;
             // Total rewards will be distributed among the reviewers who voted correctly
             uint256 rewardPerCorrectVote = totalRewards / totalCorrectVotes;
             for (uint256 i = 0; i < totalReviewers; i++) {
-                if (votesForDispute[_disputeId][votersInDispute[_disputeId][i]] == Vote.REJECT) {
+                if (
+                    votesForDispute[_disputeId][
+                        votersInDispute[_disputeId][i]
+                    ] == Vote.REJECT
+                ) {
                     transferPayment(
                         address(paymentEscrowContract),
                         votersInDispute[_disputeId][i],
@@ -494,10 +548,10 @@ contract RentDisputeDAO {
                     );
                 }
             }
-        } 
+        }
         // If the dispute is a draw, transfer the votePrice back to the reviewers (no reward for the reviewers in a draw dispute)
         else if (rentDispute.status == DisputeStatus.DRAW) {
-            // Transfer the votePrice back to the reviewers 
+            // Transfer the votePrice back to the reviewers
             for (uint256 i = 0; i < totalReviewers; i++) {
                 transferPayment(
                     address(paymentEscrowContract),
@@ -536,11 +590,9 @@ contract RentDisputeDAO {
     // ################################################### GETTER METHODS ################################################### //
 
     // Get rent dispute details
-    function getRentDispute(uint256 _disputeId)
-        public
-        view
-        returns (RentDispute memory)
-    {
+    function getRentDispute(
+        uint256 _disputeId
+    ) public view returns (RentDispute memory) {
         return disputes[_disputeId];
     }
 
@@ -550,11 +602,9 @@ contract RentDisputeDAO {
     }
 
     // Get number of disputes by landlord address
-    function getNumOfDisputesByLandlord(address _landlordAddress)
-        public
-        view
-        returns (uint256)
-    {
+    function getNumOfDisputesByLandlord(
+        address _landlordAddress
+    ) public view returns (uint256) {
         uint256 count = 0;
         for (uint256 i = 1; i <= numOfDisputes; i++) {
             if (disputes[i].landlordAddress == _landlordAddress) {
@@ -565,11 +615,9 @@ contract RentDisputeDAO {
     }
 
     // Get number of disputes by tenant address
-    function getNumOfDisputesByTenant(address _tenantAddress)
-        public
-        view
-        returns (uint256)
-    {
+    function getNumOfDisputesByTenant(
+        address _tenantAddress
+    ) public view returns (uint256) {
         uint256 count = 0;
         for (uint256 i = 1; i <= numOfDisputes; i++) {
             if (disputes[i].tenantAddress == _tenantAddress) {
@@ -579,7 +627,7 @@ contract RentDisputeDAO {
         return count;
     }
 
-     // Get all disputes
+    // Get all disputes
     function getAllDisputes() public view returns (RentDispute[] memory) {
         RentDispute[] memory allDisputes = new RentDispute[](numOfDisputes);
         for (uint256 i = 1; i <= numOfDisputes; i++) {
@@ -589,13 +637,15 @@ contract RentDisputeDAO {
     }
 
     // Get all disputes by landlord address
-    function getDisputesByLandlord(address _landlordAddress)
-        public
-        view
-        returns (RentDispute[] memory)
-    {
-        uint256 numOfLandlordDisputes = getNumOfDisputesByLandlord(_landlordAddress);
-        RentDispute[] memory landlordDisputes = new RentDispute[](numOfLandlordDisputes);
+    function getDisputesByLandlord(
+        address _landlordAddress
+    ) public view returns (RentDispute[] memory) {
+        uint256 numOfLandlordDisputes = getNumOfDisputesByLandlord(
+            _landlordAddress
+        );
+        RentDispute[] memory landlordDisputes = new RentDispute[](
+            numOfLandlordDisputes
+        );
         uint256 count = 0;
         for (uint256 i = 1; i <= numOfDisputes; i++) {
             if (disputes[i].landlordAddress == _landlordAddress) {
@@ -607,13 +657,13 @@ contract RentDisputeDAO {
     }
 
     // Get all disputes by tenant address
-    function getDisputesByTenant(address _tenantAddress)
-        public
-        view
-        returns (RentDispute[] memory)
-    {
+    function getDisputesByTenant(
+        address _tenantAddress
+    ) public view returns (RentDispute[] memory) {
         uint256 numOfTenantDisputes = getNumOfDisputesByTenant(_tenantAddress);
-        RentDispute[] memory tenantDisputes = new RentDispute[](numOfTenantDisputes);
+        RentDispute[] memory tenantDisputes = new RentDispute[](
+            numOfTenantDisputes
+        );
         uint256 count = 0;
         for (uint256 i = 1; i <= numOfDisputes; i++) {
             if (disputes[i].tenantAddress == _tenantAddress) {
@@ -623,5 +673,4 @@ contract RentDisputeDAO {
         }
         return tenantDisputes;
     }
-
 }

@@ -112,7 +112,7 @@ contract PaymentEscrow {
 
     // Modifier to check if the payment exists
     modifier PaymentExists(uint256 _paymentId) {
-        require(_paymentId <= numOfPayments, "Payment does not exist");
+        require(_paymentId > 0 && _paymentId <= numOfPayments, "Payment does not exist");
         _;
     }
 
