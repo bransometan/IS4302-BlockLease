@@ -23,6 +23,7 @@ import { useSession } from "@clerk/nextjs";
 import AcceptRentalApplicationDialog from "./AcceptRentalApplicationDialog";
 import { UserRole } from "@/constants";
 import MakePaymentDialog from "./MakePaymentDialog";
+import AcceptPaymentDialog from "./AcceptPaymentDialog";
 
 const RentalApplicationActionsDropdown = ({
   rentalApplication,
@@ -61,6 +62,13 @@ const RentalApplicationActionsDropdown = ({
             {role === UserRole.Tenant &&
               rentalApplication.status === RentStatus.ONGOING && (
                 <MakePaymentDialog
+                  rentalProperty={rentalProperty}
+                  application={rentalApplication}
+                />
+              )}
+            {role === UserRole.Landlord &&
+              rentalApplication.status === RentStatus.MADE_PAYMENT && (
+                <AcceptPaymentDialog
                   rentalProperty={rentalProperty}
                   application={rentalApplication}
                 />

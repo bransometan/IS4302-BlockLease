@@ -9,11 +9,11 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/use-toast";
-import { makePayment } from "@/services/rentalMarketplace";
+import { acceptPayment, makePayment } from "@/services/rentalMarketplace";
 import { RentalApplicationStruct, RentalPropertyStruct } from "@/types/structs";
 import { useState } from "react";
 
-export default function MakePaymentDialog({
+export default function AcceptPaymentDialog({
   rentalProperty,
   application,
 }: {
@@ -25,15 +25,15 @@ export default function MakePaymentDialog({
 
   async function handlePayment() {
     try {
-      await makePayment(
+      await acceptPayment(
         rentalProperty.rentalPropertyId,
         application.applicationId
       );
       toast({
         title: "Success",
-        description: "Rental payment successfully made",
+        description: "Rental payment successfully accepted",
       });
-      window.location.reload(); // Update state since payment is made
+      window.location.reload(); // Update state since payment accepted
     } catch (error) {
       console.error(error);
       toast({
@@ -50,23 +50,21 @@ export default function MakePaymentDialog({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <li className="hover:bg-gray-100 hover:cursor-pointer rounded px-2">
-          Make Payment
+          Accept Payment
         </li>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Make Rental Payment</DialogTitle>
+          <DialogTitle>Accept Rental Payment</DialogTitle>
           <DialogDescription>
-            You will be making a payment of{" "}
+            You will be accepting a payment of{" "}
             <b>{rentalProperty.rentalPrice} lease tokens</b>. After this you
             will have{" "}
             <b>
               {rentalProperty.leaseDuration - application.monthsPaid - 1}{" "}
               payments left
-            </b>
-            . Please note that you need to wait for the landlord to{" "}
-            <b>accept payment</b> before it is reflected in the system under{" "}
-            <b>Months Paid</b>
+            </b>{" "}
+            to receive from this tenant.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
