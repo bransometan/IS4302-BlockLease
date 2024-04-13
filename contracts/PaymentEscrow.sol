@@ -61,7 +61,6 @@ contract PaymentEscrow {
     event paymentRefunded(address payer, address payee, uint256 amount);
     event protectionFeeSet(uint256 protectionFee);
     event voterRewardSet(uint256 voterReward);
-    event tokenWithdrawn(address owner, uint256 amount);
     event rentalMarketplaceAddressSet(address rentalMarketplaceAddress);
     event rentDisputeDAOAddressSet(address rentDisputeDAOAddress);
 
@@ -280,20 +279,6 @@ contract PaymentEscrow {
         );
         payment.status = PaymentStatus.REFUNDED;
         emit paymentRefunded(payment.payer, payment.payee, payment.amount);
-    }
-
-
-    // Function to withdraw the tokens to the owner of the contract
-    function withdrawToken() public onlyOwner {
-        leaseTokenContract.transferLeaseToken(
-            address(this),
-            owner,
-            leaseTokenContract.checkLeaseToken((address(this)))
-        );
-        emit tokenWithdrawn(
-            owner,
-            leaseTokenContract.checkLeaseToken((address(this)))
-        );
     }
 
     // ################################################### SETTER METHODS ################################################### //
