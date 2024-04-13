@@ -61,7 +61,9 @@ export default function MakePaymentDialog({
             <b>{rentalProperty.rentalPrice} lease tokens</b>. After this you
             will have{" "}
             {rentalProperty.leaseDuration - application.monthsPaid - 1} payments
-            left.
+            left. Please note that you need to wait for the landlord to{" "}
+            <b>accept payment</b> before it is reflected in the system under{" "}
+            <b>Months Paid</b>
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
