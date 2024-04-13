@@ -2,6 +2,7 @@
 const _deploy_contracts = require("../migrations/2_deploy_contracts");
 const truffleAssert = require('truffle-assertions');
 var assert = require('assert');
+const Web3 = require('web3'); // npm install web3
 
 // Create variables to represent contracts
 var LeaseToken = artifacts.require("../contracts/LeaseToken.sol");
@@ -16,7 +17,8 @@ contract('Rental Platform Tests', function(accounts) {
     const owner = accounts[0];
     const landlord = accounts[1];
     const tenant = accounts[2];
-    const depositFee = web3.utils.toWei('1', 'ether'); // deposit fee
+    const depositFee = Web3.utils.toWei('1', 'ether'); // deposit fee
+    const rentalPropertyId = 1; // will be only using rentalPropertyId for 1
 
     before(async () => {
         leaseTokenInstance = await LeaseToken.deployed();
@@ -24,10 +26,12 @@ contract('Rental Platform Tests', function(accounts) {
         rentalMarketplaceInstance = await RentalMarketplace.deployed();
         rentalPropertyInstance = await RentalProperty.deployed();
         rentDisputeDAOInstance = await RentDisputeDAO.deployed();
+
+        // leaseTokenInstance.getCredit(web3.utils.toWei("10", "ether"));
     });
 
     // 
-    it('Test : Set up property listing', async () => {
+    it('Test : Landlord set up property listing', async () => {
         // Landlord lists a property
         let hdb1 = await rentalPropertyInstance.addRentalProperty("123 Main St", "s123456", "1", 0 , "Nice place", "2", "300", "12", {from: landlord});
         let hdb2 = await rentalPropertyInstance.addRentalProperty("123 Bishan Street 10", "s321323", "2", 0 , "Amazing vibe", "5", "500", "12", {from: landlord});
@@ -77,42 +81,41 @@ contract('Rental Platform Tests', function(accounts) {
         
     });
 
+    // will only be using property id 1 as example
+
     it('Test : Landlord to list a property', async () => {
-        let amountToMint = web3.utils.toWei('10', 'ether'); 
-        await leaseTokenInstance.getCredit({from: landlord, value: amountToMint});
-        
-        // Confirm landlord now has enough LeaseTokens to cover the deposit fee
-        let landlordBalance = await leaseTokenInstance.checkLeaseToken(landlord);
-        // ssert.strictEqual(landlordBalance.toString(), "1", "Deposited Lease Tokens not transferred to contract");
+        let landlordBalance = await leaseTokenInstance.getLeaseToken();
+        console.log("Landlord LeaseToken Balance:", landlordBalance.toString());
+        // assert.strictEqual(landlordBalance.toString(), "10", "Deposited Lease Tokens not transferred to contract");
 
         const rentalProperty = await rentalMarketplaceInstance.listARentalProperty(1, depositFee, {from: landlord});
         truffleAssert.eventEmitted(rentalProperty, 'RentalPropertyListed');
 
-        const isListed = await rentalPropertyInstance.getListedStatus(newPropertyId);
+        const isListed = await rentalPropertyInstance.getListedStatus(1);
         assert.isTrue(isListed, "The property should be listed.");
     });
 
     it("Test : Landlord unlists a property from the marketplace", async () => {
-        // Make sure the property is initially listed
-        await rentalMarketplaceInstance.listARentalProperty(rentalPropertyId, depositFee, {from: landlord});
-        const unlistResult = await rentalMarketplaceInstance.unlistARentalProperty(rentalPropertyId, {from: landlord});
+        // take from the listing above which is property id 1
+        const unlistResult = await rentalMarketplaceInstance.unlistARentalProperty(1, {from: landlord});
         truffleAssert.eventEmitted(unlistResult, 'RentalPropertyUnlisted');
-        const isListed = await rentalPropertyInstance.getListedStatus(rentalPropertyId);
+        const isListed = await rentalPropertyInstance.getListedStatus(1);
         assert.isFalse(isListed, "Property should be unlisted.");
     });
 
     it("Test : Tenant applies for a rental property", async () => {
-        // Ensure the property is listed
-        await rentalMarketplaceInstance.listARentalProperty(rentalPropertyId, depositFee, {from: landlord});
+        // use another property = ID 2
+        // await rentalMarketplaceInstance.listARentalProperty(2, depositFee, {from: landlord});
         const result = await rentalMarketplaceInstance.applyRentalProperty(rentalPropertyId, "John Doe", "johndoe@example.com", "1234567890", "Need a place near work", {from: tenant});
         truffleAssert.eventEmitted(result, 'RentalApplicationSubmitted');
-        const appCount = await rentalMarketplaceInstance.getRentalApplicationCount(rentalPropertyId);
+
+        const appCount = await rentalMarketplaceInstance.getRentalApplicationCount(2);
         assert.equal(appCount, 1, "There should be one application.");
     });
 
     it("Test : Landlord accepts a rental application", async () => {
-        // Ensure there's an application
-        await rentalMarketplaceInstance.applyRentalProperty(rentalPropertyId, "John Doe", "johndoe@example.com", "1234567890", "Need a place near work", {from: tenant});
+
+        // use back the the same rental application
         const result = await rentalMarketplaceInstance.acceptRentalApplication(rentalPropertyId, 0, {from: landlord});
         truffleAssert.eventEmitted(result, 'RentalApplicationAccepted');
         const appDetails = await rentalMarketplaceInstance.getRentalApplication(rentalPropertyId, 0);
@@ -120,8 +123,7 @@ contract('Rental Platform Tests', function(accounts) {
     });
 
     it("Test : Tenant makes a payment for the rental property", async () => {
-        // Ensure application is accepted
-        await rentalMarketplaceInstance.acceptRentalApplication(rentalPropertyId, 0, {from: landlord});
+        // Provided that the previous step where the Landlord has accept the rental application
         const result = await rentalMarketplaceInstance.makePayment(rentalPropertyId, 0, {from: tenant});
         truffleAssert.eventEmitted(result, 'PaymentMade');
     });
