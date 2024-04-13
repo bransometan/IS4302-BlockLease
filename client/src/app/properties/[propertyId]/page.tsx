@@ -57,25 +57,25 @@ export default function RentalPropertyOverview() {
       <h1 className="font-bold">Overview</h1>
       <MyPropertyCard rentalProperty={rentalProperty} />
       <h1 className="font-bold">My Tenants</h1>
-      <div className="grid grid-cols-3">
-        {tenants ? (
-          tenants.map((application) => (
+      {tenants && tenants.length ? (
+        <div className="grid grid-cols-3">
+          {tenants.map((application) => (
             <RentalApplicationCard rentalApplication={application} />
-          ))
-        ) : (
-          <p>You currently have no tenants</p>
-        )}
-      </div>
+          ))}
+        </div>
+      ) : (
+        <p>You currently have no tenants</p>
+      )}
       <h1 className="font-bold">Pending Applications</h1>
-      <div className="grid grid-cols-3">
-        {pendingApplications ? (
-          pendingApplications.map((application) => (
+      {pendingApplications && pendingApplications.length ? (
+        <div className="grid grid-cols-3">
+          {pendingApplications.map((application) => (
             <RentalApplicationCard rentalApplication={application} />
-          ))
-        ) : (
-          <p>You currently have no pending applications</p>
-        )}
-      </div>
+          ))}
+        </div>
+      ) : (
+        <p>You currently have no pending applications</p>
+      )}
     </div>
   );
 }
