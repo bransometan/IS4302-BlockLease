@@ -72,8 +72,8 @@ export interface RentDisputeStruct {
   applicationId: number; // Unique identifier for the rental application
   tenantAddress: string; // Address of the tenant who created the dispute
   landlordAddress: string; // Address of the landlord of the rental property
-  startTime: number; // Start time of the dispute
-  endTime: number; // End time of the dispute
+  startTime: Date; // Start time of the dispute
+  endTime: Date; // End time of the dispute
   status: DisputeStatus; // Status of the dispute (PENDING, APPROVED, REJECTED, DRAW)
   disputeType: DisputeType; // Type of the dispute
   disputeReason: string; // Reason for the dispute

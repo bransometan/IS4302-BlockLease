@@ -1,6 +1,7 @@
 import { ActiveSessionResource } from "@clerk/types";
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { format } from "date-fns";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -61,4 +62,13 @@ export function checkUserRole(
   }
 
   return null; // Return null if no role is found in the memberships
+}
+
+/**
+ * Format date to return e.g 14 Apr 2024 12:53 pm
+ * @param date Date
+ * @returns string of date
+ */
+export function formatDateForDispute(date: Date) {
+  return format(date, "d LLL yyyy h:mm aaa");
 }
