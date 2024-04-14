@@ -44,7 +44,6 @@ export default function RentalPropertyOverview() {
     getRentalPropertyInfo();
   }, []);
 
-  //TODO: rentalProperty might not exist
   if (!rentalProperty) {
     return <div>Loading...</div>;
   }

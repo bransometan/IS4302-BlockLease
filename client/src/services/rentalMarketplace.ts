@@ -33,6 +33,27 @@ export const listRentalProperty = async (
   }
 };
 
+export const unlistRentalProperty = async (rentalPropertyId: number) => {
+  if (!ethereum) {
+    reportError("Please install Metamask");
+    return Promise.reject(new Error("Metamask not installed"));
+  }
+
+  try {
+    const rentalMarketplaceContract = await getContract(
+      DeployedContract.RentalMarketplaceContract
+    );
+    const tx = await rentalMarketplaceContract.unlistARentalProperty(
+      rentalPropertyId
+    );
+    await tx.wait();
+    return Promise.resolve(tx);
+  } catch (error) {
+    reportError(error);
+    return Promise.reject(error);
+  }
+};
+
 export const applyRentalProperty = async (
   rentalPropertyId: number,
   tenantName: string,
