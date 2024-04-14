@@ -288,7 +288,7 @@ contract RentDisputeDAO {
 
         // Check if the number of voters in dispute is greater than the minimum number of voters in dispute
         // If so, trigger the resolveRentDispute function
-        if (votersInDispute[_disputeId].length > minNumOfVotersInDispute) {
+        if (votersInDispute[_disputeId].length >= minNumOfVotersInDispute) {
             resolveRentDispute(_disputeId);
         }
     }
