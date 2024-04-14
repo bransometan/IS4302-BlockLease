@@ -154,15 +154,6 @@ contract RentDisputeDAO {
         _;
     }
 
-    //Tenant has not made a dispute for the rental property
-    modifier tenantNotDisputed(uint256 _rentalPropertyId, address _tenant) {
-        require(
-            !tenantDispute[_rentalPropertyId][_tenant],
-            "Tenant has already made a dispute for this rental property"
-        );
-        _;
-    }
-
     //Tenant has made a dispute for the rental property
     modifier tenantDisputed(uint256 _rentalPropertyId, address _tenant) {
         require(
@@ -179,10 +170,20 @@ contract RentDisputeDAO {
         uint256 _applicationId,
         DisputeType _disputeType,
         string memory _disputeReason
-    ) public tenantNotDisputed(_rentalPropertyId, msg.sender) {
+    ) public {
+
         RentalMarketplace.RentalApplication
             memory rentalApplication = rentalMarketplaceContract
                 .getRentalApplication(_rentalPropertyId, _applicationId);
+
+        // Check if tenant has already made a dispute for the rental property
+        // Purpose of this check is because tenant may move out of the rental property and apply for the same rental property again
+        // If tenant moves out of the rental property and applies for the same rental property again, tenant can make a dispute again
+        // Therefore, need to reset tenantDispute to false for the rental property
+        if (!rentalMarketplaceContract.getTenantDisputeStatus(_rentalPropertyId, _applicationId)) {
+           // Reset tenantDispute to false for the rental property
+            tenantDispute[_rentalPropertyId][msg.sender] = false;
+        } 
 
         require(
             rentalApplication.rentalPropertyId == _rentalPropertyId,
@@ -202,6 +203,11 @@ contract RentDisputeDAO {
         require(
             rentalApplication.tenantAddress == msg.sender,
             "Only tenant from this property can create a dispute"
+        );
+
+        require(
+            !tenantDispute[_rentalPropertyId][msg.sender],
+            "Tenant has already made a dispute for this rental property"
         );
 
         // Tenant needs to stake the voter rewards (specified by PaymentEscorw) for the dispute for the winning reviewers
@@ -353,6 +359,9 @@ contract RentDisputeDAO {
         }
         // Clear voters for the dispute
         delete votersInDispute[_disputeId];
+        // Set tenantDispute to false for the rental application
+        // Tenant can only make a dispute for a rental property once
+        rentalMarketplaceContract.updateTenantHasDisputed(disputes[_disputeId].rentalPropertyId, disputes[_disputeId].applicationId, true);
 
         // Update the rental application status to COMPLETED
         rentalMarketplaceContract.updateRentalApplicationStatus(
