@@ -691,4 +691,11 @@ contract RentDisputeDAO {
         }
         return tenantDisputes;
     }
+
+    //Get number of voters for a particular dispute
+    function getNumVotersInDispute(
+        uint256 _disputeId
+    ) public view returns (uint256) {
+        return votersInDispute[_disputeId].length;
+    }
 }
