@@ -36,7 +36,7 @@ export function capitalizeFirstLetter(str: string) {
 }
 
 export function enumValueToIndex(enumeration: any, value: any) {
-  return Object.keys(enumeration).indexOf(value);
+  return Object.values(enumeration).indexOf(value);
 }
 
 export function checkUserRole(

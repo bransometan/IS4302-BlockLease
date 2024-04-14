@@ -17,55 +17,49 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
-import { RootState } from "@/types/state";
+import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect, useState } from "react";
+import { z } from "zod";
+import { DisputeType } from "@/types/structs";
 import { useForm } from "react-hook-form";
 import { useSelector } from "react-redux";
-import { z } from "zod";
+import { RootState } from "@/types/state";
 import { useRouter } from "next/navigation";
-import {
-  applyRentalProperty,
-  getDepositAmountForRentalPropertyId,
-  listRentalProperty,
-} from "@/services/rentalMarketplace";
-import { useUser } from "@clerk/nextjs";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { createRentDispute } from "@/services/rentDisputeDAO";
 
 const formSchema = z.object({
-  phoneNumber: z.string().min(1, "Phone number is required"),
-  description: z.string().min(1, "Description must be at least 1 character"),
+  disputeType: z.nativeEnum(DisputeType),
+  disputeReason: z
+    .string()
+    .min(1, "Dispute reason must be at least 1 character"),
 });
 
-export default function ApplyRentalPropertyForm({
+export default function CreateDisputeForm({
   rentalPropertyId,
+  applicationId,
 }: {
   rentalPropertyId: number;
+  applicationId: number;
 }) {
-  const [depositFee, setDepositFee] = useState<number>();
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
-  const { wallet } = useSelector((states: RootState) => states.globalStates);
   const router = useRouter();
-  const { user } = useUser();
-
-  useEffect(() => {
-    const getDepositFee = async () => {
-      const depositFee = await getDepositAmountForRentalPropertyId(
-        rentalPropertyId
-      );
-      setDepositFee(depositFee);
-    };
-    getDepositFee();
-  }, []);
+  const { wallet } = useSelector((states: RootState) => states.globalStates);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      phoneNumber: "",
-      description: "",
+      disputeType: DisputeType.MAINTENANCE_AND_REPAIRS,
+      disputeReason: "",
     },
   });
 
@@ -76,16 +70,20 @@ export default function ApplyRentalPropertyForm({
       });
       return;
     }
+
     try {
-      await applyRentalProperty(
+      await createRentDispute(
         rentalPropertyId,
-        user?.fullName as string,
-        user?.primaryEmailAddress?.emailAddress as string,
-        values.phoneNumber,
-        values.description
+        applicationId,
+        values.disputeType,
+        values.disputeReason
       );
+      toast({
+        title: "Success",
+        description: "Created rent dispute successfully",
+      });
       form.reset();
-      router.push("/applications");
+      router.push("/disputes");
     } catch (error) {
       console.error(error);
       toast({
@@ -98,26 +96,21 @@ export default function ApplyRentalPropertyForm({
     }
   }
 
-  if (!depositFee) return;
-
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <li className="hover:bg-gray-100 hover:cursor-pointer rounded px-2">
-          Apply
+          Dispute
         </li>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader className="space-y-2">
-          <DialogTitle>Apply rental property</DialogTitle>
+        <DialogHeader>
+          <DialogTitle>Create dispute on rental property</DialogTitle>
           <DialogDescription>
-            Apply to be a tenant in this rental property!
-          </DialogDescription>
-          <DialogDescription>
-            Tenant must initially{" "}
-            <b>pay a deposit of {depositFee} lease tokens</b> for the rental
-            property to the PaymentEscrow contract. Deposit will be returned to
-            the tenant if the rental application is rejected.
+            For issues during your lease duration. You will be required to stake
+            the voter rewards (specified by PaymentEscrow) for the dispute for
+            winning reviewers. PaymentEscrow will hold the voter rewards until
+            the dispute is resolved. The dispute is valid for <b>7 days</b>.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -127,25 +120,41 @@ export default function ApplyRentalPropertyForm({
           >
             <FormField
               control={form.control}
-              name="phoneNumber"
+              name="disputeType"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Phone Number</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter phone number" {...field} />
-                  </FormControl>
-                  <FormMessage />
+                  <FormLabel>Dispute Type</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a dispute type" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {Object.values(DisputeType).map((disputeType, i) => {
+                        return (
+                          <SelectItem key={i} value={disputeType}>
+                            {disputeType}
+                          </SelectItem>
+                        );
+                      })}
+                    </SelectContent>
+                    <FormMessage />
+                  </Select>
                 </FormItem>
               )}
             />
             <FormField
               control={form.control}
-              name="description"
+              name="disputeReason"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Description</FormLabel>
+                  <FormLabel>Dispute Reason</FormLabel>
                   <FormControl>
-                    <Textarea placeholder="Enter description" {...field} />
+                    <Textarea placeholder="Enter dispute reason" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -154,8 +163,8 @@ export default function ApplyRentalPropertyForm({
             <DialogFooter>
               <Button
                 variant="ghost"
-                onClick={() => setOpen(false)}
                 type="button"
+                onClick={() => setOpen(false)}
               >
                 Cancel
               </Button>

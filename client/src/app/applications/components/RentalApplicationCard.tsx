@@ -25,6 +25,7 @@ import { UserRole } from "@/constants";
 import MakePaymentDialog from "./MakePaymentDialog";
 import AcceptPaymentDialog from "./AcceptPaymentDialog";
 import MoveOutDialog from "./MoveOutDialog";
+import CreateDisputeForm from "./CreateDisputeForm";
 
 const RentalApplicationActionsDropdown = ({
   rentalApplication,
@@ -76,10 +77,17 @@ const RentalApplicationActionsDropdown = ({
               )}
             {role === UserRole.Tenant &&
               rentalApplication.status === RentStatus.COMPLETED && (
-                <MoveOutDialog
-                  rentalPropertyId={rentalProperty.rentalPropertyId}
-                  applicationId={rentalApplication.applicationId}
-                />
+                <>
+                  <MoveOutDialog
+                    rentalPropertyId={rentalProperty.rentalPropertyId}
+                    applicationId={rentalApplication.applicationId}
+                  />
+                  <Separator />
+                  <CreateDisputeForm
+                    rentalPropertyId={rentalProperty.rentalPropertyId}
+                    applicationId={rentalApplication.applicationId}
+                  />
+                </>
               )}
           </ul>
         </div>
