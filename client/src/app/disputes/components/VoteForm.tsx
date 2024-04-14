@@ -21,12 +21,11 @@ import { useToast } from "@/components/ui/use-toast";
 import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { DisputeType } from "@/types/structs";
+import { Vote } from "@/types/structs";
 import { useForm } from "react-hook-form";
 import { useSelector } from "react-redux";
 import { RootState } from "@/types/state";
 import { useRouter } from "next/navigation";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -34,22 +33,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { createRentDispute } from "@/services/rentDisputeDAO";
+import { voteOnRentDispute } from "@/services/rentDisputeDAO";
 
 const formSchema = z.object({
-  disputeType: z.nativeEnum(DisputeType),
-  disputeReason: z
-    .string()
-    .min(1, "Dispute reason must be at least 1 character"),
+  vote: z.nativeEnum(Vote),
 });
 
-export default function CreateDisputeForm({
-  rentalPropertyId,
-  applicationId,
-}: {
-  rentalPropertyId: number;
-  applicationId: number;
-}) {
+export default function VoteForm({ disputeId }: { disputeId: number }) {
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
@@ -58,8 +48,7 @@ export default function CreateDisputeForm({
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      disputeType: DisputeType.MAINTENANCE_AND_REPAIRS,
-      disputeReason: "",
+      vote: Vote.VOID,
     },
   });
 
@@ -72,18 +61,13 @@ export default function CreateDisputeForm({
     }
 
     try {
-      await createRentDispute(
-        rentalPropertyId,
-        applicationId,
-        values.disputeType,
-        values.disputeReason
-      );
+      await voteOnRentDispute(disputeId, values.vote);
       toast({
         title: "Success",
-        description: "Created rent dispute successfully",
+        description: "Voted on dispute successfully",
       });
       form.reset();
-      router.push("/disputes");
+      window.location.reload();
     } catch (error) {
       console.error(error);
       toast({
@@ -100,17 +84,24 @@ export default function CreateDisputeForm({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <li className="hover:bg-gray-100 hover:cursor-pointer rounded px-2">
-          Dispute
+          Vote
         </li>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Create dispute on rental property</DialogTitle>
+          <DialogTitle>Vote on dispute</DialogTitle>
           <DialogDescription>
-            For issues during your lease duration. You will be required to stake
-            a voter reward of <b>50 lease tokens</b> to the PaymentEscrow for
-            the dispute. PaymentEscrow will hold the voter reward until the
-            dispute is resolved. The dispute is valid for <b>7 days</b>.
+            You will be required to stake the vote price of <b>1 lease token</b>{" "}
+            to the PaymentEscrow for the dispute. The dispute is valid for{" "}
+            <b>7 days</b>. PaymentEscrow will hold the vote price until the
+            dispute is resolved.
+          </DialogDescription>
+          <DialogDescription>
+            <b>
+              The dispute will be resolved if 1: the minimum of 3 votes is
+              reached
+            </b>{" "}
+            or <b>2: the dispute has passed 7 days</b>.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -120,43 +111,30 @@ export default function CreateDisputeForm({
           >
             <FormField
               control={form.control}
-              name="disputeType"
+              name="vote"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Dispute Type</FormLabel>
+                  <FormLabel>Vote</FormLabel>
                   <Select
                     onValueChange={field.onChange}
                     defaultValue={field.value}
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select a dispute type" />
+                        <SelectValue placeholder="Select a vote" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {Object.values(DisputeType).map((disputeType, i) => {
+                      {Object.values(Vote).map((vote, i) => {
                         return (
-                          <SelectItem key={i} value={disputeType}>
-                            {disputeType}
+                          <SelectItem key={i} value={vote}>
+                            {vote}
                           </SelectItem>
                         );
                       })}
                     </SelectContent>
                     <FormMessage />
                   </Select>
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="disputeReason"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Dispute Reason</FormLabel>
-                  <FormControl>
-                    <Textarea placeholder="Enter dispute reason" {...field} />
-                  </FormControl>
-                  <FormMessage />
                 </FormItem>
               )}
             />

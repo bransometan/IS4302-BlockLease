@@ -16,11 +16,14 @@ import { CircleEllipsis } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { checkUserRole, formatDateForDispute, truncate } from "@/lib/utils";
 import { useSession } from "@clerk/nextjs";
+import { UserRole } from "@/constants";
+import VoteForm from "./VoteForm";
 
-const RentalApplicationActionsDropdown = ({}: {}) => {
-  const { session } = useSession();
-  const role = checkUserRole(session);
-
+const RentalApplicationActionsDropdown = ({
+  disputeId,
+}: {
+  disputeId: number;
+}) => {
   return (
     <Popover>
       <PopoverTrigger className="absolute right-1 top-1">
@@ -28,7 +31,9 @@ const RentalApplicationActionsDropdown = ({}: {}) => {
       </PopoverTrigger>
       <PopoverContent className="text-sm absolute right-0 top-0 w-[100px]">
         <div>
-          <ul className="space-y-1"></ul>
+          <ul className="space-y-1">
+            <VoteForm disputeId={disputeId} />
+          </ul>
         </div>
       </PopoverContent>
     </Popover>
@@ -40,10 +45,16 @@ export default function DisputeCard({
 }: {
   rentDispute: RentDisputeStruct;
 }) {
+  const { session } = useSession();
+  const role = checkUserRole(session);
   return (
     <Card>
       <CardHeader className="font-bold relative">
-        <RentalApplicationActionsDropdown />
+        {role === UserRole.Validator && (
+          <RentalApplicationActionsDropdown
+            disputeId={rentDispute.rentDisputeId}
+          />
+        )}
         <CardTitle>Application Id: {rentDispute.applicationId}</CardTitle>
         <CardTitle>
           Rental Property Id: {rentDispute.rentalPropertyId}
