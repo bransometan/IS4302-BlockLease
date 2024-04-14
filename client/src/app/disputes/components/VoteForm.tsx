@@ -101,7 +101,7 @@ export default function VoteForm({ disputeId }: { disputeId: number }) {
           </DialogDescription>
           <DialogDescription>
             <b>
-              The dispute will be resolved if 1: the minimum of 3 votes is
+              The dispute will be resolved if 1: the minimum of 2 votes is
               reached
             </b>{" "}
             or <b>2: the dispute has passed 7 days</b>.

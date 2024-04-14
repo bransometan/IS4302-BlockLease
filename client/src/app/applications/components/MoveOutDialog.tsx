@@ -73,7 +73,7 @@ export default function MoveOutDialog({
           <DialogTitle>Move out of rental property</DialogTitle>
           <DialogDescription>
             You have completed your lease. If you have any disputes, please
-            choose the <b>dipute</b> option. If not, you will be{" "}
+            choose the <b>dispute</b> option. If not, you will be{" "}
             <b>returned the deposit fee of {depositFee} lease tokens</b> you
             have initially made. After this, you are free to rent another
             property if desired.
