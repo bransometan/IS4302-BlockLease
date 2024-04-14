@@ -11,7 +11,6 @@ import { UserRole } from "@/constants";
 export default function Disputes() {
   const { session } = useSession();
   const role = checkUserRole(session);
-  const [allDisputes, setAllDisputes] = useState<RentDisputeStruct[]>();
   const [pendingDisputes, setPendingDisputes] = useState<RentDisputeStruct[]>();
   const [resolvedDisputes, setResolvedDisputes] =
     useState<RentDisputeStruct[]>();
