@@ -51,8 +51,6 @@ export default function Navbar() {
   const { session } = useSession();
   const role = checkUserRole(session);
 
-  if (!role) return;
-
   return (
     <nav className="w-full fixed top-0 z-20 bg-white">
       <div className="flex items-center justify-between p-3 px-10 ">
@@ -86,9 +84,11 @@ export default function Navbar() {
               <p className="text-sm font-medium text-right">
                 {leaseTokens} lease tokens
               </p>
-              <p className="text-sm font-medium text-right">
-                {capitalizeFirstLetter(role)}
-              </p>
+              {role && (
+                <p className="text-sm font-medium text-right">
+                  {capitalizeFirstLetter(role)}
+                </p>
+              )}
             </div>
             <div className="flex items-center space-x-4">
               {wallet ? (
