@@ -39,11 +39,11 @@ export default function Applications() {
     <div className="space-y-4">
       <h1 className="font-bold">My Applications</h1>
       <div className="space-y-4">
-        {currentApplication ? (
+        {currentApplication && currentRentalProperty ? (
           <>
             <RentalApplicationCard
               rentalApplication={currentApplication}
-              rentalProperty={currentRentalProperty!}
+              rentalProperty={currentRentalProperty}
             />
             <h1 className="font-bold">Rental Property Details</h1>
             <CurrentRentalPropertyCard

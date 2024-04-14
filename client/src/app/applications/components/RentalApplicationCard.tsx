@@ -24,6 +24,7 @@ import AcceptRentalApplicationDialog from "./AcceptRentalApplicationDialog";
 import { UserRole } from "@/constants";
 import MakePaymentDialog from "./MakePaymentDialog";
 import AcceptPaymentDialog from "./AcceptPaymentDialog";
+import MoveOutDialog from "./MoveOutDialog";
 
 const RentalApplicationActionsDropdown = ({
   rentalApplication,
@@ -73,6 +74,13 @@ const RentalApplicationActionsDropdown = ({
                   application={rentalApplication}
                 />
               )}
+            {role === UserRole.Tenant &&
+              rentalApplication.status === RentStatus.COMPLETED && (
+                <MoveOutDialog
+                  rentalPropertyId={rentalProperty.rentalPropertyId}
+                  applicationId={rentalApplication.applicationId}
+                />
+              )}
           </ul>
         </div>
       </PopoverContent>
@@ -114,7 +122,10 @@ export default function RentalApplicationCard({
           </li>
           <li>
             {rentalApplication.paymentIds.length > 0 ? (
-              <p>Payments Made (ID): [{rentalApplication.paymentIds}]</p>
+              <p>
+                Payments Made (ID) (Includes deposit): [
+                {rentalApplication.paymentIds.join(", ")}]
+              </p>
             ) : (
               <p>No payments made yet</p>
             )}

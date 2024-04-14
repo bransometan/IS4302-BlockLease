@@ -225,6 +225,53 @@ export const acceptPayment = async (
   }
 };
 
+export const moveOut = async (
+  rentalPropertyId: number,
+  applicationId: number
+) => {
+  if (!ethereum) {
+    reportError("Please install Metamask");
+    return Promise.reject(new Error("Metamask not installed"));
+  }
+
+  try {
+    const rentalMarketplaceContract = await getContract(
+      DeployedContract.RentalMarketplaceContract
+    );
+    const tx = await rentalMarketplaceContract.moveOut(
+      rentalPropertyId,
+      applicationId
+    );
+    await tx.wait();
+    await getBalance(); // Since deposit fee is returned to tenant
+    return Promise.resolve(tx);
+  } catch (error) {
+    reportError(error);
+    return Promise.reject(error);
+  }
+};
+
+export const getDepositAmountForRentalPropertyId = async (
+  rentalPropertyId: number
+) => {
+  if (!ethereum) {
+    reportError("Please install Metamask");
+    return Promise.reject(new Error("Metamask not installed"));
+  }
+
+  try {
+    const rentalMarketplaceContract = await getContract(
+      DeployedContract.RentalMarketplaceContract
+    );
+    const depositAmount: BigInt =
+      await rentalMarketplaceContract.getDepositAmount(rentalPropertyId);
+    return Promise.resolve(Number(depositAmount));
+  } catch (error) {
+    reportError(error);
+    return Promise.reject(error);
+  }
+};
+
 const _structureRentalApplication = (
   rentalApplication: any
 ): RentalApplicationStruct => {

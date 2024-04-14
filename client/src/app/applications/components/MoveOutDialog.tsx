@@ -10,21 +10,22 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/use-toast";
 import {
-  cancelOrRejectRentalApplication,
   getDepositAmountForRentalPropertyId,
+  moveOut,
 } from "@/services/rentalMarketplace";
+import { RentalApplicationStruct, RentalPropertyStruct } from "@/types/structs";
 import { useEffect, useState } from "react";
 
-export default function CancelRentalApplicationDialog({
+export default function MoveOutDialog({
   rentalPropertyId,
   applicationId,
 }: {
   rentalPropertyId: number;
   applicationId: number;
 }) {
-  const [depositFee, setDepositFee] = useState<number>();
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
+  const [depositFee, setDepositFee] = useState<number>();
 
   useEffect(() => {
     const getDepositFee = async () => {
@@ -36,14 +37,14 @@ export default function CancelRentalApplicationDialog({
     getDepositFee();
   }, []);
 
-  async function handleCancel() {
+  async function handleMoveOut() {
     try {
-      await cancelOrRejectRentalApplication(rentalPropertyId, applicationId);
+      await moveOut(rentalPropertyId, applicationId);
       toast({
         title: "Success",
-        description: "Rental application successfully cancelled",
+        description: "Moved out of rental property successfully",
       });
-      window.location.reload(); // Update state since application is deleted
+      window.location.reload(); // Update state since done with stay
     } catch (error) {
       console.error(error);
       toast({
@@ -56,29 +57,33 @@ export default function CancelRentalApplicationDialog({
     }
   }
 
-  if (!depositFee) return;
+  if (!depositFee) {
+    return;
+  }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <li className="hover:bg-gray-100 hover:cursor-pointer rounded px-2">
-          Cancel
+          Move Out
         </li>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Cancel Rental Application</DialogTitle>
+          <DialogTitle>Move out of rental property</DialogTitle>
           <DialogDescription>
-            Are you sure? This will cancel the current rental application.
-            Tenant will be <b>refunded the deposit {depositFee} lease tokens</b>
-            .
+            You have completed your lease. If you have any disputes, please
+            choose the <b>dipute</b> option. If not, you will be{" "}
+            <b>returned the deposit fee of {depositFee} lease tokens</b> you
+            have initially made. After this, you are free to rent another
+            property if desired.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
           <Button variant="ghost" onClick={() => setOpen(false)}>
             Cancel
           </Button>
-          <Button type="submit" onClick={handleCancel}>
+          <Button type="submit" onClick={handleMoveOut}>
             Confirm
           </Button>
         </DialogFooter>

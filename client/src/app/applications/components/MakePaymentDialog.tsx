@@ -66,7 +66,7 @@ export default function MakePaymentDialog({
             </b>
             . Please note that you need to wait for the landlord to{" "}
             <b>accept payment</b> before it is reflected in the system under{" "}
-            <b>Months Paid</b>
+            <b>Months Paid</b>.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>

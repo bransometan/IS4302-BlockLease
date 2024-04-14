@@ -21,13 +21,14 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { RootState } from "@/types/state";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useSelector } from "react-redux";
 import { z } from "zod";
 import { useRouter } from "next/navigation";
 import {
   applyRentalProperty,
+  getDepositAmountForRentalPropertyId,
   listRentalProperty,
 } from "@/services/rentalMarketplace";
 import { useUser } from "@clerk/nextjs";
@@ -43,11 +44,22 @@ export default function ApplyRentalPropertyForm({
 }: {
   rentalPropertyId: number;
 }) {
+  const [depositFee, setDepositFee] = useState<number>();
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
   const { wallet } = useSelector((states: RootState) => states.globalStates);
   const router = useRouter();
   const { user } = useUser();
+
+  useEffect(() => {
+    const getDepositFee = async () => {
+      const depositFee = await getDepositAmountForRentalPropertyId(
+        rentalPropertyId
+      );
+      setDepositFee(depositFee);
+    };
+    getDepositFee();
+  }, []);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -86,6 +98,8 @@ export default function ApplyRentalPropertyForm({
     }
   }
 
+  if (!depositFee) return;
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -100,7 +114,8 @@ export default function ApplyRentalPropertyForm({
             Apply to be a tenant in this rental property!
           </DialogDescription>
           <DialogDescription>
-            Tenant must initially pay the deposit (LeaseToken) for the rental
+            Tenant must initially{" "}
+            <b>pay a deposit of {depositFee} lease tokens</b> for the rental
             property to the PaymentEscrow contract. Deposit will be returned to
             the tenant if the rental application is rejected.
           </DialogDescription>
