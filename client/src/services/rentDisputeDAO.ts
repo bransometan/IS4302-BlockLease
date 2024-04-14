@@ -38,6 +38,10 @@ export const createRentDispute = async (
   }
 };
 
+/**
+ * To be used by tenant to retrieve dispute made
+ * @returns Rent Dispute
+ */
 export const getDisputesByTenant = async () => {
   if (!ethereum) {
     reportError("Please install Metamask");
@@ -51,6 +55,29 @@ export const getDisputesByTenant = async () => {
     );
     const rentDisputes: RentDisputeStruct[] =
       await rentDisputeDAOContract.getDisputesByTenant(accounts?.[0]);
+    return rentDisputes.map((dispute) => _structureRentDispute(dispute));
+  } catch (error) {
+    reportError(error);
+    return Promise.reject(error);
+  }
+};
+
+/**
+ * For use by validators to get all disputes
+ * @returns Rent Disputes
+ */
+export const getAllDisputes = async () => {
+  if (!ethereum) {
+    reportError("Please install Metamask");
+    return Promise.reject(new Error("Metamask not installed"));
+  }
+
+  try {
+    const rentDisputeDAOContract = await getContract(
+      DeployedContract.RentDisputeDAOContract
+    );
+    const rentDisputes: RentDisputeStruct[] =
+      await rentDisputeDAOContract.getAllDisputes();
     return rentDisputes.map((dispute) => _structureRentDispute(dispute));
   } catch (error) {
     reportError(error);
