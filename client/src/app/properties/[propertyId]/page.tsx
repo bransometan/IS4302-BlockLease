@@ -57,7 +57,7 @@ export default function RentalPropertyOverview() {
       <MyPropertyCard rentalProperty={rentalProperty} />
       <h1 className="font-bold">My Tenants</h1>
       {tenants && tenants.length ? (
-        <div className="grid grid-cols-3">
+        <div className="grid grid-cols-3 gap-4">
           {tenants.map((application) => (
             <RentalApplicationCard
               rentalApplication={application}
@@ -70,7 +70,7 @@ export default function RentalPropertyOverview() {
       )}
       <h1 className="font-bold">Pending Applications</h1>
       {pendingApplications && pendingApplications.length ? (
-        <div className="grid grid-cols-3">
+        <div className="grid grid-cols-3 gap-4">
           {pendingApplications.map((application) => (
             <RentalApplicationCard
               rentalApplication={application}

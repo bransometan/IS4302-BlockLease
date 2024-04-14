@@ -1,6 +1,10 @@
 "use client";
 
-import { getAllDisputes, getDisputesByTenant } from "@/services/rentDisputeDAO";
+import {
+  getAllDisputes,
+  getDisputesByLandlord,
+  getDisputesByTenant,
+} from "@/services/rentDisputeDAO";
 import { DisputeStatus, RentDisputeStruct } from "@/types/structs";
 import React, { useEffect, useState } from "react";
 import DisputeCard from "./components/DisputeCard";
@@ -20,6 +24,8 @@ export default function Disputes() {
       const disputes =
         role === UserRole.Tenant
           ? await getDisputesByTenant()
+          : role === UserRole.Landlord
+          ? await getDisputesByLandlord()
           : role === UserRole.Validator
           ? await getAllDisputes()
           : [];
@@ -36,7 +42,12 @@ export default function Disputes() {
   return (
     <div className="space-y-4">
       <h1 className="font-bold">Pending disputes</h1>
-      <div className={cn(role === UserRole.Validator && "grid grid-cols-3")}>
+      <div
+        className={cn(
+          (role === UserRole.Validator || role === UserRole.Landlord) &&
+            "grid grid-cols-3 gap-4"
+        )}
+      >
         {pendingDisputes && pendingDisputes.length > 0 ? (
           pendingDisputes.map((dispute, i) => (
             <DisputeCard key={i} rentDispute={dispute} />
@@ -46,7 +57,7 @@ export default function Disputes() {
         )}
       </div>
       <h1 className="font-bold">Resolved disputes</h1>
-      <div className="grid grid-cols-3">
+      <div className="grid grid-cols-3 gap-4">
         {resolvedDisputes && resolvedDisputes.length > 0 ? (
           resolvedDisputes.map((dispute, i) => (
             <DisputeCard key={i} rentDispute={dispute} />

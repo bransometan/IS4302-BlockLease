@@ -91,6 +91,9 @@ export default function VoteForm({ disputeId }: { disputeId: number }) {
         <DialogHeader>
           <DialogTitle>Vote on dispute</DialogTitle>
           <DialogDescription>
+            Note: you are <b>only allowed to vote once</b> on this dispute.
+          </DialogDescription>
+          <DialogDescription>
             You will be required to stake the vote price of <b>1 lease token</b>{" "}
             to the PaymentEscrow for the dispute. The dispute is valid for{" "}
             <b>7 days</b>. PaymentEscrow will hold the vote price until the

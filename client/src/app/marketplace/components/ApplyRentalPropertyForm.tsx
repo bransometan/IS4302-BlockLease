@@ -116,8 +116,9 @@ export default function ApplyRentalPropertyForm({
           <DialogDescription>
             Tenant must initially{" "}
             <b>pay a deposit of {depositFee} lease tokens</b> for the rental
-            property to the PaymentEscrow contract. Deposit will be returned to
-            the tenant if the rental application is rejected.
+            property to the PaymentEscrow contract. The deposit will be deducted
+            once landlord accepts application. Deposit will be returned to the
+            tenant if the rental application is rejected.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>

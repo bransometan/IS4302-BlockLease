@@ -1,6 +1,11 @@
 "use client";
 
-import { checkUserRole, cn, truncate } from "@/lib/utils";
+import {
+  capitalizeFirstLetter,
+  checkUserRole,
+  cn,
+  truncate,
+} from "@/lib/utils";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -46,6 +51,8 @@ export default function Navbar() {
   const { session } = useSession();
   const role = checkUserRole(session);
 
+  if (!role) return;
+
   return (
     <nav className="w-full fixed top-0 z-20 bg-white">
       <div className="flex items-center justify-between p-3 px-10 ">
@@ -76,7 +83,12 @@ export default function Navbar() {
         <SignedIn>
           <div className="flex justify-between gap-4 items-center">
             <div>
-              <p className="text-sm font-medium">{leaseTokens} lease tokens</p>
+              <p className="text-sm font-medium text-right">
+                {leaseTokens} lease tokens
+              </p>
+              <p className="text-sm font-medium text-right">
+                {capitalizeFirstLetter(role)}
+              </p>
             </div>
             <div className="flex items-center space-x-4">
               {wallet ? (

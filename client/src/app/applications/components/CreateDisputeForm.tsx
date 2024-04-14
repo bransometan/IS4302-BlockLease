@@ -109,8 +109,9 @@ export default function CreateDisputeForm({
           <DialogDescription>
             For issues during your lease duration. You will be required to stake
             a voter reward of <b>50 lease tokens</b> to the PaymentEscrow for
-            the dispute. PaymentEscrow will hold the voter reward until the
-            dispute is resolved. The dispute is valid for <b>7 days</b>.
+            the dispute, as reward for <b>validators</b>. PaymentEscrow will
+            hold the voter reward until the dispute is resolved. The dispute is
+            valid for <b>7 days</b>.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>

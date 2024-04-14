@@ -11,7 +11,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { RentDisputeStruct } from "@/types/structs";
+import { DisputeStatus, RentDisputeStruct } from "@/types/structs";
 import { CircleEllipsis } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { checkUserRole, formatDateForDispute, truncate } from "@/lib/utils";
@@ -50,11 +50,12 @@ export default function DisputeCard({
   return (
     <Card>
       <CardHeader className="font-bold relative">
-        {role === UserRole.Validator && (
-          <RentalApplicationActionsDropdown
-            disputeId={rentDispute.rentDisputeId}
-          />
-        )}
+        {role === UserRole.Validator &&
+          rentDispute.status === DisputeStatus.PENDING && (
+            <RentalApplicationActionsDropdown
+              disputeId={rentDispute.rentDisputeId}
+            />
+          )}
         <CardTitle>Application Id: {rentDispute.applicationId}</CardTitle>
         <CardTitle>
           Rental Property Id: {rentDispute.rentalPropertyId}
@@ -85,7 +86,7 @@ export default function DisputeCard({
       </CardContent>
       <CardFooter>
         <p>
-          Dispute Status: <b>{rentDispute.status}</b>
+          Tenant Dispute Status: <b>{rentDispute.status}</b>
         </p>
       </CardFooter>
     </Card>
