@@ -38,13 +38,12 @@ export default function RentalPropertyOverview() {
         applications.filter((app) => app.status === RentStatus.PENDING)
       );
       setTenants(
-        applications.filter((app) => app.status === RentStatus.ONGOING)
+        applications.filter((app) => app.status !== RentStatus.PENDING)
       );
     };
     getRentalPropertyInfo();
   }, []);
 
-  //TODO: rentalProperty might not exist
   if (!rentalProperty) {
     return <div>Loading...</div>;
   }
@@ -58,9 +57,12 @@ export default function RentalPropertyOverview() {
       <MyPropertyCard rentalProperty={rentalProperty} />
       <h1 className="font-bold">My Tenants</h1>
       {tenants && tenants.length ? (
-        <div className="grid grid-cols-3">
+        <div className="grid grid-cols-3 gap-4">
           {tenants.map((application) => (
-            <RentalApplicationCard rentalApplication={application} />
+            <RentalApplicationCard
+              rentalApplication={application}
+              rentalProperty={rentalProperty}
+            />
           ))}
         </div>
       ) : (
@@ -68,9 +70,12 @@ export default function RentalPropertyOverview() {
       )}
       <h1 className="font-bold">Pending Applications</h1>
       {pendingApplications && pendingApplications.length ? (
-        <div className="grid grid-cols-3">
+        <div className="grid grid-cols-3 gap-4">
           {pendingApplications.map((application) => (
-            <RentalApplicationCard rentalApplication={application} />
+            <RentalApplicationCard
+              rentalApplication={application}
+              rentalProperty={rentalProperty}
+            />
           ))}
         </div>
       ) : (

@@ -27,6 +27,7 @@ contract RentalMarketplace {
         uint256 monthsPaid; // The number of months the tenant has paid
         RentStatus status; // The status of the rental application
         uint256[] paymentIds; // All the payment transaction ids generated for tenant during deposit/monthlyPayment of rental property (mainly to keep track of payments/refunds for deposit and monthly rent)
+        bool tenantHasDisputed; // The tenant has disputed the rental application 
     }
 
     RentalProperty rentalPropertyContract;
@@ -280,7 +281,8 @@ contract RentalMarketplace {
             description,
             0,
             RentStatus.PENDING,
-            new uint256[](0)
+            new uint256[](0),
+            false
         );
 
         // Deposit Fee (LeaseToken) required for the rental property
@@ -545,6 +547,20 @@ contract RentalMarketplace {
         rentalApplications[rentalPropertyId][applicationId].status = newStatus;
     }
 
+    //Update the tenant has disputed the rental application
+    //Not restricted to landlord as this function is used in RentDisputeDAO to update the tenant has disputed the rental application
+    function updateTenantHasDisputed(
+        uint256 rentalPropertyId,
+        uint256 applicationId,
+        bool hasDisputed
+    )
+        public
+        rentalPropertyListed(rentalPropertyId)
+        rentalApplicationExist(rentalPropertyId, applicationId)
+    {
+        rentalApplications[rentalPropertyId][applicationId].tenantHasDisputed = hasDisputed;
+    }
+
     // ################################################### GETTER METHODS ################################################### //
 
     //Get the rental application details for a rental property.
@@ -597,7 +613,7 @@ contract RentalMarketplace {
                 }
             }
         }
-        return RentalApplication(0, 0, address(0), address(0), "", "", "", "", 0, RentStatus.PENDING, new uint256[](0));
+        return RentalApplication(0, 0, address(0), address(0), "", "", "", "", 0, RentStatus.PENDING, new uint256[](0), false);
     }
 
     //Get the deposit required for a rental property.
@@ -606,4 +622,13 @@ contract RentalMarketplace {
     ) public view returns (uint256) {
         return rentalPropertyDeposits[rentalPropertyId];
     }
+
+    //Get the tenant dispute status of a rental application.
+    function getTenantDisputeStatus(
+        uint256 rentalPropertyId,
+        uint256 applicationId
+    ) public view returns (bool) {
+        return rentalApplications[rentalPropertyId][applicationId].tenantHasDisputed;
+    }
+
 }

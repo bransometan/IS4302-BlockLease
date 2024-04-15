@@ -9,41 +9,25 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/use-toast";
-import {
-  cancelOrRejectRentalApplication,
-  getDepositAmountForRentalPropertyId,
-} from "@/services/rentalMarketplace";
-import { useEffect, useState } from "react";
+import { unlistRentalProperty } from "@/services/rentalMarketplace";
+import { useState } from "react";
 
-export default function CancelRentalApplicationDialog({
+export default function UnlistRentalPropertyDialog({
   rentalPropertyId,
-  applicationId,
 }: {
   rentalPropertyId: number;
-  applicationId: number;
 }) {
-  const [depositFee, setDepositFee] = useState<number>();
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
 
-  useEffect(() => {
-    const getDepositFee = async () => {
-      const depositFee = await getDepositAmountForRentalPropertyId(
-        rentalPropertyId
-      );
-      setDepositFee(depositFee);
-    };
-    getDepositFee();
-  }, []);
-
-  async function handleCancel() {
+  async function handleUnlist() {
     try {
-      await cancelOrRejectRentalApplication(rentalPropertyId, applicationId);
+      await unlistRentalProperty(rentalPropertyId);
       toast({
         title: "Success",
-        description: "Rental application successfully cancelled",
+        description: "Rental property successfully unlisted",
       });
-      window.location.reload(); // Update state since application is deleted
+      window.location.reload();
     } catch (error) {
       console.error(error);
       toast({
@@ -56,29 +40,29 @@ export default function CancelRentalApplicationDialog({
     }
   }
 
-  if (!depositFee) return;
-
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <li className="hover:bg-gray-100 hover:cursor-pointer rounded px-2">
-          Cancel
+          Unlist
         </li>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Cancel Rental Application</DialogTitle>
+          <DialogTitle>Unlist Rental Property</DialogTitle>
           <DialogDescription>
-            Are you sure? This will cancel the current rental application.
-            Tenant will be <b>refunded the deposit {depositFee} lease tokens</b>
-            .
+            Are you sure? This unlists the rental property from the marketplace.{" "}
+            <b>
+              Note: you cannot unlist a rental property once there are
+              applications.
+            </b>
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
           <Button variant="ghost" onClick={() => setOpen(false)}>
             Cancel
           </Button>
-          <Button type="submit" onClick={handleCancel}>
+          <Button type="submit" onClick={handleUnlist}>
             Confirm
           </Button>
         </DialogFooter>

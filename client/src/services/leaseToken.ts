@@ -34,6 +34,7 @@ export const getLeaseToken = async (valueInEth: number) => {
 export const getBalance = async () => {
   try {
     if (!ethereum) {
+      store.dispatch(setLeaseTokens(0));
       reportError("Please install Metamask");
       return Promise.reject(new Error("Metamask not installed'"));
     }

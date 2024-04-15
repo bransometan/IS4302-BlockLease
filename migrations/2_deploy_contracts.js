@@ -7,7 +7,7 @@ const RentDisputeDAO = artifacts.require("RentDisputeDAO");
 const PROTECTION_FEE = 50;
 const VOTER_REWARD = 50;
 const VOTE_PRICE = 1;
-const MINIMUM_VOTES = 3;
+const MINIMUM_VOTES = 2;
 
 module.exports = async (deployer, network, accounts) => {
   await deployer.deploy(LeaseToken).then(function () {

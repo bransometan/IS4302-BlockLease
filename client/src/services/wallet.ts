@@ -1,5 +1,6 @@
 import { store } from "@/store";
 import { globalActions } from "@/store/globalSlices";
+import { getBalance } from "./leaseToken";
 
 const { setWallet } = globalActions;
 let ethereum: any;
@@ -18,6 +19,7 @@ export const connectWallet = async () => {
       method: "eth_requestAccounts",
     });
     store.dispatch(setWallet(accounts?.[0]));
+    await getBalance();
   } catch (error) {
     reportError(error);
   }
@@ -38,12 +40,15 @@ export const checkWallet = async () => {
     ethereum.on("accountsChanged", async () => {
       store.dispatch(setWallet(accounts?.[0]));
       await checkWallet();
+      await getBalance();
     });
 
     if (accounts?.length) {
       store.dispatch(setWallet(accounts[0]));
+      await getBalance();
     } else {
       store.dispatch(setWallet(""));
+      await getBalance();
       reportError("Please connect wallet, no accounts found.");
     }
   } catch (error) {

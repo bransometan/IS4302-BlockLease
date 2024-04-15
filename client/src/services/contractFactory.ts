@@ -9,7 +9,7 @@ import PaymentEscrowContract from "../../../build/contracts/PaymentEscrow.json";
 export enum DeployedContract {
   RentalPropertyContract,
   RentalMarketplaceContract,
-  // RentalDisputeDAOContract,
+  RentDisputeDAOContract,
   LeaseTokenContract,
   PaymentEscrowContract,
 }
@@ -42,11 +42,11 @@ export const getContract = async (contract: DeployedContract) => {
       contractAddress = deployedNetwork.address;
       contractAbi = RentalMarketplaceContract.abi;
       break;
-    // case Contract.RentalDisputeDAOContract:
-    //   deployedNetwork = RentalDisputeDAOContract.networks[GANACHE_NETWORK_ID];
-    //   contractAddress = deployedNetwork.address;
-    //   contractAbi = RentalDisputeDAOContract.abi;
-    //   break;
+    case DeployedContract.RentDisputeDAOContract:
+      deployedNetwork = RentDisputeDAOContract.networks[GANACHE_NETWORK_ID];
+      contractAddress = deployedNetwork.address;
+      contractAbi = RentDisputeDAOContract.abi;
+      break;
     case DeployedContract.LeaseTokenContract:
       deployedNetwork = LeaseTokenContract.networks[GANACHE_NETWORK_ID];
       contractAddress = deployedNetwork.address;

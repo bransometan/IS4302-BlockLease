@@ -33,6 +33,27 @@ export const listRentalProperty = async (
   }
 };
 
+export const unlistRentalProperty = async (rentalPropertyId: number) => {
+  if (!ethereum) {
+    reportError("Please install Metamask");
+    return Promise.reject(new Error("Metamask not installed"));
+  }
+
+  try {
+    const rentalMarketplaceContract = await getContract(
+      DeployedContract.RentalMarketplaceContract
+    );
+    const tx = await rentalMarketplaceContract.unlistARentalProperty(
+      rentalPropertyId
+    );
+    await tx.wait();
+    return Promise.resolve(tx);
+  } catch (error) {
+    reportError(error);
+    return Promise.reject(error);
+  }
+};
+
 export const applyRentalProperty = async (
   rentalPropertyId: number,
   tenantName: string,
@@ -167,6 +188,105 @@ export const acceptRentalApplication = async (
     await tx.wait();
     await getBalance(); // Since the deposit by tenant is released to landlord
     return Promise.resolve(tx);
+  } catch (error) {
+    reportError(error);
+    return Promise.reject(error);
+  }
+};
+
+export const makePayment = async (
+  rentalPropertyId: number,
+  applicationId: number
+) => {
+  if (!ethereum) {
+    reportError("Please install Metamask");
+    return Promise.reject(new Error("Metamask not installed"));
+  }
+
+  try {
+    const rentalMarketplaceContract = await getContract(
+      DeployedContract.RentalMarketplaceContract
+    );
+    const tx = await rentalMarketplaceContract.makePayment(
+      rentalPropertyId,
+      applicationId
+    );
+    await tx.wait();
+    await getBalance(); // Since payment in Lease Tokens is made
+    return Promise.resolve(tx);
+  } catch (error) {
+    reportError(error);
+    return Promise.reject(error);
+  }
+};
+
+export const acceptPayment = async (
+  rentalPropertyId: number,
+  applicationId: number
+) => {
+  if (!ethereum) {
+    reportError("Please install Metamask");
+    return Promise.reject(new Error("Metamask not installed"));
+  }
+
+  try {
+    const rentalMarketplaceContract = await getContract(
+      DeployedContract.RentalMarketplaceContract
+    );
+    const tx = await rentalMarketplaceContract.acceptPayment(
+      rentalPropertyId,
+      applicationId
+    );
+    await tx.wait();
+    await getBalance(); // Since payment in Lease Tokens is accepted
+    return Promise.resolve(tx);
+  } catch (error) {
+    reportError(error);
+    return Promise.reject(error);
+  }
+};
+
+export const moveOut = async (
+  rentalPropertyId: number,
+  applicationId: number
+) => {
+  if (!ethereum) {
+    reportError("Please install Metamask");
+    return Promise.reject(new Error("Metamask not installed"));
+  }
+
+  try {
+    const rentalMarketplaceContract = await getContract(
+      DeployedContract.RentalMarketplaceContract
+    );
+    const tx = await rentalMarketplaceContract.moveOut(
+      rentalPropertyId,
+      applicationId
+    );
+    await tx.wait();
+    await getBalance(); // Since deposit fee is returned to tenant
+    return Promise.resolve(tx);
+  } catch (error) {
+    reportError(error);
+    return Promise.reject(error);
+  }
+};
+
+export const getDepositAmountForRentalPropertyId = async (
+  rentalPropertyId: number
+) => {
+  if (!ethereum) {
+    reportError("Please install Metamask");
+    return Promise.reject(new Error("Metamask not installed"));
+  }
+
+  try {
+    const rentalMarketplaceContract = await getContract(
+      DeployedContract.RentalMarketplaceContract
+    );
+    const depositAmount: BigInt =
+      await rentalMarketplaceContract.getDepositAmount(rentalPropertyId);
+    return Promise.resolve(Number(depositAmount));
   } catch (error) {
     reportError(error);
     return Promise.reject(error);

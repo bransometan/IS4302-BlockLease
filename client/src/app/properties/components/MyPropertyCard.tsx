@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Card,
   CardContent,
@@ -11,14 +13,16 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
-import { RentalPropertyStruct } from "@/types/structs";
+import { RentalApplicationStruct, RentalPropertyStruct } from "@/types/structs";
 import { CircleEllipsis } from "lucide-react";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import EditRentalPropertyForm from "./EditRentalPropertyForm";
 import DeleteRentalPropertyDialog from "./DeleteRentalProperyDialog";
 import ListRentalPropertyDialog from "./ListRentalProperyDialog";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import UnlistRentalPropertyDialog from "./UnlistRentalPropertyDialog";
+import { getAllRentalApplicationsByRentalPropertyId } from "@/services/rentalMarketplace";
 
 const MyPropertyActionsDropdown = ({
   rentalProperty,
@@ -46,9 +50,9 @@ const MyPropertyActionsDropdown = ({
                 />
               </>
             ) : (
-              <>
-                <p>Unlist</p>
-              </>
+              <UnlistRentalPropertyDialog
+                rentalPropertyId={rentalProperty.rentalPropertyId}
+              />
             )}
           </ul>
         </div>
@@ -66,12 +70,12 @@ export default function MyPropertyCard({
   const propertyId = params.propertyId;
   return (
     <Card>
+      <CardHeader className="font-bold relative">
+        <MyPropertyActionsDropdown rentalProperty={rentalProperty} />
+        <CardTitle>{rentalProperty.location}</CardTitle>
+      </CardHeader>
       {!propertyId ? (
         <Link href={`/properties/${rentalProperty.rentalPropertyId}`}>
-          <CardHeader className="font-bold relative">
-            <MyPropertyActionsDropdown rentalProperty={rentalProperty} />
-            <CardTitle>{rentalProperty.location}</CardTitle>
-          </CardHeader>
           <CardContent className="space-y-2">
             <p> {rentalProperty.description}</p>
             <hr />
@@ -98,10 +102,6 @@ export default function MyPropertyCard({
         </Link>
       ) : (
         <>
-          <CardHeader className="font-bold relative">
-            <MyPropertyActionsDropdown rentalProperty={rentalProperty} />
-            <CardTitle>{rentalProperty.location}</CardTitle>
-          </CardHeader>
           <CardContent className="space-y-2">
             <p> {rentalProperty.description}</p>
             <hr />

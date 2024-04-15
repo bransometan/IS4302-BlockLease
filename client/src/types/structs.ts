@@ -13,6 +13,29 @@ export enum RentStatus {
   DISPUTE = "Dispute", // This is when a dispute is submitted from the tenant to the landlord when the rental is completed
 }
 
+export enum DisputeStatus {
+  PENDING = "Pending",
+  APPROVED = "Approved",
+  REJECTED = "Rejected",
+  DRAW = "Draw",
+}
+
+export enum DisputeType {
+  MAINTENANCE_AND_REPAIRS = "Maintenance and repairs",
+  HEALTH_AND_SAFETY = "Health and safety",
+  PRIVACY = "Privacy",
+  DISCRIMINATION = "Discrimination",
+  NOISE_COMPLAINTS = "Noise complaints",
+  LEASE_TERMS = "Lease terms",
+  OTHER = "Other",
+}
+
+export enum Vote {
+  VOID = "Void",
+  APPROVE = "Approve",
+  REJECT = "Reject",
+}
+
 export interface RentalPropertyStruct {
   rentalPropertyId: number;
   location: string;
@@ -41,4 +64,17 @@ export interface RentalApplicationStruct {
   monthsPaid: number;
   status: RentStatus;
   paymentIds: number[];
+}
+
+export interface RentDisputeStruct {
+  rentDisputeId: number; // Unique identifier for the dispute
+  rentalPropertyId: number; // Unique identifier for the rental property
+  applicationId: number; // Unique identifier for the rental application
+  tenantAddress: string; // Address of the tenant who created the dispute
+  landlordAddress: string; // Address of the landlord of the rental property
+  startTime: Date; // Start time of the dispute
+  endTime: Date; // End time of the dispute
+  status: DisputeStatus; // Status of the dispute (PENDING, APPROVED, REJECTED, DRAW)
+  disputeType: DisputeType; // Type of the dispute
+  disputeReason: string; // Reason for the dispute
 }

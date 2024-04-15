@@ -11,9 +11,9 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import {
   acceptRentalApplication,
-  cancelOrRejectRentalApplication,
+  getDepositAmountForRentalPropertyId,
 } from "@/services/rentalMarketplace";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function AcceptRentalApplicationDialog({
   rentalPropertyId,
@@ -24,6 +24,17 @@ export default function AcceptRentalApplicationDialog({
 }) {
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
+  const [depositFee, setDepositFee] = useState<number>();
+
+  useEffect(() => {
+    const getDepositFee = async () => {
+      const depositFee = await getDepositAmountForRentalPropertyId(
+        rentalPropertyId
+      );
+      setDepositFee(depositFee);
+    };
+    getDepositFee();
+  }, []);
 
   async function handleAccept() {
     try {
@@ -45,6 +56,8 @@ export default function AcceptRentalApplicationDialog({
     }
   }
 
+  if (!depositFee) return;
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -56,8 +69,9 @@ export default function AcceptRentalApplicationDialog({
         <DialogHeader>
           <DialogTitle>Accept Rental Application</DialogTitle>
           <DialogDescription>
-            The deposit fee provided by the prospective tenant will be released
-            to you once you accept this rental application.
+            The deposit fee of <b>{depositFee} lease tokens</b> provided by the
+            prospective tenant will be released to you once you accept this
+            rental application.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
