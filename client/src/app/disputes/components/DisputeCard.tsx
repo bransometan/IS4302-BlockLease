@@ -18,6 +18,8 @@ import { checkUserRole, formatDateForDispute, truncate } from "@/lib/utils";
 import { useSession } from "@clerk/nextjs";
 import { UserRole } from "@/constants";
 import VoteForm from "./VoteForm";
+import { useEffect, useState } from "react";
+import { getNumVotersInDispute } from "@/services/rentDisputeDAO";
 
 const RentalApplicationActionsDropdown = ({
   disputeId,
@@ -47,6 +49,16 @@ export default function DisputeCard({
 }) {
   const { session } = useSession();
   const role = checkUserRole(session);
+  const [numVoters, setNumVoters] = useState<number>();
+
+  useEffect(() => {
+    const getNumVoters = async () => {
+      const numVoters = await getNumVotersInDispute(rentDispute.rentDisputeId);
+      setNumVoters(numVoters);
+    };
+    getNumVoters();
+  }, []);
+
   return (
     <Card>
       <CardHeader className="font-bold relative">
@@ -85,9 +97,14 @@ export default function DisputeCard({
         </ul>
       </CardContent>
       <CardFooter>
-        <p>
-          Tenant Dispute Status: <b>{rentDispute.status}</b>
-        </p>
+        <div>
+          <p>
+            Current number of voters: <b>{numVoters}/2</b>
+          </p>
+          <p>
+            Tenant Dispute Status: <b>{rentDispute.status}</b>
+          </p>
+        </div>
       </CardFooter>
     </Card>
   );

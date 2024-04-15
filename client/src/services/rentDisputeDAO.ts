@@ -136,6 +136,26 @@ export const voteOnRentDispute = async (disputeId: number, vote: Vote) => {
   }
 };
 
+export const getNumVotersInDispute = async (disputeId: number) => {
+  if (!ethereum) {
+    reportError("Please install Metamask");
+    return Promise.reject(new Error("Metamask not installed"));
+  }
+
+  try {
+    const rentDisputeDAOContract = await getContract(
+      DeployedContract.RentDisputeDAOContract
+    );
+    const numVoters = await rentDisputeDAOContract.getNumVotersInDispute(
+      disputeId
+    );
+    return Number(numVoters);
+  } catch (error) {
+    reportError(error);
+    return Promise.reject(error);
+  }
+};
+
 const _structureRentDispute = (
   rentDispute: RentDisputeStruct
 ): RentDisputeStruct => {
