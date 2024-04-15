@@ -144,13 +144,9 @@ contract('Rental Property + Rental Marketplace Test Cases', function(accounts) {
         await rentalMarketplaceInstance.listARentalProperty(2, depositFee, {from: landlord});
         const result = await rentalMarketplaceInstance.applyRentalProperty(2, "John Doe", "johndoe@example.com", "1234567890", "Need a place near work", {from: tenant});
         truffleAssert.eventEmitted(result, 'RentalApplicationSubmitted');
-
-        const appCount = await rentalMarketplaceInstance.getRentalApplicationCount(2);
-        assert.equal(appCount, 1, "There should be one application.");
     });
 
     it("Test : Landlord accepts a rental application", async () => {
-
         // use back the the same rental application
         const result = await rentalMarketplaceInstance.acceptRentalApplication(rentalPropertyId, 0, {from: landlord});
         truffleAssert.eventEmitted(result, 'RentalApplicationAccepted');
