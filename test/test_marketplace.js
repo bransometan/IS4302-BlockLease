@@ -202,11 +202,10 @@ $$ |  $$ |\$$$$$$$\ $$ |  $$ | \$$$$  |\$$$$$$$ |$$ |      $$ |      $$ |      \
         let t1balance = await leaseTokenInstance.checkLeaseToken(tenant1);
         let t2balance = await leaseTokenInstance.checkLeaseToken(tenant2);
         let t3balance = await leaseTokenInstance.checkLeaseToken(tenant3);
-        console.log(t1balance)
 
-        // assert.equal(t1balance, 400, "Tenant wallet should have deducted the amount");
-        // assert.equal(t2balance, 400, "Tenant wallet should have deducted the amount");
-        // assert.equal(t3balance, 400, "Tenant wallet should have deducted the amount");
+        assert.equal(t1balance, 950, "Tenant wallet should have deducted the amount");
+        assert.equal(t2balance, 950, "Tenant wallet should have deducted the amount");
+        assert.equal(t3balance, 950, "Tenant wallet should have deducted the amount");
 
     });
 

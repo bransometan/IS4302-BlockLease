@@ -112,7 +112,7 @@ contract('Dispute DRAW for Rental', function (accounts) {
         truffleAssert.eventEmitted(validator2VoteAccept, 'VoteOnRentDispute');
 
         let amtv1 = await leaseTokenInstance.checkLeaseToken(validator1);
-        let amtv2 = await leaseTokenInstance.checkLeaseToken(validator1);
+        let amtv2 = await leaseTokenInstance.checkLeaseToken(validator2);
 
         console.log("Validator 1 new wallet balance : " + amtv1.toString())
         console.log("Validator 2 new wallet balance : " + amtv2.toString())
@@ -169,10 +169,10 @@ contract('Dispute DRAW for Rental', function (accounts) {
         await rentalMarketplaceInstance.moveOut(0, 0, {from: tenant});
 
         let t2end = await leaseTokenInstance.checkLeaseToken(tenant);
-        console.log("Tenant Balance : After Move Out + Deposit Fee:" + t2end.toString())
+        console.log("Tenant Balance : After Move Out + Deposit Fee : " + t2end.toString())
 
         let landlordB = await leaseTokenInstance.checkLeaseToken(landlord);
-        console.log("Landlord Balance AFTER refund deposit fee" + landlordB.toString())
+        console.log("Landlord Balance AFTER refund deposit fee : " + landlordB.toString())
         // ======== End ========
     });
 
@@ -207,28 +207,27 @@ contract('Dispute DRAW for Rental', function (accounts) {
         }    
 
         // before dispute
-        console.log("Amount tenant have BEFORE dispute" + tenantTokens)
+        console.log("Amount tenant have BEFORE dispute : " + tenantTokens)
         // Dispute type is health and safety
         const tenantDispute1 = await rentDisputeDAOInstance.createRentDispute(1, 0, 1, "Landlord threatens to light house on fire", { from: tenant });
         truffleAssert.eventEmitted(tenantDispute1, 'RentDisputeCreated');
-        console.log(tenantDispute1)
-
+        
         // check balance of the token of tenant
-        console.log("Amount tenant have AFTER dispute" + tenantTokens)
+        console.log("Amount tenant have AFTER dispute : " + tenantTokens)
 
         // ======== End ========
     });
 
     it('Test Case 10: Check Dispute Draw outcome with NO VOTERS', async () => {  
         let tenantTokens = await leaseTokenInstance.checkLeaseToken(tenant);
-        console.log("Tenant New Balance BEFORE added token reward" + tenantTokens.toString())
+        console.log("Tenant New Balance BEFORE added token reward : " + tenantTokens.toString())
 
         await rentDisputeDAOInstance.triggerResolveRentDispute(2);
 
         console.log("Tenant New Balance AFTER added token reward" + tenantTokens.toString())
 
         let landlordB = await leaseTokenInstance.checkLeaseToken(landlord);
-        console.log("Landlord Balance AFTER UNCHANGED" + landlordB.toString())
+        console.log("Landlord Balance AFTER UNCHANGED : " + landlordB.toString())
         // ======== End ========
     });
 
