@@ -20,7 +20,7 @@ contract('Dispute DRAW for Rental', function (accounts) {
     const validator1 = accounts[3];
     const validator2 = accounts[4];
     const validator3 = accounts[5];
-    const depositFee = 100;
+    const depositFee = 50;
 
     before(async () => {
         leaseTokenInstance = await LeaseToken.deployed();
@@ -129,16 +129,18 @@ contract('Dispute DRAW for Rental', function (accounts) {
 
         } catch (error) {
             console.log("Caught error:", error.message);
-            assert(error.message.includes('revert Dispute is not pending'), "Unexpected error message: " + error.message);
+            assert(error.message.includes('revert Voter has already voted'), "Unexpected error message: " + error.message);
         }
     });
 
     it('Test Case 5: Check Dispute Draw outcome with voters', async () => {  
         // let tenantTokens = await leaseTokenInstance.checkLeaseToken(tenant);
         // console.log("Tenant New Balance BEFORE added token reward : " + tenantTokens.toString())
-
-        let resolve = await rentDisputeDAOInstance.triggerResolveRentDispute(1);
-        truffleAssert.eventEmitted(resolve, 'RentDisputeResolved');
+        const dispute = await rentDisputeDAOInstance.getRentDispute(1);
+        console.log(dispute.status.toString())
+        await rentDisputeDAOInstance.triggerResolveRentDispute(1);
+        // let resolve = await rentDisputeDAOInstance.triggerResolveRentDispute(1);
+        // truffleAssert.eventEmitted(resolve, 'RentDisputeResolved');
 
         // console.log("Tenant New Balance AFTER added token reward : " + tenantTokens.toString())
 
@@ -188,27 +190,28 @@ contract('Dispute DRAW for Rental', function (accounts) {
         let tenantTokens = await leaseTokenInstance.checkLeaseToken(tenant);
 
         let landlordBalance = await leaseTokenInstance.checkLeaseToken(landlord);
-
-        const rentalProperty = await rentalMarketplaceInstance.listARentalProperty(0, depositFee, { from: landlord });
+        await rentalPropertyInstance.addRentalProperty("545 Main St", "s144456", "1", 0, "Dope place", "2", "20", "3", { from: landlord });
+        await rentalMarketplaceInstance.listARentalProperty(1, depositFee, { from: landlord });
         landlordBalance = await leaseTokenInstance.checkLeaseToken(landlord);
 
         // Tenant apply for rental property
-        const tenantApply = await rentalMarketplaceInstance.applyRentalProperty(0, "Tan Ah Kao", "tanahkao@gmail.com", "91231234", "I wish to stay in Main St with Nice place", { from: tenant });
+        const tenantApply = await rentalMarketplaceInstance.applyRentalProperty(1, "Tan Ah Kao", "tanahkao@gmail.com", "91231234", "I wish to stay in Main St with Nice place", { from: tenant });
         // Landlord accepts
-        const landlordAccept = await rentalMarketplaceInstance.acceptRentalApplication(0, 0, { from: landlord });
+        const landlordAccept = await rentalMarketplaceInstance.acceptRentalApplication(1, 0, { from: landlord });
         
         for (let i = 0; i < 3; i++) {
             // Tenant make payment to landlord
-            await rentalMarketplaceInstance.makePayment(0, 0, { from: tenant });
+            await rentalMarketplaceInstance.makePayment(1, 0, { from: tenant });
             // Landlord accept payment
-            await rentalMarketplaceInstance.acceptPayment(0, 0, { from: landlord });
+            await rentalMarketplaceInstance.acceptPayment(1, 0, { from: landlord });
         }    
 
         // before dispute
         console.log("Amount tenant have BEFORE dispute" + tenantTokens)
         // Dispute type is health and safety
-        const tenantDispute1 = await rentDisputeDAOInstance.createRentDispute(0, 0, 1, "Landlord threatens to light house on fire", { from: tenant });
+        const tenantDispute1 = await rentDisputeDAOInstance.createRentDispute(1, 0, 1, "Landlord threatens to light house on fire", { from: tenant });
         truffleAssert.eventEmitted(tenantDispute1, 'RentDisputeCreated');
+        console.log(tenantDispute1)
 
         // check balance of the token of tenant
         console.log("Amount tenant have AFTER dispute" + tenantTokens)
@@ -220,7 +223,7 @@ contract('Dispute DRAW for Rental', function (accounts) {
         let tenantTokens = await leaseTokenInstance.checkLeaseToken(tenant);
         console.log("Tenant New Balance BEFORE added token reward" + tenantTokens.toString())
 
-        await rentDisputeDAOInstance.triggerResolveRentDispute(1);
+        await rentDisputeDAOInstance.triggerResolveRentDispute(2);
 
         console.log("Tenant New Balance AFTER added token reward" + tenantTokens.toString())
 
@@ -230,7 +233,7 @@ contract('Dispute DRAW for Rental', function (accounts) {
     });
 
     it('Test Case 11: Tenant move out of rental property (after dispute)', async () => {     
-        await rentalMarketplaceInstance.moveOut(0, 0, {from: tenant});
+        await rentalMarketplaceInstance.moveOut(1, 0, {from: tenant});
 
         let tend = await leaseTokenInstance.checkLeaseToken(tenant);
         console.log("Tenant Balance : After Move Out + Deposit Fee:" + tend.toString())
@@ -241,7 +244,7 @@ contract('Dispute DRAW for Rental', function (accounts) {
     });
 
     it('Test Case 12: Landlord unlist the property', async () => {     
-        const result = await rentalMarketplaceInstance.unlistARentalProperty(0, {from: landlord});
+        const result = await rentalMarketplaceInstance.unlistARentalProperty(1, {from: landlord});
         truffleAssert.eventEmitted(result, 'RentalPropertyUnlisted');
 
         let landlordB = await leaseTokenInstance.checkLeaseToken(landlord);

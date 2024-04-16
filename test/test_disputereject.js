@@ -11,7 +11,7 @@
 // var RentalProperty = artifacts.require("../contracts/RentalProperty.sol");
 // var RentDisputeDAO = artifacts.require("../contracts/RentDisputeDAO.sol");
 
-// contract('Dispute APPROVED for Rental', function (accounts) {
+// contract('Dispute REJECTED for Rental', function (accounts) {
 //     let leaseTokenInstance, paymentEscrowInstance, rentalMarketplaceInstance, rentalPropertyInstance, rentDisputeDAOInstance;
 
 //     // const owner = accounts[0];
@@ -20,7 +20,7 @@
 //     const validator1 = accounts[3];
 //     const validator2 = accounts[4];
 //     const validator3 = accounts[5];
-//     const depositFee = 50;
+//     const depositFee = 100;
 
 //     before(async () => {
 //         leaseTokenInstance = await LeaseToken.deployed();
