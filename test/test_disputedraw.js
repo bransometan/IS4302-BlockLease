@@ -82,7 +82,7 @@ contract('Dispute DRAW for Rental', function (accounts) {
         // ======== End ========
     });
 
-    it('Test Case 2: Tenant cannot move out of rental property in a dispute', async () => {
+    it('Test Case 2 FAILURE: Tenant cannot move out of rental property in a dispute', async () => {
         try {
             await rentalMarketplaceInstance.moveOut(0, 0, {from: tenant});
         } catch (error) {
@@ -111,8 +111,11 @@ contract('Dispute DRAW for Rental', function (accounts) {
         let validator2VoteAccept = await rentDisputeDAOInstance.voteOnRentDispute(1, 2, { from: validator2 });
         truffleAssert.eventEmitted(validator2VoteAccept, 'VoteOnRentDispute');
 
-        console.log("Validator 1 new wallet balance" + result.toString())
-        console.log("Validator 1 new wallet balance" + result2.toString())
+        let amtv1 = await leaseTokenInstance.checkLeaseToken(validator1);
+        let amtv2 = await leaseTokenInstance.checkLeaseToken(validator1);
+
+        console.log("Validator 1 new wallet balance : " + amtv1.toString())
+        console.log("Validator 2 new wallet balance : " + amtv2.toString())
         // ======== End ========
     });
 
@@ -131,22 +134,22 @@ contract('Dispute DRAW for Rental', function (accounts) {
     });
 
     it('Test Case 5: Check Dispute Draw outcome with voters', async () => {  
-        let tenantTokens = await leaseTokenInstance.checkLeaseToken(tenant);
-        console.log("Tenant New Balance BEFORE added token reward : " + tenantTokens.toString())
+        // let tenantTokens = await leaseTokenInstance.checkLeaseToken(tenant);
+        // console.log("Tenant New Balance BEFORE added token reward : " + tenantTokens.toString())
 
         let resolve = await rentDisputeDAOInstance.triggerResolveRentDispute(1);
         truffleAssert.eventEmitted(resolve, 'RentDisputeResolved');
 
-        console.log("Tenant New Balance AFTER added token reward : " + tenantTokens.toString())
+        // console.log("Tenant New Balance AFTER added token reward : " + tenantTokens.toString())
 
-        let result = await leaseTokenInstance.checkLeaseToken(validator1);
-        let result2 = await leaseTokenInstance.checkLeaseToken(validator2);
+        // let result = await leaseTokenInstance.checkLeaseToken(validator1);
+        // let result2 = await leaseTokenInstance.checkLeaseToken(validator2);
 
-        console.log("Validator 1 New Balance AFTER added VOTE price : " + result.toString())
-        console.log("Validator 2 New Balance AFTER added Vote reward : " + result2.toString())
+        // console.log("Validator 1 New Balance AFTER added VOTE price : " + result.toString())
+        // console.log("Validator 2 New Balance AFTER added Vote reward : " + result2.toString())
 
-        let landlordB = await leaseTokenInstance.checkLeaseToken(landlord);
-        console.log("Landlord Balance AFTER UNCHANGED : " + landlordB.toString())
+        // let landlordB = await leaseTokenInstance.checkLeaseToken(landlord);
+        // console.log("Landlord Balance AFTER UNCHANGED : " + landlordB.toString())
         // ======== End ========
     });
 
