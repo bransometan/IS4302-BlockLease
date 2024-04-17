@@ -153,7 +153,8 @@ $$ |  $$ |\$$$$$$$\ $$ |  $$ | \$$$$  |\$$$$$$$ |$$ |      $$ |      $$ |      \
         const rentalProperty = await rentalMarketplaceInstance.listARentalProperty(1, depositFee, {from: landlord});
         truffleAssert.eventEmitted(rentalProperty, 'RentalPropertyListed');
 
-        // const isListed = await rentalPropertyInstance.getListedStatus(1);
+        const isListed = await rentalPropertyInstance.getListedStatus(1);
+        assert.equal(isListed, true, "Property should be listed");
     });
 
     it("Test Case 3: Landlord can update property when there is no tenant applications", async () => {
@@ -329,13 +330,13 @@ $$ |  $$ |\$$$$$$$\ $$ |  $$ | \$$$$  |\$$$$$$$ |$$ |      $$ |      $$ |      \
         // based on the example propertyid 2 has lease of 12
         for (let i = 0; i < 11; i++) {
             let t2before = await leaseTokenInstance.checkLeaseToken(tenant2);
-            console.log(`Before Monthly Rental paid Month ${i + 2} :` + t2before.toString())
+            console.log(`Tenant Start Balance for Month ${i + 2} :` + t2before.toString())
 
             await rentalMarketplaceInstance.makePayment(2, 1, {from: tenant2});
             await rentalMarketplaceInstance.acceptPayment(2, 1, {from: landlord});
 
             let t2after = await leaseTokenInstance.checkLeaseToken(tenant2);
-            console.log(`After Monthly Rental Receive Month ${i + 2}:` + t2after.toString())
+            console.log(`Tenant Balance After Rental Month ${i + 2}:` + t2after.toString())
         }
 
         await rentalMarketplaceInstance.moveOut(2, 1, {from: tenant2});
