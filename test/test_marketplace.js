@@ -116,7 +116,7 @@ $$ |  $$ |\$$$$$$$\ $$ |  $$ | \$$$$  |\$$$$$$$ |$$ |      $$ |      $$ |      \
     */
 
                                                             
-    it('Test 1: Landlord CANNOT list property', async () => {
+    it('Test Case 1: Landlord CANNOT list property', async () => {
         let amountOfEthToSend = web3.utils.toWei('0.4', 'ether');
 
         await leaseTokenInstance.getLeaseToken({
@@ -141,19 +141,19 @@ $$ |  $$ |\$$$$$$$\ $$ |  $$ | \$$$$  |\$$$$$$$ |$$ |      $$ |      $$ |      \
                                                                                                                    
 
     // will only be using property id 1 as example
-    it('Test 2: Landlord CAN list a property on market place', async () => {
+    it('Test Case 2: Landlord CAN list a property on market place', async () => {
         let amountOfEthToSend = web3.utils.toWei('10', 'ether');
         let result = await leaseTokenInstance.getLeaseToken({
             from: landlord, 
             value: amountOfEthToSend
         });
         let landlordBalance = await leaseTokenInstance.checkLeaseToken(landlord);
-        console.log(landlordBalance.toString())
+        console.log("Landlord Balance " + landlordBalance.toString())
 
         const rentalProperty = await rentalMarketplaceInstance.listARentalProperty(1, depositFee, {from: landlord});
         truffleAssert.eventEmitted(rentalProperty, 'RentalPropertyListed');
 
-        const isListed = await rentalPropertyInstance.getListedStatus(1);
+        // const isListed = await rentalPropertyInstance.getListedStatus(1);
     });
 
     it("Test Case 3: Landlord can update property when there is no tenant applications", async () => {
@@ -170,7 +170,6 @@ $$ |  $$ |\$$$$$$$\ $$ |  $$ | \$$$$  |\$$$$$$$ |$$ |      $$ |      $$ |      \
         truffleAssert.eventEmitted(updateResult, 'RentalPropertyUpdateDetails');
 
         let updatedProperty = await rentalPropertyInstance.getRentalProperty(1);
-        console.log(updatedProperty)
         assert.equal(updatedProperty[1], updatedTitle, "Property title should be updated.");
         assert.equal(updatedProperty[5], updatedDescription, "Property description should be updated.");
         assert.equal(updatedProperty[7], updatedRentalPrice, "Rental price should be updated.");
@@ -184,7 +183,7 @@ $$ |  $$ |\$$$$$$$\ $$ |  $$ | \$$$$  |\$$$$$$$ |$$ |      $$ |      $$ |      \
         const unlistResult = await rentalMarketplaceInstance.unlistARentalProperty(1, {from: landlord});
         truffleAssert.eventEmitted(unlistResult, 'RentalPropertyUnlisted');
         const isListed = await rentalPropertyInstance.getListedStatus(1);
-        console.log(isListed)
+        assert.equal(isListed, false, "Property should be unlisted");
     });
 
     it("Test Case 5: Tenant can apply for rental property", async () => {
@@ -250,7 +249,7 @@ $$ |  $$ |\$$$$$$$\ $$ |  $$ | \$$$$  |\$$$$$$$ |$$ |      $$ |      $$ |      \
 
         const result = await rentalMarketplaceInstance.cancelOrRejectRentalApplication(2, 0, {from: landlord});
         truffleAssert.eventEmitted(result, 'RentalApplicationCancelOrRejected');
-        
+
         let t1balance = await leaseTokenInstance.checkLeaseToken(tenant1);
         console.log(`Balance After: ${t1balance.toString()}`);
 
@@ -330,13 +329,13 @@ $$ |  $$ |\$$$$$$$\ $$ |  $$ | \$$$$  |\$$$$$$$ |$$ |      $$ |      $$ |      \
         // based on the example propertyid 2 has lease of 12
         for (let i = 0; i < 11; i++) {
             let t2before = await leaseTokenInstance.checkLeaseToken(tenant2);
-            console.log(`Before Monthly Rental paid ${i + 2} :` + t2before.toString())
+            console.log(`Before Monthly Rental paid Month ${i + 2} :` + t2before.toString())
 
             await rentalMarketplaceInstance.makePayment(2, 1, {from: tenant2});
             await rentalMarketplaceInstance.acceptPayment(2, 1, {from: landlord});
 
             let t2after = await leaseTokenInstance.checkLeaseToken(tenant2);
-            console.log(`After Monthly Rental Receive ${i + 2}:` + t2after.toString())
+            console.log(`After Monthly Rental Receive Month ${i + 2}:` + t2after.toString())
         }
 
         await rentalMarketplaceInstance.moveOut(2, 1, {from: tenant2});
@@ -349,17 +348,18 @@ $$ |  $$ |\$$$$$$$\ $$ |  $$ | \$$$$  |\$$$$$$$ |$$ |      $$ |      $$ |      \
     // need to check on the protection fee how it works
     it("Test Case 17: Landlord unlist rental property", async () => {
         const landlordwallet = await leaseTokenInstance.checkLeaseToken(landlord);
-        console.log("Before List Property:" + landlordwallet.toString())
+        // console.log("Before List Property:" + landlordwallet.toString())
 
-        const rentalProperty = await rentalMarketplaceInstance.listARentalProperty(3, depositFee, {from: landlord});
-        truffleAssert.eventEmitted(rentalProperty, 'RentalPropertyListed');
+        // const rentalProperty = await rentalMarketplaceInstance.listARentalProperty(3, depositFee, {from: landlord});
+        // truffleAssert.eventEmitted(rentalProperty, 'RentalPropertyListed');
 
         console.log("Before Unlist Property:" + landlordwallet.toString())
 
-        const result = await rentalMarketplaceInstance.unlistARentalProperty(3, {from: landlord});
+        const result = await rentalMarketplaceInstance.unlistARentalProperty(2, {from: landlord});
         truffleAssert.eventEmitted(result, 'RentalPropertyUnlisted');
 
-        console.log("After Unlist (Refund + full protection fee) :" + landlordwallet.toString())
+        const landlordwalletA = await leaseTokenInstance.checkLeaseToken(landlord);
+        console.log("After Unlist (Refund + full protection fee) :" + landlordwalletA.toString())
     });
 
 

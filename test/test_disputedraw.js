@@ -71,13 +71,14 @@ contract('Dispute DRAW for Rental', function (accounts) {
         }
 
         // before dispute
-        console.log("Amount tenant have BEFORE dispute" + tenantTokens)
+        console.log("Amount tenant have BEFORE dispute : " + tenantTokens)
         // Dispute type is health and safety
         const tenantDispute1 = await rentDisputeDAOInstance.createRentDispute(0, 0, 1, "Landlord threatens to light house on fire", { from: tenant });
         truffleAssert.eventEmitted(tenantDispute1, 'RentDisputeCreated');
 
+        const tokenafter = await leaseTokenInstance.checkLeaseToken(tenant);
         // check balance of the token of tenant
-        console.log("Amount tenant have AFTER dispute" + tenantTokens)
+        console.log("Amount tenant have AFTER dispute : " + tokenafter.toString())
 
         // ======== End ========
     });
@@ -134,24 +135,21 @@ contract('Dispute DRAW for Rental', function (accounts) {
     });
 
     it('Test Case 5: Check Dispute Draw outcome with voters', async () => {  
-        // let tenantTokens = await leaseTokenInstance.checkLeaseToken(tenant);
-        // console.log("Tenant New Balance BEFORE added token reward : " + tenantTokens.toString())
-        const dispute = await rentDisputeDAOInstance.getRentDispute(1);
-        console.log(dispute.status.toString())
-        await rentDisputeDAOInstance.triggerResolveRentDispute(1);
-        // let resolve = await rentDisputeDAOInstance.triggerResolveRentDispute(1);
-        // truffleAssert.eventEmitted(resolve, 'RentDisputeResolved');
 
-        // console.log("Tenant New Balance AFTER added token reward : " + tenantTokens.toString())
+        let resolve = await rentDisputeDAOInstance.triggerResolveRentDispute(1);
+        truffleAssert.eventEmitted(resolve, 'RentDisputeResolved');
+        
+        let tenanttoken = await leaseTokenInstance.checkLeaseToken(tenant);
+        console.log("Tenant New Balance AFTER added token reward : " + tenanttoken.toString())
 
-        // let result = await leaseTokenInstance.checkLeaseToken(validator1);
-        // let result2 = await leaseTokenInstance.checkLeaseToken(validator2);
+        let result = await leaseTokenInstance.checkLeaseToken(validator1);
+        let result2 = await leaseTokenInstance.checkLeaseToken(validator2);
 
-        // console.log("Validator 1 New Balance AFTER added VOTE price : " + result.toString())
-        // console.log("Validator 2 New Balance AFTER added Vote reward : " + result2.toString())
+        console.log("Validator 1 New Balance AFTER added VOTE price : " + result.toString())
+        console.log("Validator 2 New Balance AFTER added Vote reward : " + result2.toString())
 
-        // let landlordB = await leaseTokenInstance.checkLeaseToken(landlord);
-        // console.log("Landlord Balance AFTER UNCHANGED : " + landlordB.toString())
+        let landlordB = await leaseTokenInstance.checkLeaseToken(landlord);
+        console.log("Landlord Balance AFTER UNCHANGED : " + landlordB.toString())
         // ======== End ========
     });
 
@@ -212,8 +210,9 @@ contract('Dispute DRAW for Rental', function (accounts) {
         const tenantDispute1 = await rentDisputeDAOInstance.createRentDispute(1, 0, 1, "Landlord threatens to light house on fire", { from: tenant });
         truffleAssert.eventEmitted(tenantDispute1, 'RentDisputeCreated');
         
+        const tokenafter = await leaseTokenInstance.checkLeaseToken(tenant);
         // check balance of the token of tenant
-        console.log("Amount tenant have AFTER dispute : " + tenantTokens)
+        console.log("Amount tenant have AFTER dispute : " + tokenafter.toString())
 
         // ======== End ========
     });
@@ -224,7 +223,8 @@ contract('Dispute DRAW for Rental', function (accounts) {
 
         await rentDisputeDAOInstance.triggerResolveRentDispute(2);
 
-        console.log("Tenant New Balance AFTER added token reward" + tenantTokens.toString())
+        let tenantTokensafter = await leaseTokenInstance.checkLeaseToken(tenant);
+        console.log("Tenant New Balance AFTER added token reward" + tenantTokensafter.toString())
 
         let landlordB = await leaseTokenInstance.checkLeaseToken(landlord);
         console.log("Landlord Balance AFTER UNCHANGED : " + landlordB.toString())

@@ -77,7 +77,8 @@ contract('Dispute APPROVED for Rental', function (accounts) {
         truffleAssert.eventEmitted(tenantDispute1, 'RentDisputeCreated');
 
         // check balance of the token of tenant
-        console.log("Amount tenant have AFTER dispute : " + tenantTokens)
+        const tokenafter = await leaseTokenInstance.checkLeaseToken(tenant);
+        console.log("Amount tenant have AFTER dispute : " + tokenafter.toString())
 
         // ======== End ========
     });
@@ -153,14 +154,15 @@ contract('Dispute APPROVED for Rental', function (accounts) {
         let resolve = await rentDisputeDAOInstance.triggerResolveRentDispute(1);
         truffleAssert.eventEmitted(resolve, 'RentDisputeResolved');
 
-        console.log("Tenant New Balance AFTER added token reward : " + tenantTokens.toString())
+        let tenantTokensafter = await leaseTokenInstance.checkLeaseToken(tenant);
+        console.log("Tenant New Balance AFTER added token reward : " + tenantTokensafter.toString())
 
         let result = await leaseTokenInstance.checkLeaseToken(validator1);
         let result2 = await leaseTokenInstance.checkLeaseToken(validator2);
         let result3= await leaseTokenInstance.checkLeaseToken(validator3);
         console.log("Validator 1 New Balance AFTER added VOTE commision : " + result.toString())
         console.log("Validator 2 New Balance AFTER added Vote commison : " + result2.toString())
-        console.log("Validator 3 New Balance SAME after lost : " + result2.toString())
+        console.log("Validator 3 New Balance SAME after lost : " + result3.toString())
 
 
         // let landlordB = await leaseTokenInstance.checkLeaseToken(landlord);

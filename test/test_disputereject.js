@@ -76,8 +76,8 @@ contract('Dispute REJECTED for Rental', function (accounts) {
         const tenantDispute1 = await rentDisputeDAOInstance.createRentDispute(0, 0, 1, "Landlord threatens to light house on fire", { from: tenant });
         truffleAssert.eventEmitted(tenantDispute1, 'RentDisputeCreated');
 
-        // check balance of the token of tenant
-        console.log("Amount tenant have AFTER dispute : " + tenantTokens)
+        const tokenafter = await leaseTokenInstance.checkLeaseToken(tenant);
+        console.log("Amount tenant have AFTER dispute : " + tokenafter.toString())
 
         // ======== End ========
     });
@@ -161,7 +161,7 @@ contract('Dispute REJECTED for Rental', function (accounts) {
 
         console.log("Validator 1 New Balance AFTER added VOTE commision : " + result.toString())
         console.log("Validator 2 New Balance AFTER added Vote commison : " + result2.toString())
-        console.log("Validator 3 New Balance SAME after lost : " + result2.toString())
+        console.log("Validator 3 New Balance SAME after lost : " + result3.toString())
 
 
         // let landlordB = await leaseTokenInstance.checkLeaseToken(landlord);
