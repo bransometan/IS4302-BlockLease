@@ -3,7 +3,15 @@ pragma solidity ^0.8.0;
 
 import "./ERC20.sol";
 
+/*
+LeaseToken contract is a contract that allows users to get LeaseToken by sending ETH to the contract address.
+LeaseToken utilises ERC20 token that is minted by the contract and can be transferred to other addresses.
+LeaseToken can be converted to ETH by calling the convertLeaseTokenToETH function.
+*/
+
 contract LeaseToken {
+
+    // ################################################### STRUCTURE & STATE VARIABLES ################################################### //
     ERC20 erc20Contract;
     uint256 supplyLimit;
     uint256 currentSupply;
@@ -15,7 +23,7 @@ contract LeaseToken {
         owner = msg.sender;
         supplyLimit = 1e18; // 1e18 LeaseToken supply limit
     }
-
+    // ################################################### EVENTS ################################################### //
     event getCredit(uint256 credit);
     event transferCredit(address sender, address recipient, uint256 credit);
     event transferCreditFrom(
@@ -26,6 +34,9 @@ contract LeaseToken {
     );
     event approveCredit(address sender, address spender, uint256 credit);
 
+    // ################################################### FUNCTIONS ################################################### //
+    
+    // Get LeaseToken by sending ETH
     function getLeaseToken() public payable {
         uint256 leaseToken = msg.value / 1e16; // Get LeaseToken eligible (1e16 wei = 1 LeaseToken OR 0.01 ETH = 1 LeaseToken)
         require(
@@ -36,11 +47,13 @@ contract LeaseToken {
         erc20Contract.mint(msg.sender, leaseToken);
     }
 
+    // Check LeaseToken balance
     function checkLeaseToken(address recipient) public view returns (uint256) {
         uint256 leaseToken = erc20Contract.balanceOf(recipient);
         return leaseToken;
     }
 
+    // Transfer LeaseToken to another address
     function transferLeaseToken(
         address sender,
         address recipient,
@@ -50,6 +63,7 @@ contract LeaseToken {
         emit transferCredit(sender, recipient, leaseToken);
     }
 
+    // Transfer LeaseToken from another address to another address
     function transferLeaseTokenFrom(
         address spender,
         address sender,
@@ -60,6 +74,7 @@ contract LeaseToken {
         emit transferCreditFrom(spender, sender, recipient, leaseToken);
     }
 
+    // Approve LeaseToken to be spent by another address
     function approveLeaseToken(
         address sender,
         address spender,
@@ -69,6 +84,7 @@ contract LeaseToken {
         emit approveCredit(sender, spender, leaseToken);
     }
 
+    // Check LeaseToken allowance for spender
     function checkLeaseTokenAllowance(
         address _owner,
         address spender
@@ -77,6 +93,7 @@ contract LeaseToken {
         return allowance;
     }
 
+    // Convert LeaseToken to ETH
     function convertLeaseTokenToETH(
         address sender,
         uint256 leaseTokenAmount
