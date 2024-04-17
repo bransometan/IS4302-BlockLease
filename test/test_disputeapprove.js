@@ -120,6 +120,8 @@ contract('Dispute APPROVED for Rental', function (accounts) {
         let validator3VoteAccept = await rentDisputeDAOInstance.voteOnRentDispute(1, 2, { from: validator3 });
         truffleAssert.eventEmitted(validator3VoteAccept, 'VoteOnRentDispute');
 
+        
+
         let amtv1 = await leaseTokenInstance.checkLeaseToken(validator1);
         let amtv2 = await leaseTokenInstance.checkLeaseToken(validator2);
         let amtv3 = await leaseTokenInstance.checkLeaseToken(validator3);
@@ -191,7 +193,10 @@ contract('Dispute APPROVED for Rental', function (accounts) {
         // ======== End ========
     });
 
-    it('Test Case 8: Landlord unlist the property', async () => {     
+    it('Test Case 8: Landlord unlist the property', async () => {
+        const landlordwallet = await leaseTokenInstance.checkLeaseToken(landlord);
+        console.log("Before Unlist Property:" + landlordwallet.toString())
+
         const result = await rentalMarketplaceInstance.unlistARentalProperty(0, {from: landlord});
         truffleAssert.eventEmitted(result, 'RentalPropertyUnlisted');
 

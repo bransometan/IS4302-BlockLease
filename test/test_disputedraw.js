@@ -242,7 +242,10 @@ contract('Dispute DRAW for Rental', function (accounts) {
         // ======== End ========
     });
 
-    it('Test Case 12: Landlord unlist the property', async () => {     
+    it('Test Case 12: Landlord unlist the property', async () => {
+        const landlordwallet = await leaseTokenInstance.checkLeaseToken(landlord);
+        console.log("Before Unlist Property:" + landlordwallet.toString())
+             
         const result = await rentalMarketplaceInstance.unlistARentalProperty(1, {from: landlord});
         truffleAssert.eventEmitted(result, 'RentalPropertyUnlisted');
 
