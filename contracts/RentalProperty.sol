@@ -1,6 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
+/*
+RentalProperty contract is a contract that allows landlords to create, update, delete and get rental properties.
+RentalProperty contract has the following core functionalities:
+- Landlord create a new rental property
+- Landlord update details of a rental property
+- Landlord delete a rental property
+*/
+
 contract RentalProperty {
     // ################################################### STRUCTURE & STATE VARIABLES ################################################### //
 

@@ -4,6 +4,20 @@ pragma solidity ^0.8.0;
 import "./RentalProperty.sol";
 import "./PaymentEscrow.sol";
 
+/*
+RentalMarketplace contract is a contract that allows tenants to apply for rental properties listed by landlords.
+RentalMarketplace contract interacts with RentalProperty contract and PaymentEscrow contract.
+RentalMarketplace contract has the following core functionalities:
+- Landlord can list a rental property to the marketplace to start accepting tenants.
+- Landlord can unlist a rental property from the marketplace to stop accepting tenants.
+- Tenant can apply for a rental property by submitting a rental application.
+- Tenant can cancel or landlord can reject a rental application.
+- Landlord can accept a rental application to start the rental process.
+- Tenant can make a payment for the rental property.
+- Landlord can accept a payment from a tenant.
+- Tenant move out of the rental property and landlord return deposit if any.
+*/
+
 contract RentalMarketplace {
     // ################################################### STRUCTURE & STATE VARIABLES ################################################### //
 
