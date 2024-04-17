@@ -1,7 +1,12 @@
+// "LeaseToken" represents a smart contract for managing lease tokens.
 const LeaseToken = artifacts.require("LeaseToken");
+// "PaymentEscrow" represents a smart contract for managing payment escrow.
 const PaymentEscrow = artifacts.require("PaymentEscrow");
+// "RentalProperty" represents a smart contract for managing rental properties.
 const RentalProperty = artifacts.require("RentalProperty");
+// "RentalMarketplace" represents a smart contract for managing a marketplace for renting properties.
 const RentalMarketplace = artifacts.require("RentalMarketplace");
+// "RentDisputeDAO" represents a smart contract for managing disputes related to rent.
 const RentDisputeDAO = artifacts.require("RentDisputeDAO");
 
 // Fixed parameters for the contracts
