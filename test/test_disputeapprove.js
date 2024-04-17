@@ -120,7 +120,7 @@ contract('Dispute APPROVED for Rental', function (accounts) {
         let validator3VoteAccept = await rentDisputeDAOInstance.voteOnRentDispute(1, 2, { from: validator3 });
         truffleAssert.eventEmitted(validator3VoteAccept, 'VoteOnRentDispute');
 
-        
+
 
         let amtv1 = await leaseTokenInstance.checkLeaseToken(validator1);
         let amtv2 = await leaseTokenInstance.checkLeaseToken(validator2);
@@ -182,13 +182,21 @@ contract('Dispute APPROVED for Rental', function (accounts) {
     });
 
 
-    it('Test Case 7: Tenant move out of rental property (after dispute)', async () => {     
+    it('Test Case 7: Tenant move out of rental property (after dispute)', async () => {    
+        let t2current = await leaseTokenInstance.checkLeaseToken(tenant);
+        let landlordBbefore = await leaseTokenInstance.checkLeaseToken(landlord);
+        let application = await rentalMarketplaceInstance.getRentalApplication(0,0);
+        assert.equal(application.status, 3, "Application status not COMPLETED");
+
         await rentalMarketplaceInstance.moveOut(0, 0, {from: tenant});
 
         let t2end = await leaseTokenInstance.checkLeaseToken(tenant);
+        let expectedBalanceAfter = new web3.utils.BN(t2current).add(new web3.utils.BN(depositFee));
+        assert.equal(t2end.toString(), expectedBalanceAfter.toString(), "Deposit Fee not refunded correctly");
         console.log("Tenant Balance : After Move Out + Deposit Fee : " + t2end.toString())
 
         let landlordB = await leaseTokenInstance.checkLeaseToken(landlord);
+        // assert.equal(landlordBbefore.toString(), landlordB.toString(), "Error in amount transfer");
         console.log("Landlord Balance (Unchanged) : " + landlordB.toString())
         // ======== End ========
     });

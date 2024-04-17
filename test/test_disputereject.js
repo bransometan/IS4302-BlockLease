@@ -179,13 +179,22 @@ contract('Dispute REJECTED for Rental', function (accounts) {
     });
 
 
-    it('Test Case 7: Tenant move out of rental property (after dispute)', async () => {     
+    it('Test Case 7: Tenant move out of rental property (after dispute)', async () => { 
+        let t2current = await leaseTokenInstance.checkLeaseToken(tenant);
+        let landlordBbefore = await leaseTokenInstance.checkLeaseToken(landlord);
+        let application = await rentalMarketplaceInstance.getRentalApplication(0,0);
+        assert.equal(application.status, 3, "Application status not COMPLETED");
+
         await rentalMarketplaceInstance.moveOut(0, 0, {from: tenant});
 
         let t2end = await leaseTokenInstance.checkLeaseToken(tenant);
+        let expectedBalanceAfter = new web3.utils.BN(t2current).add(new web3.utils.BN(depositFee/2));
+        assert.equal(t2end.toString(), expectedBalanceAfter.toString(), "Deposit Fee not refunded correctly");
         console.log("Tenant Balance : REFUND 1/2 deposit fee : " + t2end.toString())
 
         let landlordB = await leaseTokenInstance.checkLeaseToken(landlord);
+        let expectedBalanceAfterL = new web3.utils.BN(landlordBbefore).sub(new web3.utils.BN(depositFee/2));
+        assert.equal(landlordB.toString(), expectedBalanceAfterL.toString(), "Deposit Fee not refunded correctly");
         console.log("Landlord Balance (-1/2 deposit fee) : " + landlordB.toString())
         // ======== End ========
     });
@@ -193,7 +202,7 @@ contract('Dispute REJECTED for Rental', function (accounts) {
     it('Test Case 8: Landlord unlist the property', async () => {     
         const landlordwallet = await leaseTokenInstance.checkLeaseToken(landlord);
         console.log("Before Unlist Property:" + landlordwallet.toString())
-        
+
         const result = await rentalMarketplaceInstance.unlistARentalProperty(0, {from: landlord});
         truffleAssert.eventEmitted(result, 'RentalPropertyUnlisted');
 

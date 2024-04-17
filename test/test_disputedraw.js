@@ -164,6 +164,8 @@ contract('Dispute DRAW for Rental', function (accounts) {
 
 
     it('Test Case 7: Tenant move out of rental property (after dispute)', async () => {     
+        let application = await rentalMarketplaceInstance.getRentalApplication(0,0);
+        assert.equal(application.status, 3, "Application status not COMPLETED");
         await rentalMarketplaceInstance.moveOut(0, 0, {from: tenant});
 
         let t2end = await leaseTokenInstance.checkLeaseToken(tenant);
@@ -245,7 +247,7 @@ contract('Dispute DRAW for Rental', function (accounts) {
     it('Test Case 12: Landlord unlist the property', async () => {
         const landlordwallet = await leaseTokenInstance.checkLeaseToken(landlord);
         console.log("Before Unlist Property:" + landlordwallet.toString())
-             
+
         const result = await rentalMarketplaceInstance.unlistARentalProperty(1, {from: landlord});
         truffleAssert.eventEmitted(result, 'RentalPropertyUnlisted');
 
