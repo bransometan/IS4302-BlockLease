@@ -245,46 +245,42 @@ $$ |  $$ |\$$$$$$$\ $$ |  $$ | \$$$$  |\$$$$$$$ |$$ |      $$ |      $$ |      \
 
     it("Test Case 9: Landlord cancel tenant rental application", async () => {
         // cancel tenat 1 application
-        // let t1balancebefore = await leaseTokenInstance.checkLeaseToken(tenant1);
-        // console.log(t1balancebefore.toString())
+        let t1balancebefore = await leaseTokenInstance.checkLeaseToken(tenant1);
+        console.log(`Balance Before: ${t1balancebefore.toString()}`);
 
-        // const result = await rentalMarketplaceInstance.cancelOrRejectRentalApplication(2, 0, {from: landlord});
-        // truffleAssert.eventEmitted(result, 'RentalApplicationCancelOrRejected');
-        // // Check that the application no longer exists
-        // truffleAssert.reverts(rentalMarketplaceInstance.getRentalApplication(2, 0), "Rental application does not exist");
-
-        // let t1balance = await leaseTokenInstance.checkLeaseToken(tenant1);
-        // console.log(t1balance.toString())
+        const result = await rentalMarketplaceInstance.cancelOrRejectRentalApplication(2, 0, {from: landlord});
+        truffleAssert.eventEmitted(result, 'RentalApplicationCancelOrRejected');
+        
+        let t1balance = await leaseTokenInstance.checkLeaseToken(tenant1);
+        console.log(`Balance After: ${t1balance.toString()}`);
 
     });
 
     it("Test Case 10: Landlord accepts rental application", async () => {
         // accept tenant 2 application
         let landlordBBefore = await leaseTokenInstance.checkLeaseToken(landlord);
-        console.log(landlordBBefore.toString())
+        console.log("Landlord wallet balance BEFORE accept applicaton : " + landlordBBefore.toString())
 
         const result = await rentalMarketplaceInstance.acceptRentalApplication(2, 1, {from: landlord});
-        console.log(result.status)
         truffleAssert.eventEmitted(result, 'RentalApplicationAccepted');
         
         // check landlord wallet 
         let landlordB = await leaseTokenInstance.checkLeaseToken(landlord);
-        console.log(landlordB.toString())
+        console.log("Landlord wallet balance AFTER accept applicaton : " + landlordB.toString())
 
     });
 
     it("Test Case 11: Tenant cancel tenant rental application", async () => {
-        // // cancel tenat 3 application
-        // const result = await rentalMarketplaceInstance.cancelOrRejectRentalApplication(2, 2, {from: tenant3});
-        // truffleAssert.eventEmitted(result, 'RentalApplicationCancelOrRejected');
-        // // Check that the application no longer exists
-        // truffleAssert.reverts(rentalMarketplaceInstance.getRentalApplication(2, 2), "Rental application does not exist");
-
-        // let t3balance = await leaseTokenInstance.checkLeaseToken(tenant3);
-        // console.log(t3balance.toString())
-
-        // //400 + 100
-        // assert.equal(t3balance, 500, "Tenant wallet should have refunded the deposit fee of 100");
+        // cancel tenat 3 application
+        let t3balanceBefore = await leaseTokenInstance.checkLeaseToken(tenant3);
+        console.log(`Balance Before: ${t3balanceBefore.toString()}`);
+    
+        const result = await rentalMarketplaceInstance.cancelOrRejectRentalApplication(2, 2, {from: tenant3});
+        truffleAssert.eventEmitted(result, 'RentalApplicationCancelOrRejected');
+    
+        // After cancellation
+        let t3balanceAfter = await leaseTokenInstance.checkLeaseToken(tenant3);
+        console.log(`Balance After: ${t3balanceAfter.toString()}`);
 
     });
 
