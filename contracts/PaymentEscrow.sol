@@ -3,8 +3,17 @@ pragma solidity ^0.8.0;
 
 import "./LeaseToken.sol";
 
+/*
+PaymentEscrow contract is used to facilitate the payment transactions between the landlord and tenant.
+- Any payment transaction between the landlord and tenant will be created, paid, released, or refunded using this contract.
+- The contract is used by the RentalMarketplace contract to create, pay, release, and refund payments.
+- The contract is also used by the RentDisputeDAO contract to create, pay, release, and refund payments in case of disputes.
+*/
+
 contract PaymentEscrow {
+    
     // ################################################### STRUCTURE & STATE VARIABLES ################################################### //
+    
     enum PaymentStatus {
         PENDING, // Payment has been created but not yet made
         PAID, // Payment has been made but not yet released
@@ -13,12 +22,11 @@ contract PaymentEscrow {
     }
 
     struct Payment {
-        address payer;
-        address payee;
-        uint256 amount;
-        PaymentStatus status;
+        address payer; // Address of the payer
+        address payee; // Address of the payee
+        uint256 amount; // Amount of the payment
+        PaymentStatus status; // Status of the payment
     }
-    
 
     // The number of payment transactions that have been made
     uint256 private numOfPayments = 0;
@@ -29,7 +37,7 @@ contract PaymentEscrow {
     // Reviewer who will vote on the dispute must stake a vote price (in tokens) to vote in the dispute
     uint256 private votePrice;
 
-    LeaseToken leaseTokenContract;
+    LeaseToken leaseTokenContract; // LeaseToken contract
 
     mapping(uint256 => Payment) public payments; // Mapping of payment ID to payment details
 
@@ -202,7 +210,9 @@ contract PaymentEscrow {
         checkSufficientBalance(_payer, _amount)
         returns (uint256)
     {
+        // Increment the number of payments
         numOfPayments++;
+        // Create a new payment transaction
         payments[numOfPayments] = Payment(
             _payer,
             _payee,
@@ -212,10 +222,12 @@ contract PaymentEscrow {
 
         // Payer approves PaymentEscrow to spend the payment amount on behalf of the payer
         leaseTokenContract.approveLeaseToken(_payer, address(this), _amount);
-      
+
+        // Emit an event for the created payment
         emit paymentCreated(_payer, _payee, _amount);
        
-        return numOfPayments; // Return the payment ID (index starts from 1 as 0 is used for non-existent payments)
+        // Return the payment ID (index starts from 1 as 0 is used for non-existent payments)
+        return numOfPayments;
     }
 
     // Function to transfer the payment amount from the payer to the PaymentEscrow
@@ -227,6 +239,7 @@ contract PaymentEscrow {
         PaymentExists(_paymentId)
         PaymentPending(_paymentId)
     {
+        // Get the payment details
         Payment storage payment = payments[_paymentId];
 
         // Payer transfers the payment amount to PaymentEscrow
@@ -236,7 +249,9 @@ contract PaymentEscrow {
             address(this),
             payment.amount
         );
-        payment.status = PaymentStatus.PAID; // Payment has been made
+        // Update the payment status to PAID
+        payment.status = PaymentStatus.PAID;
+        // Emit an event for the payment made
         emit paymentPaid(payment.payer, payment.payee, payment.amount);
     }
 
@@ -249,6 +264,7 @@ contract PaymentEscrow {
         PaymentExists(_paymentId)
         PaymentPaid(_paymentId)
     {
+        // Get the payment details
         Payment storage payment = payments[_paymentId];
 
         // PaymentEscrow transfers the payment amount to the payee
@@ -257,7 +273,9 @@ contract PaymentEscrow {
             payment.payee,
             payment.amount
         );
+        // Update the payment status to RELEASED
         payment.status = PaymentStatus.RELEASED;
+        // Emit an event for the payment released
         emit paymentReleased(payment.payer, payment.payee, payment.amount);
     }
 
@@ -270,6 +288,7 @@ contract PaymentEscrow {
         PaymentExists(_paymentId)
         PaymentPaid(_paymentId)
     {
+        // Get the payment details
         Payment storage payment = payments[_paymentId];
         // PaymentEscrow transfers the payment amount back to the Payer
         leaseTokenContract.transferLeaseToken(
@@ -277,7 +296,9 @@ contract PaymentEscrow {
             payment.payer, // Refund the payment amount to the Payer
             payment.amount
         );
+        // Update the payment status to REFUNDED
         payment.status = PaymentStatus.REFUNDED;
+        // Emit an event for the payment refunded
         emit paymentRefunded(payment.payer, payment.payee, payment.amount);
     }
 
