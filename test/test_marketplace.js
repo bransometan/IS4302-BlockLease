@@ -252,6 +252,10 @@ $$ |  $$ |\$$$$$$$\ $$ |  $$ | \$$$$  |\$$$$$$$ |$$ |      $$ |      $$ |      \
         truffleAssert.eventEmitted(result, 'RentalApplicationCancelOrRejected');
 
         let t1balance = await leaseTokenInstance.checkLeaseToken(tenant1);
+
+        let expectedBalanceAfter = new web3.utils.BN(t1balancebefore).add(new web3.utils.BN(depositFee));
+        assert.equal(t1balance.toString(), expectedBalanceAfter.toString(), "Deposit Fee not refunded correctly");
+
         console.log(`Balance After: ${t1balance.toString()}`);
 
     });
@@ -266,6 +270,9 @@ $$ |  $$ |\$$$$$$$\ $$ |  $$ | \$$$$  |\$$$$$$$ |$$ |      $$ |      $$ |      \
         
         // check landlord wallet 
         let landlordB = await leaseTokenInstance.checkLeaseToken(landlord);
+        let expectedBalanceAfter = new web3.utils.BN(landlordBBefore).add(new web3.utils.BN(depositFee));
+        assert.equal(landlordB.toString(), expectedBalanceAfter.toString(), "Deposit fee not received from tenant");
+
         console.log("Landlord wallet balance AFTER accept applicaton : " + landlordB.toString())
 
     });
@@ -280,8 +287,10 @@ $$ |  $$ |\$$$$$$$\ $$ |  $$ | \$$$$  |\$$$$$$$ |$$ |      $$ |      $$ |      \
     
         // After cancellation
         let t3balanceAfter = await leaseTokenInstance.checkLeaseToken(tenant3);
-        console.log(`Balance After: ${t3balanceAfter.toString()}`);
+        let expectedBalanceAfter = new web3.utils.BN(t3balanceBefore).add(new web3.utils.BN(depositFee));
+        assert.equal(t3balanceAfter.toString(), expectedBalanceAfter.toString(), "Deposit Fee not refunded correctly");
 
+        console.log(`Balance After: ${t3balanceAfter.toString()}`);
     });
 
     it("Test Case 12 FAILURE: : Landlord cannot accept payment from rental application when the rental application is not yet accepted", async () => {
