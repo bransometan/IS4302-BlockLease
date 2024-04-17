@@ -304,6 +304,10 @@ $$ |  $$ |\$$$$$$$\ $$ |  $$ | \$$$$  |\$$$$$$$ |$$ |      $$ |      $$ |      \
     });
 
     it("Test Case 13: Tenant make payment for monthly rental fee", async () => {
+        //check whether application status change
+        let application = await rentalMarketplaceInstance.getRentalApplication(2,1);
+        assert.equal(application.status, 1, "Application status not ongoing");
+
         let tenant2before = await leaseTokenInstance.checkLeaseToken(tenant2);
         console.log("Before Payment Made :" + tenant2before.toString())
 
@@ -311,10 +315,16 @@ $$ |  $$ |\$$$$$$$\ $$ |  $$ | \$$$$  |\$$$$$$$ |$$ |      $$ |      $$ |      \
         truffleAssert.eventEmitted(result, 'PaymentMade');
 
         let tenant2after = await leaseTokenInstance.checkLeaseToken(tenant2);
+        let mfee = await rentalPropertyInstance.getRentalPrice(2);
+        let expectedBalanceAfter = new web3.utils.BN(tenant2before).sub(new web3.utils.BN(mfee));
+        assert.equal(tenant2after.toString(), expectedBalanceAfter.toString(), "Tenant have not made payment");
         console.log("After Payment Made :" + tenant2after.toString())
     });
 
     it("Test Case 14: Landlord accept payment for monthly rental fee from a tenant", async () => {
+        let application = await rentalMarketplaceInstance.getRentalApplication(2,1);
+        assert.equal(application.status, 2, "Application status not MAKE PAYMENT");
+
         let landlordbefore = await leaseTokenInstance.checkLeaseToken(landlord);
         console.log("Before Rental Receive:" + landlordbefore.toString())
 
@@ -322,6 +332,9 @@ $$ |  $$ |\$$$$$$$\ $$ |  $$ | \$$$$  |\$$$$$$$ |$$ |      $$ |      $$ |      \
         truffleAssert.eventEmitted(result, 'PaymentAccepted');
 
         let landlordafter = await leaseTokenInstance.checkLeaseToken(landlord);
+        let mfee = await rentalPropertyInstance.getRentalPrice(2);
+        let expectedBalanceAfter = new web3.utils.BN(landlordbefore).add(new web3.utils.BN(mfee));
+        assert.equal(landlordafter.toString(), expectedBalanceAfter.toString(), "Landlord have not accept payment");
         console.log("After Monthly Rental Receive:" + landlordafter.toString())
     });
 
@@ -348,9 +361,16 @@ $$ |  $$ |\$$$$$$$\ $$ |  $$ | \$$$$  |\$$$$$$$ |$$ |      $$ |      $$ |      \
             console.log(`Tenant Balance After Rental Month ${i + 2}:` + t2after.toString())
         }
 
+        let t2current = await leaseTokenInstance.checkLeaseToken(tenant2);
+        //check if rental application is complete
+        let application = await rentalMarketplaceInstance.getRentalApplication(2,1);
+        assert.equal(application.status, 3, "Application status not COMPLETED");
+
         await rentalMarketplaceInstance.moveOut(2, 1, {from: tenant2});
 
         let t2end = await leaseTokenInstance.checkLeaseToken(tenant2);
+        let expectedBalanceAfter = new web3.utils.BN(t2current).add(new web3.utils.BN(depositFee));
+        assert.equal(t2end.toString(), expectedBalanceAfter.toString(), "Deposit Fee not refunded correctly");
         console.log("After Move Out + Deposit Fee:" + t2end.toString())
         
     });
@@ -358,17 +378,15 @@ $$ |  $$ |\$$$$$$$\ $$ |  $$ | \$$$$  |\$$$$$$$ |$$ |      $$ |      $$ |      \
     // need to check on the protection fee how it works
     it("Test Case 17: Landlord unlist rental property", async () => {
         const landlordwallet = await leaseTokenInstance.checkLeaseToken(landlord);
-        // console.log("Before List Property:" + landlordwallet.toString())
-
-        // const rentalProperty = await rentalMarketplaceInstance.listARentalProperty(3, depositFee, {from: landlord});
-        // truffleAssert.eventEmitted(rentalProperty, 'RentalPropertyListed');
-
         console.log("Before Unlist Property:" + landlordwallet.toString())
 
         const result = await rentalMarketplaceInstance.unlistARentalProperty(2, {from: landlord});
         truffleAssert.eventEmitted(result, 'RentalPropertyUnlisted');
 
+        //protection is standardised as 50 tokens
         const landlordwalletA = await leaseTokenInstance.checkLeaseToken(landlord);
+        let expectedBalanceAfter = new web3.utils.BN(landlordwallet).add(new web3.utils.BN(50));
+        assert.equal(landlordwalletA.toString(), expectedBalanceAfter.toString(), "Protection Fee not refunded correctly");
         console.log("After Unlist (Refund + full protection fee) :" + landlordwalletA.toString())
     });
 
