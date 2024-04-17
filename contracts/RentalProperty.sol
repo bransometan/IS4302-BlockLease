@@ -62,7 +62,7 @@ contract RentalProperty {
 
     // ################################################### MODIFIERS ################################################### //
 
-    //Modifier to ensure a function is callable only by its landlord owner
+    // Modifier to ensure a function is callable only by its landlord owner
     modifier landlordOnly(uint256 rentalPropertyId) {
         require(
             rentalProperties[rentalPropertyId].landlord == msg.sender,
@@ -71,7 +71,7 @@ contract RentalProperty {
         _;
     }
 
-    //Modifier to ensure a function is accessible only if the rental property id is valid
+    // Modifier to ensure a function is accessible only if the rental property id is valid
     modifier validRentalPropertyId(uint256 rentalPropertyId) {
         require(
             rentalPropertyId < numRentalProperty,
@@ -80,25 +80,25 @@ contract RentalProperty {
         _;
     }
 
-    //Modifier to ensure the number of tenants is valid
+    // Modifier to ensure the number of tenants is valid
     modifier validNumOfTenants(uint256 numOfTenants) {
         require(numOfTenants > 0, "Number of tenants must be greater than 0");
         _;
     }
 
-    //Modifier to ensure the rental price is valid
+    // Modifier to ensure the rental price is valid
     modifier validRentalPrice(uint256 rentalPrice) {
         require(rentalPrice > 0, "Rental Price must be greater than 0");
         _;
     }
 
-    //Modifier to ensure the lease duration is valid
+    // Modifier to ensure the lease duration is valid
     modifier validLeaseDuration(uint256 leaseDuration) {
         require(leaseDuration > 0, "Lease Duration must be greater than 0");
         _;
     }
 
-    //Modifier to ensure the rental property can be updated or deleted
+    // Modifier to ensure the rental property can be updated or deleted
     modifier validUpdateStatus(uint256 rentalPropertyId) {
         require(
             rentalProperties[rentalPropertyId].updateStatus == true,
@@ -109,7 +109,7 @@ contract RentalProperty {
 
     // ################################################### CREATE METHOD ################################################### //
 
-    // Function for landlord to create a new Rental Property, and add to 'rentalProperties' map. requires at least 0.01ETH to create
+    // Function for landlord to create a new Rental Property, and add to 'rentalProperties' map.
     function addRentalProperty(
         string memory _location,
         string memory _postalCode,
@@ -146,6 +146,7 @@ contract RentalProperty {
         uint256 newRentalPropertyId = numRentalProperty++; // increment rental property id
         rentalProperties[newRentalPropertyId] = newRentalProperty; // add to rentalProperties map
 
+        // Emit event for Rental Property creation
         emit RentalPropertyCreated(
             newRentalPropertyId,
             _location,
@@ -159,12 +160,13 @@ contract RentalProperty {
             msg.sender
         );
 
-        return newRentalPropertyId; //return new rental property id
+        // Return new rental property id
+        return newRentalPropertyId; 
     }
 
     // ################################################### GETTER METHODS ################################################### //
 
-    //Function to get a rental property
+    // Function to get a rental property
     function getRentalProperty(
         uint256 rentalPropertyId
     )
@@ -176,7 +178,7 @@ contract RentalProperty {
         return rentalProperties[rentalPropertyId];
     }
 
-    //Function to get the location of a rental property
+    // Function to get the location of a rental property
     function getLocation(
         uint256 rentalPropertyId
     )
@@ -188,7 +190,7 @@ contract RentalProperty {
         return rentalProperties[rentalPropertyId].location;
     }
 
-    //Function to get the postal code of a rental property
+    // Function to get the postal code of a rental property
     function getPostalCode(
         uint256 rentalPropertyId
     )
@@ -200,7 +202,7 @@ contract RentalProperty {
         return rentalProperties[rentalPropertyId].postalCode;
     }
 
-    //Function to get the unit number of a rental property
+    // Function to get the unit number of a rental property
     function getUnitNumber(
         uint256 rentalPropertyId
     )
@@ -212,7 +214,7 @@ contract RentalProperty {
         return rentalProperties[rentalPropertyId].unitNumber;
     }
 
-    //Function to get the property type of a rental property
+    // Function to get the property type of a rental property
     function getPropertyType(
         uint256 rentalPropertyId
     )
@@ -224,7 +226,7 @@ contract RentalProperty {
         return rentalProperties[rentalPropertyId].propertyType;
     }
 
-    //Function to get the description of a rental property
+    // Function to get the description of a rental property
     function getDescription(
         uint256 rentalPropertyId
     )
@@ -236,64 +238,64 @@ contract RentalProperty {
         return rentalProperties[rentalPropertyId].description;
     }
 
-    //Function to get the number of tenants in a rental property
+    // Function to get the number of tenants in a rental property
     function getNumOfTenants(
         uint256 rentalPropertyId
     ) public view validRentalPropertyId(rentalPropertyId) returns (uint256) {
         return rentalProperties[rentalPropertyId].numOfTenants;
     }
 
-    //Function to get the rental price of a rental property
+    // Function to get the rental price of a rental property
     function getRentalPrice(
         uint256 rentalPropertyId
     ) public view validRentalPropertyId(rentalPropertyId) returns (uint256) {
         return rentalProperties[rentalPropertyId].rentalPrice;
     }
 
-    //Function to get the lease duration of a rental property
+    // Function to get the lease duration of a rental property
     function getLeaseDuration(
         uint256 rentalPropertyId
     ) public view validRentalPropertyId(rentalPropertyId) returns (uint256) {
         return rentalProperties[rentalPropertyId].leaseDuration;
     }
 
-    //Function to get the landlord of a rental property
+    // Function to get the landlord of a rental property
     function getLandlord(
         uint256 rentalPropertyId
     ) public view validRentalPropertyId(rentalPropertyId) returns (address) {
         return rentalProperties[rentalPropertyId].landlord;
     }
 
-    //Function to get the update status of a rental property
+    // Function to get the update status of a rental property
     function getUpdateStatus(
         uint256 rentalPropertyId
     ) public view validRentalPropertyId(rentalPropertyId) returns (bool) {
         return rentalProperties[rentalPropertyId].updateStatus;
     }
 
-    //Function to get the listed status of a rental property
+    // Function to get the listed status of a rental property
     function getListedStatus(
         uint256 rentalPropertyId
     ) public view validRentalPropertyId(rentalPropertyId) returns (bool) {
         return rentalProperties[rentalPropertyId].isListed;
     }
 
-    //Function to get the number of rental properties
+    // Function to get the number of rental properties
     function getNumRentalProperty() public view returns (uint256) {
         return numRentalProperty;
     }
 
-    //Function to get the number of listed rental properties
+    // Function to get the number of listed rental properties
     function getNumListedRentalProperty() public view returns (uint256) {
         return numListedRentalProperty;
     }
 
-    //Function to get the number of unlisted rental properties
+    // Function to get the number of unlisted rental properties
     function getNumUnlistedRentalProperty() public view returns (uint256) {
         return numRentalProperty - numListedRentalProperty;
     }
 
-    //Function to get the number of rental properties of a landlord
+    // Function to get the number of rental properties of a landlord
     function getNumLandlordRentalProperties(
         address landlord
     ) public view returns (uint256) {
@@ -306,7 +308,7 @@ contract RentalProperty {
         return count;
     }
 
-    //Function to get the number of listed rental properties of a landlord
+    // Function to get the number of listed rental properties of a landlord
     function getNumLandlordListedRentalProperties(
         address landlord
     ) public view returns (uint256) {
@@ -321,7 +323,7 @@ contract RentalProperty {
         return count;
     }
 
-    //Function to get the number of unlisted rental properties of a landlord
+    // Function to get the number of unlisted rental properties of a landlord
     function getNumLandlordUnlistedRentalProperties(
         address landlord
     ) public view returns (uint256) {
@@ -336,7 +338,7 @@ contract RentalProperty {
         return count;
     }
 
-    //Function to get all the rental properties (listed and unlisted)
+    // Function to get all the rental properties (listed and unlisted)
     function getAllRentalProperties()
         public
         view
@@ -351,7 +353,7 @@ contract RentalProperty {
         return allRentalProperties;
     }
 
-    //Function to get all the listed rental properties
+    // Function to get all the listed rental properties
     function getAllListedRentalProperties()
         public
         view
@@ -370,7 +372,7 @@ contract RentalProperty {
         return listedRentalProperties;
     }
 
-    //Function to get all the unlisted rental properties
+    // Function to get all the unlisted rental properties
     function getAllUnlistedRentalProperties()
         public
         view
@@ -389,7 +391,7 @@ contract RentalProperty {
         return unlistedRentalProperties;
     }
 
-    //Function to get all the rental properties of a landlord (listed and unlisted)
+    // Function to get all the rental properties of a landlord (listed and unlisted)
     function getLandlordRentalProperties(
         address landlord
     ) public view returns (rentalProperty[] memory) {
@@ -406,7 +408,7 @@ contract RentalProperty {
         return landlordRentalProperties;
     }
 
-    //Function to get all the listed rental properties of a landlord
+    // Function to get all the listed rental properties of a landlord
     function getLandlordListedRentalProperties(
         address landlord
     ) public view returns (rentalProperty[] memory) {
@@ -426,7 +428,7 @@ contract RentalProperty {
         return landlordListedRentalProperties;
     }
 
-    //Function to get all the unlisted rental properties of a landlord
+    // Function to get all the unlisted rental properties of a landlord
     function getLandlordUnlistedRentalProperties(
         address landlord
     ) public view returns (rentalProperty[] memory) {
@@ -448,7 +450,7 @@ contract RentalProperty {
         return landlordUnlistedRentalProperties;
     }
 
-    //Function to get payment id of a rental property
+    // Function to get payment id of a rental property
     function getPaymentId(
         uint256 rentalPropertyId
     ) public view validRentalPropertyId(rentalPropertyId) returns (uint256) {
@@ -457,7 +459,7 @@ contract RentalProperty {
 
     // ################################################### SETTER METHODS ################################################### //
 
-    //Function to update details of a rental property
+    // Function to update details of a rental property
     function updateRentalProperty(
         uint256 rentalPropertyId,
         string memory newLocation,
@@ -477,7 +479,6 @@ contract RentalProperty {
 
         // Reason for using require statements here instead of modifiers is to avoid "CompilerError: Stack too deep, try removing local variables"
         // The EVM imposes a limit of 16 local variables, including function parameters and return variables.
-
         // require new number of tenants to be greater than 0 
         require(newNumOfTenants > 0, "Number of tenants must be greater than 0");
         // require new rental price to be greater than 0
@@ -485,6 +486,7 @@ contract RentalProperty {
         // require new lease duration to be greater than 0
         require(newLeaseDuration > 0, "Lease Duration must be greater than 0");
 
+        // update rental property details
         rentalProperties[rentalPropertyId].location = newLocation;
         rentalProperties[rentalPropertyId].postalCode = newPostalCode;
         rentalProperties[rentalPropertyId].unitNumber = newUnitNumber;
@@ -494,6 +496,7 @@ contract RentalProperty {
         rentalProperties[rentalPropertyId].rentalPrice = newRentalPrice;
         rentalProperties[rentalPropertyId].leaseDuration = newLeaseDuration;
 
+        // Emit event for Rental Property details update
         emit RentalPropertyUpdateDetails(
             rentalPropertyId,
             newLocation,
@@ -507,8 +510,8 @@ contract RentalProperty {
         );
     }
 
-    //Function to set the new update status of a rental property
-    //Not restricted to landlord as this function is used in RentalMarketplace to set the update status to false when there are tenants applications
+    // Function to set the new update status of a rental property
+    // Not restricted to landlord as this function is used in RentalMarketplace to set the update status to false when there are tenants applications
     function setUpdateStatus(
         uint256 rentalPropertyId,
         bool newUpdateStatus
@@ -516,8 +519,8 @@ contract RentalProperty {
         rentalProperties[rentalPropertyId].updateStatus = newUpdateStatus;
     }
 
-    //Function to set the new listed status of a rental property
-    //Not restricted to landlord as this function is used in RentalMarketplace to set the listed status to true when the rental property is listed
+    // Function to set the new listed status of a rental property
+    // Not restricted to landlord as this function is used in RentalMarketplace to set the listed status to true when the rental property is listed
     function setListedStatus(
         uint256 rentalPropertyId,
         bool newListedStatus
@@ -525,20 +528,20 @@ contract RentalProperty {
         rentalProperties[rentalPropertyId].isListed = newListedStatus;
     }
 
-    //Function to increment the number of listed rental properties
-    //Not restricted to landlord as this function is used in RentalMarketplace to increment the number of listed rental properties
+    // Function to increment the number of listed rental properties
+    // Not restricted to landlord as this function is used in RentalMarketplace to increment the number of listed rental properties
     function incrementListedRentalProperty() external {
         numListedRentalProperty++;
     }
 
-    //Function to decrement the number of listed rental properties
-    //Not restricted to landlord as this function is used in RentalMarketplace to decrement the number of listed rental properties
+    // Function to decrement the number of listed rental properties
+    // Not restricted to landlord as this function is used in RentalMarketplace to decrement the number of listed rental properties
     function decrementListedRentalProperty() external {
         numListedRentalProperty--;
     }
 
-    //Function to set a payment id to the rental property
-    //Not restricted to landlord as this function is used in RentalMarketplace to keep track of protection fee payment/refund
+    // Function to set a payment id to the rental property
+    // Not restricted to landlord as this function is used in RentalMarketplace to keep track of protection fee payment/refund
     function setPaymentId(
         uint256 rentalPropertyId,
         uint256 newPaymentId
@@ -548,7 +551,7 @@ contract RentalProperty {
 
     // ################################################### DELETE METHOD ################################################### //
 
-    //Function to delete a rental property
+    // Function to delete a rental property
     function deleteRentalProperty(
         uint256 rentalPropertyId
     )
@@ -559,6 +562,7 @@ contract RentalProperty {
     {
         // delete rental property from rentalProperties map
         delete rentalProperties[rentalPropertyId];
+        // emit event for Rental Property deletion
         emit RentalPropertyDeleted(rentalPropertyId);
     }
 }

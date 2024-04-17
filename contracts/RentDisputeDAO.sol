@@ -558,7 +558,7 @@ contract RentDisputeDAO {
     }
 
     // Handle reviewer's reward for voters who voted correctly on the dispute (i.e. winning reviewers)
-    //  - If the dispute is approved or rejected, transfer the reward ((voter reward + total vote price)/total winning reviewers) to the winning reviewers who voted correctly.
+    // If the dispute is approved or rejected, transfer the reward ((voter reward + total vote price)/total winning reviewers) to the winning reviewers who voted correctly.
     // Losing reviewers will not receive any reward and will lose the vote price.
     // If the dispute is a draw, transfer the votePrice back to the reviewers (no reward for the reviewers in a draw dispute)
     function handleReviewersReward(
