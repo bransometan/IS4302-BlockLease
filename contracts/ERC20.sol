@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT 
 pragma solidity ^0.8.0;
 
-//first need to approve the address of spender 
-// Check the allowance
+//First need to approve the address of spender 
+//Second need to check the allowance
 //Finally able to call transferFrom to transfer tokens
 
 /**
@@ -73,10 +73,6 @@ contract ERC20 {
     event Burn(address indexed from, uint256 amount);
     event MintFinished();
 
-  
-
-
-
   /**
   * @dev total number of tokens in existence
   */
@@ -92,7 +88,6 @@ contract ERC20 {
   function balanceOf(address _owner) public view returns (uint256) {
     return balances[_owner];
   }
-
 
   /**
   * @dev transfer token for a specified address
@@ -239,7 +234,4 @@ contract ERC20 {
     _;
   }
 
-
-
-    
 }
