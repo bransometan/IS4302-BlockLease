@@ -30,8 +30,8 @@ contract RentalMarketplace {
         bool tenantHasDisputed; // The tenant has disputed the rental application 
     }
 
-    RentalProperty rentalPropertyContract;
-    PaymentEscrow paymentEscrowContract;
+    RentalProperty rentalPropertyContract; // RentalProperty Contract
+    PaymentEscrow paymentEscrowContract; // PaymentEscrow Contract
 
     // This is mapping of RentalProperty id to the downpayment/deposit of the property
     mapping(uint256 => uint256) private rentalPropertyDeposits;
@@ -190,7 +190,10 @@ contract RentalMarketplace {
 
     // ################################################### FUNCTIONS ################################################### //
 
-    //Landlord can list a rental property to the marketplace to start accepting tenants.
+    // Landlord can list a rental property to the marketplace to start accepting tenants.
+    // Landlord must initially pay the protection fee (LeaseToken) to the PaymentEscrow contract.
+    // Protection fee will be returned to the landlord if the rental property is unlisted.
+    // Deposit fee (LeaseToken) set by Landlord required for the rental property (to be paid by tenant if they apply for the rental property).
     function listARentalProperty(
         uint256 rentalPropertyId,
         uint256 depositFee
@@ -218,10 +221,12 @@ contract RentalMarketplace {
         rentalPropertyContract.setListedStatus(rentalPropertyId, true);
         // Increment the number of listed rental properties
         rentalPropertyContract.incrementListedRentalProperty();
+        // Emit an event for the listing of the rental property
         emit RentalPropertyListed(rentalPropertyId, depositFee);
     }
 
-    //Landlord can unlist a rental property from the marketplace to stop accepting tenants.
+    // Landlord can unlist a rental property from the marketplace to stop accepting tenants.
+    // Landlord receives the protection fee (LeaseToken) back from the PaymentEscrow contract during unlisting of the rental property.
     function unlistARentalProperty(
         uint256 rentalPropertyId
     )
@@ -230,25 +235,26 @@ contract RentalMarketplace {
         landlordOnly(rentalPropertyId)
         rentalPropertyVacant(rentalPropertyId)
     {
-        //PaymentEscrow Contract refund the protection fee (LeaseToken) to the landlord during unlisting of the rental property
+        // PaymentEscrow Contract refund the protection fee (LeaseToken) to the landlord during unlisting of the rental property
         paymentEscrowContract.refund(
             rentalPropertyContract.getPaymentId(rentalPropertyId)
         );
 
-        //Set the deposit required for the rental property to 0
+        // Set the deposit required for the rental property to 0
         rentalPropertyDeposits[rentalPropertyId] = 0;
-        //Remove the payment transaction id from the rental property
+        // Remove the payment transaction id from the rental property
         rentalPropertyContract.setPaymentId(rentalPropertyId, 0);
-        //Set the rental property as not listed
+        // Set the rental property as not listed
         rentalPropertyContract.setListedStatus(rentalPropertyId, false);
-        //Decrement the number of listed rental properties
+        // Decrement the number of listed rental properties
         rentalPropertyContract.decrementListedRentalProperty();
+        // Emit an event for the unlisting of the rental property
         emit RentalPropertyUnlisted(rentalPropertyId);
     }
 
-    //Tenant can apply for a rental property by submitting a rental application.
-    //Tenant must initially pay the deposit (LeaseToken) for the rental property to the PaymentEscrow contract.
-    //Deposit will be returned to the tenant if the rental application is rejected.
+    // Tenant can apply for a rental property by submitting a rental application.
+    // Tenant must initially pay the deposit (LeaseToken) for the rental property to the PaymentEscrow contract.
+    // Deposit will be returned to the tenant if the rental application is rejected by landlord or tenant cancels the application.
     function applyRentalProperty(
         uint256 rentalPropertyId,
         string memory tenantName,
@@ -260,16 +266,20 @@ contract RentalMarketplace {
         rentalPropertyListed(rentalPropertyId)
         rentalPropertyNotFull(rentalPropertyId)
     {
+        // Landlord cannot apply for own rental property
         require(
             msg.sender != rentalPropertyContract.getLandlord(rentalPropertyId),
             "Landlord cannot apply for own rental property"
         );
+        // Tenant can only apply for one rental property at a time
         require(
             !hasApplied[msg.sender],
             "Tenant has already applied for a rental property"
         );
 
+        // Create a rental application for the rental property
         uint256 applicationId = rentalApplicationCounts[rentalPropertyId];
+        // Add the rental application to the rental property
         rentalApplications[rentalPropertyId][applicationId] = RentalApplication(
             rentalPropertyId,
             rentalApplicationCounts[rentalPropertyId],
@@ -305,10 +315,14 @@ contract RentalMarketplace {
         hasApplied[msg.sender] = true;
         // Landlord cannot update/delete the rental property while there is an ongoing application
         rentalPropertyContract.setUpdateStatus(rentalPropertyId, false);
+        // Emit an event for the submission of the rental application
         emit RentalApplicationSubmitted(rentalPropertyId, applicationId);
     }
 
     // Tenant can cancel or landlord can reject a rental application.
+    // Tenant receives the deposit (LeaseToken) back from the PaymentEscrow contract if the rental application is rejected by landlord or tenant cancels the application.
+    // Tenant can only cancel the application if the rental application is pending.
+    // Landlord can only reject the application if the rental application is pending.
     function cancelOrRejectRentalApplication(
         uint256 rentalPropertyId,
         uint256 applicationId
@@ -325,11 +339,12 @@ contract RentalMarketplace {
 
         // Remove the rental application from the rental property and update corresponding mappings
         removeApplication(rentalPropertyId, applicationId);
-
+        // Emit an event for the cancellation or rejection of the rental application
         emit RentalApplicationCancelOrRejected(rentalPropertyId, applicationId);
     }
 
-    //Landlord can accept a rental application to start the rental process.
+    // Landlord can accept a rental application to start the rental process.
+    // Landlord receives the deposit (LeaseToken) released from the PaymentEscrow contract if the rental application is accepted.
     function acceptRentalApplication(
         uint256 rentalPropertyId,
         uint256 applicationId
@@ -339,6 +354,7 @@ contract RentalMarketplace {
         rentalApplicationExist(rentalPropertyId, applicationId)
         rentalApplicationPending(rentalPropertyId, applicationId)
     {
+        // Get the rental application
         RentalApplication storage rentalApplication = rentalApplications[
             rentalPropertyId
         ][applicationId];
@@ -349,6 +365,7 @@ contract RentalMarketplace {
 
         // Update the rental application status to ongoing
         rentalApplication.status = RentStatus.ONGOING;
+        // Emit an event for the acceptance of the rental application
         emit RentalApplicationAccepted(rentalPropertyId, applicationId);
     }
 
@@ -362,14 +379,17 @@ contract RentalMarketplace {
         rentalApplicationExist(rentalPropertyId, applicationId)
         rentalApplicationOngoing(rentalPropertyId, applicationId)
     {
+        // Landlord cannot make payment for own rental property
         require(
             msg.sender != rentalPropertyContract.getLandlord(rentalPropertyId),
             "Landlord cannot make payment for own rental property"
         );
+        // Tenant can only make payment if they have applied for the rental property
         require(
             hasApplied[msg.sender],
             "Tenant has not applied for this rental property"
         );
+        // Get the rental application
         RentalApplication storage rentalApplication = rentalApplications[
             rentalPropertyId
         ][applicationId];
@@ -392,10 +412,12 @@ contract RentalMarketplace {
 
         // Update the rental application status to made payment
         rentalApplication.status = RentStatus.MADE_PAYMENT;
+        // Emit an event for the payment made by the tenant
         emit PaymentMade(rentalPropertyId, applicationId);
     }
 
-    //Landlord can accept a payment from a tenant.
+    // Landlord can accept a payment from a tenant.
+    // Landlord receives the monthly rent released from the PaymentEscrow contract if the payment is accepted.
     function acceptPayment(
         uint256 rentalPropertyId,
         uint256 applicationId
@@ -406,6 +428,7 @@ contract RentalMarketplace {
         rentalApplicationExist(rentalPropertyId, applicationId)
         rentalApplicationMadePayment(rentalPropertyId, applicationId)
     {
+        // Get the rental application
         RentalApplication storage rentalApplication = rentalApplications[
             rentalPropertyId
         ][applicationId];
@@ -431,10 +454,13 @@ contract RentalMarketplace {
             rentalApplication.status = RentStatus.ONGOING;
         }
 
+        // Emit an event for the payment accepted by the landlord
         emit PaymentAccepted(rentalPropertyId, applicationId);
     }
 
-    //Tenant move out of the rental property and landlord return deposit if any.
+    // Tenant move out of the rental property and landlord return deposit if any.
+    // Tenant receives the remaining deposit (LeaseToken) back from the PaymentEscrow contract if the rental is completed.
+    // Tenant can only move out if the rental is completed.
     function moveOut(
         uint256 rentalPropertyId,
         uint256 applicationId
@@ -444,10 +470,12 @@ contract RentalMarketplace {
         rentalApplicationExist(rentalPropertyId, applicationId)
         rentalApplicationCompleted(rentalPropertyId, applicationId)
     {
+        // Landlord cannot move out of own rental property
         require(
             msg.sender != rentalPropertyContract.getLandlord(rentalPropertyId),
             "Landlord cannot move out of own rental property"
         );
+        // Tenant can only move out if they have applied for the rental property
         require(
             hasApplied[msg.sender],
             "Tenant has not applied for this rental property"
@@ -471,7 +499,7 @@ contract RentalMarketplace {
 
         // Remove the rental application from the rental property and update corresponding mappings
         removeApplication(rentalPropertyId, applicationId);
-
+        // Emit an event for the tenant move out
         emit tenantMoveOut(rentalPropertyId, applicationId);
     }
 
@@ -515,13 +543,14 @@ contract RentalMarketplace {
         );
         // Pay the payment transaction
         paymentEscrowContract.pay(paymentId);
+        // Return the payment transaction id
         return paymentId;
     }
 
     // ################################################### SETTER METHODS ################################################### //
 
-    //Update the deposit required for a rental property (in the event of disputes - when tenant lost the dispute and will get leser deposit back)
-    //Not restricted to landlord as this function is used in RentDisputeDAO to update the new deposit balance
+    // Update the deposit required for a rental property (in the event of disputes - when tenant lost the dispute and will get leser deposit back)
+    // Not restricted to landlord as this function is used in RentDisputeDAO to update the new deposit balance
     function updateDepositFeeBalance(
         uint256 rentalPropertyId,
         uint256 newDepositFee
@@ -533,8 +562,8 @@ contract RentalMarketplace {
         rentalPropertyDeposits[rentalPropertyId] = newDepositFee;
     }
 
-    //Update the rental application status
-    //Not restricted to landlord as this function is used in RentDisputeDAO to update the new status of the rental application
+    // Update the rental application status
+    // Not restricted to landlord as this function is used in RentDisputeDAO to update the new status of the rental application
     function updateRentalApplicationStatus(
         uint256 rentalPropertyId,
         uint256 applicationId,
@@ -547,8 +576,8 @@ contract RentalMarketplace {
         rentalApplications[rentalPropertyId][applicationId].status = newStatus;
     }
 
-    //Update the tenant has disputed the rental application
-    //Not restricted to landlord as this function is used in RentDisputeDAO to update the tenant has disputed the rental application
+    // Update the tenant has disputed the rental application
+    // Not restricted to landlord as this function is used in RentDisputeDAO to update the tenant has disputed the rental application
     function updateTenantHasDisputed(
         uint256 rentalPropertyId,
         uint256 applicationId,
@@ -563,7 +592,7 @@ contract RentalMarketplace {
 
     // ################################################### GETTER METHODS ################################################### //
 
-    //Get the rental application details for a rental property.
+    // Get the rental application details for a rental property.
     function getRentalApplication(
         uint256 rentalPropertyId,
         uint256 applicationId
@@ -571,19 +600,19 @@ contract RentalMarketplace {
         return rentalApplications[rentalPropertyId][applicationId];
     }
 
-    //Get the number of rental applications for a rental property.
+    // Get the number of rental applications for a rental property.
     function getRentalApplicationCount(
         uint256 rentalPropertyId
     ) public view returns (uint256) {
         return rentalApplicationCounts[rentalPropertyId];
     }
 
-    //Check if a tenant has applied for a rental property.
+    // Check if a tenant has applied for a rental property.
     function getHasApplied(address tenantAddress) public view returns (bool) {
         return hasApplied[tenantAddress];
     }
 
-    //Get all rental applications for a rental property.
+    // Get all rental applications for a rental property.
     function getAllRentalApplicationsFromRentalProperty(uint256 rentalPropertyId)
         public
         view
@@ -616,14 +645,14 @@ contract RentalMarketplace {
         return RentalApplication(0, 0, address(0), address(0), "", "", "", "", 0, RentStatus.PENDING, new uint256[](0), false);
     }
 
-    //Get the deposit required for a rental property.
+    // Get the deposit required for a rental property.
     function getDepositAmount(
         uint256 rentalPropertyId
     ) public view returns (uint256) {
         return rentalPropertyDeposits[rentalPropertyId];
     }
 
-    //Get the tenant dispute status of a rental application.
+    // Get the tenant dispute status of a rental application.
     function getTenantDisputeStatus(
         uint256 rentalPropertyId,
         uint256 applicationId
