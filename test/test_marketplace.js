@@ -89,6 +89,11 @@ $$ |  $$ |\$$$$$$$\ $$ |  $$ | \$$$$  |\$$$$$$$ |$$ |      $$ |      $$ |      \
         truffleAssert.eventEmitted(landed1, 'RentalPropertyCreated');
         truffleAssert.eventEmitted(landed2, 'RentalPropertyCreated');
         truffleAssert.eventEmitted(other1, 'RentalPropertyCreated');
+
+        // test using postal code, for 1 2 and 5
+        assert.equal(await rentalPropertyInstance.getPostalCode(0), "s123456", "Property 1 not added");
+        assert.equal(await rentalPropertyInstance.getPostalCode(1), "s321323", "Property 2 not added");
+        assert.equal(await rentalPropertyInstance.getPostalCode(4), "s534533", "Property 5 not added");
     });
 
 
