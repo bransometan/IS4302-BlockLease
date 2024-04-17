@@ -39,6 +39,16 @@ contract RentalProperty {
     uint256 private numListedRentalProperty = 0; // number of listed rental properties
     mapping(uint256 => rentalProperty) private rentalProperties; // map of rental properties indexed by rentalPropertyId
 
+    // The owner of the contract (RentalProperty), who can set the access control to the RentalMarketplace contract
+    address private owner;
+    // The address of the RentalMarketplace contract, mainly used for access control
+    address private rentalMarketplaceAddress;
+
+    // Constructor to set the owner of the contract
+    constructor() {
+        owner = msg.sender;
+    }
+
     // ################################################### EVENTS ################################################### //
 
     event RentalPropertyCreated(
@@ -69,6 +79,21 @@ contract RentalProperty {
     event RentalPropertyDeleted(uint256 rentalPropertyId);
 
     // ################################################### MODIFIERS ################################################### //
+
+    // Modifier to ensure only the owner of the contract can call the function
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Only the owner can call this function");
+        _;
+    }
+
+    // Modifier to check if the caller is the RentalMarketplace contract
+    modifier onlyRentalMarketplace() {
+        require(
+            msg.sender == rentalMarketplaceAddress,
+            "Only RentalMarketplace can call this function"
+        );
+        _;
+    }
 
     // Modifier to ensure a function is callable only by its landlord owner
     modifier landlordOnly(uint256 rentalPropertyId) {
@@ -467,6 +492,16 @@ contract RentalProperty {
 
     // ################################################### SETTER METHODS ################################################### //
 
+    // Function to set the address of the RentalMarketplace contract
+    // Only the owner of the contract can call this function
+    // Mainly used for access control
+    function setRentalMarketplaceAddress(address _rentalMarketplaceAddress)
+        public
+        onlyOwner
+    {
+        rentalMarketplaceAddress = _rentalMarketplaceAddress;
+    }
+
     // Function to update details of a rental property
     function updateRentalProperty(
         uint256 rentalPropertyId,
@@ -523,7 +558,7 @@ contract RentalProperty {
     function setUpdateStatus(
         uint256 rentalPropertyId,
         bool newUpdateStatus
-    ) external validRentalPropertyId(rentalPropertyId) {
+    ) public validRentalPropertyId(rentalPropertyId) onlyRentalMarketplace() {
         rentalProperties[rentalPropertyId].updateStatus = newUpdateStatus;
     }
 
@@ -532,19 +567,19 @@ contract RentalProperty {
     function setListedStatus(
         uint256 rentalPropertyId,
         bool newListedStatus
-    ) external validRentalPropertyId(rentalPropertyId) {
+    ) public validRentalPropertyId(rentalPropertyId) onlyRentalMarketplace() {
         rentalProperties[rentalPropertyId].isListed = newListedStatus;
     }
 
     // Function to increment the number of listed rental properties
     // Not restricted to landlord as this function is used in RentalMarketplace to increment the number of listed rental properties
-    function incrementListedRentalProperty() external {
+    function incrementListedRentalProperty() public onlyRentalMarketplace() {
         numListedRentalProperty++;
     }
 
     // Function to decrement the number of listed rental properties
     // Not restricted to landlord as this function is used in RentalMarketplace to decrement the number of listed rental properties
-    function decrementListedRentalProperty() external {
+    function decrementListedRentalProperty() public onlyRentalMarketplace() {
         numListedRentalProperty--;
     }
 
@@ -553,7 +588,7 @@ contract RentalProperty {
     function setPaymentId(
         uint256 rentalPropertyId,
         uint256 newPaymentId
-    ) external validRentalPropertyId(rentalPropertyId) {
+    ) public validRentalPropertyId(rentalPropertyId) onlyRentalMarketplace() {
         rentalProperties[rentalPropertyId].paymentId = newPaymentId;
     }
 

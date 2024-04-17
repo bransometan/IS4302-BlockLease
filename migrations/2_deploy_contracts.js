@@ -29,9 +29,6 @@ module.exports = async (deployer, network, accounts) => {
       VOTE_PRICE
     );
   });
-  
-  // Get the instance of the PaymentEscrow contract
-  const escrowContract = await PaymentEscrow.deployed();
 
   // Third: Deploy the RentalProperty contract
   await deployer.deploy(RentalProperty).then(function () {
@@ -42,6 +39,7 @@ module.exports = async (deployer, network, accounts) => {
       PaymentEscrow.address
     );
   });
+
   // Fifth: Deploy the RentDisputeDAO contract and pass the address of the RentalProperty, PaymentEscrow, and RentalMarketplace contracts
   await deployer.deploy(
     RentDisputeDAO,
@@ -51,7 +49,24 @@ module.exports = async (deployer, network, accounts) => {
     MINIMUM_VOTES
   );
 
-  // Use the instance earlier and set the addresses of the RentalMarketplace and RentDisputeDAO contracts in the PaymentEscrow contract
+   // Get the instance of the PaymentEscrow contract
+   const escrowContract = await PaymentEscrow.deployed();
+   // Get the instance of the RentalProperty contract
+   const rentalPropertyContract = await RentalProperty.deployed();
+   // Get the instance of the RentalMarketplace contract
+   const rentalMarketplaceContract = await RentalMarketplace.deployed();
+
+  /* After deploying the contracts, set the addresses of respective contracts below in each contract
+     Main purpose: Access Control (Security) - Prevent unauthorized access to functions in the contracts
+     Note: The addresses of the contracts are set in the respective contracts to ensure that only the authorized contracts can access some functions of the contracts
+  */
+ 
+  // Set the addresses of the RentalMarketplace contract in the PaymentEscrow contract
   await escrowContract.setRentalMarketplaceAddress(RentalMarketplace.address);
+  // Set the address of the RentDisputeDAO contract in the PaymentEscrow contract
   await escrowContract.setRentDisputeDAOAddress(RentDisputeDAO.address);
+  // Set the address of the RentalMarketplace contract in the RentalProperty contract
+  await rentalPropertyContract.setRentalMarketplaceAddress(RentalMarketplace.address);
+  // Set the address of the RentDisputeDAO contract in the RentalMarketplace contract
+  await rentalMarketplaceContract.setRentDisputeDAOAddress(RentDisputeDAO.address);
 };

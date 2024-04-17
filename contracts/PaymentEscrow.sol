@@ -43,9 +43,9 @@ contract PaymentEscrow {
 
     // The owner of the contract (PaymentEscrow), who can set the protection fee (for landlord) and voter rewards (for disputes)
     address private owner;
-    // The address of the RentalMarketplace contract, which is the only contract that can call the release function
+    // The address of the RentalMarketplace contract, mainly used for access control
     address private rentalMarketplaceAddress;
-    // The address of the RentDisputeDAO contract, which is the only contract that can call the refund function
+    // The address of the RentDisputeDAO contract, mainly used for access control
     address private rentDisputeDAOAddress;
 
     constructor(
@@ -322,7 +322,7 @@ contract PaymentEscrow {
     // Function to set the vote price
     function setVotePrice(
         uint256 _votePrice
-    ) public onlyOwner {
+    ) public onlyOwner invalidVotePrice(_votePrice) {
         votePrice = _votePrice;
     }
 

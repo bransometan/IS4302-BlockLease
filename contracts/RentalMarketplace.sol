@@ -3,6 +3,7 @@ pragma solidity ^0.8.0;
 
 import "./RentalProperty.sol";
 import "./PaymentEscrow.sol";
+import "./RentDisputeDAO.sol";
 
 /*
 RentalMarketplace contract is a contract that allows tenants to apply for rental properties listed by landlords.
@@ -57,9 +58,15 @@ contract RentalMarketplace {
     // This is to keep track if a tenant has already applied for a rental property (Tenant can only apply for one rental property at a time)
     mapping(address => bool) private hasApplied;
 
+    // The owner of the contract (RentalMarketplace), who can set the access control to the RentDisputeDAO contract
+    address private owner;
+    // The address of the RentDisputeDAO contract, mainly used for access control
+    address private rentDisputeDAOAddress;
+
     constructor(address rentalPropertyAddress, address paymentEscrowAddress) {
         rentalPropertyContract = RentalProperty(rentalPropertyAddress);
         paymentEscrowContract = PaymentEscrow(paymentEscrowAddress);
+        owner = msg.sender;
     }
 
     // ################################################### EVENTS ################################################### //
@@ -84,6 +91,21 @@ contract RentalMarketplace {
     event tenantMoveOut(uint256 rentalPropertyId, uint256 applicationId);
 
     // ################################################### MODIFIERS ################################################### //
+
+    // Modifier to ensure only the owner of the contract can call the function
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Only the owner can call this function");
+        _;
+    }
+
+    // Modifier to check if the caller is the RentDisputeDAO contract
+    modifier onlyRentDisputeDAO() {
+        require(
+            msg.sender == rentDisputeDAOAddress,
+            "Only RentDisputeDAO can call this function"
+        );
+        _;
+    }
 
     // Modifier to check the landlord is the owner of the rental property
     modifier landlordOnly(uint256 rentalPropertyId) {
@@ -563,6 +585,16 @@ contract RentalMarketplace {
 
     // ################################################### SETTER METHODS ################################################### //
 
+    // Set the RentDisputeDAO contract address
+    // Only the owner of the contract can set the RentDisputeDAO contract address
+    // Mainly used for access control
+    function setRentDisputeDAOAddress(address _rentDisputeDAOAddress)
+        public
+        onlyOwner
+    {
+        rentDisputeDAOAddress = _rentDisputeDAOAddress;
+    }
+
     // Update the deposit required for a rental property (in the event of disputes - when tenant lost the dispute and will get leser deposit back)
     // Not restricted to landlord as this function is used in RentDisputeDAO to update the new deposit balance
     function updateDepositFeeBalance(
@@ -572,6 +604,7 @@ contract RentalMarketplace {
         public
         rentalPropertyListed(rentalPropertyId)
         depositFeeGreaterThanZero(newDepositFee)
+        onlyRentDisputeDAO()
     {
         rentalPropertyDeposits[rentalPropertyId] = newDepositFee;
     }
@@ -586,6 +619,7 @@ contract RentalMarketplace {
         public
         rentalPropertyListed(rentalPropertyId)
         rentalApplicationExist(rentalPropertyId, applicationId)
+        onlyRentDisputeDAO()
     {
         rentalApplications[rentalPropertyId][applicationId].status = newStatus;
     }
@@ -600,6 +634,7 @@ contract RentalMarketplace {
         public
         rentalPropertyListed(rentalPropertyId)
         rentalApplicationExist(rentalPropertyId, applicationId)
+        onlyRentDisputeDAO()
     {
         rentalApplications[rentalPropertyId][applicationId].tenantHasDisputed = hasDisputed;
     }
