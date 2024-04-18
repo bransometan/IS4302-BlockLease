@@ -380,7 +380,6 @@ $$ |  $$ |\$$$$$$$\ $$ |  $$ | \$$$$  |\$$$$$$$ |$$ |      $$ |      $$ |      \
         
     });
 
-    // need to check on the protection fee how it works
     it("Test Case 17: Landlord unlist rental property", async () => {
         const landlordwallet = await leaseTokenInstance.checkLeaseToken(landlord);
         console.log("Before Unlist Property:" + landlordwallet.toString())
