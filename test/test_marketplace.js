@@ -166,9 +166,9 @@ $$ |  $$ |\$$$$$$$\ $$ |  $$ | \$$$$  |\$$$$$$$ |$$ |      $$ |      $$ |      \
         let tenant3TokenBalanceAfter = await leaseTokenInstance.checkLeaseToken(tenant3);
 
         // Check if the ETH is less after getting LeaseTokens
-        assert(tenant1EthBalanceAfter < tenant1EthBalanceBefore, "Tenant1 ETH balance is incorrect");
-        assert(tenant2EthBalanceAfter < tenant2EthBalanceBefore, "Tenant2 ETH balance is incorrect");
-        assert(tenant3EthBalanceAfter < tenant3EthBalanceBefore, "Tenant3 ETH balance is incorrect");
+        assert(Number(tenant1EthBalanceAfter) < Number(tenant1EthBalanceBefore), "Tenant1 New ETH balance is incorrect");
+        assert(Number(tenant2EthBalanceAfter) < Number(tenant2EthBalanceBefore), "Tenant2 New ETH balance is incorrect");
+        assert(Number(tenant3EthBalanceAfter) < Number(tenant3EthBalanceBefore), "Tenant3 New ETH balance is incorrect");
         // Check if the LeaseTokens are received correctly
         assert.equal(tenant1TokenBalanceAfter.toString(), (BigInt(tenant1TokenBalanceBefore) + BigInt(1000)).toString(), "Tenant1 LeaseToken balance is incorrect");
         assert.equal(tenant2TokenBalanceAfter.toString(), (BigInt(tenant2TokenBalanceBefore) + BigInt(1000)).toString(), "Tenant2 LeaseToken balance is incorrect");
@@ -515,7 +515,7 @@ $$ |  $$ |\$$$$$$$\ $$ |  $$ | \$$$$  |\$$$$$$$ |$$ |      $$ |      $$ |      \
         const landlordWalletAfter = await leaseTokenInstance.checkLeaseToken(landlord);
 
         // Check if the ETH is more after converting LeaseToken to ETH
-        assert(landlordEthBalanceAfter > landlordEthBalanceBefore, "Landlord ETH balance is incorrect");
+        assert(Number(landlordEthBalanceAfter) > Number(landlordEthBalanceBefore), "Landlord New ETH balance is incorrect");
         // Check if the LeaseTokens are converted to ETH correctly
         assert.equal(landlordWalletAfter.toString(), "0", "LeaseToken not converted to ETH correctly");
         console.log("After Convert LeaseToken to ETH:" + landlordWalletAfter.toString())
