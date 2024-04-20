@@ -1,4 +1,5 @@
-// dispute approve , rejected and draw
+
+// Require contracts to be deployed and assertion frameworks initialisation
 const _deploy_contracts = require("../migrations/2_deploy_contracts");
 const truffleAssert = require('truffle-assertions');
 var assert = require('assert');

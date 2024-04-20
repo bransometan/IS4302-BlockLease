@@ -1,3 +1,37 @@
+/*
+Description: Test cases for Rental Property Management and Rental Property Marketplace
+Roles: 1 Landlord, 3 Tenant 
+Run Command: truffle test ./test/test_marketplace.js
+
+Rental Property Management
+Test Cases (3):
+1. Landlord add rental property
+2. Landlord updates rental property
+3. Landlord deletes their property listing
+
+Rental Property Marketplace
+Test Cases (19):
+1. Tenants get LeaseTokens in exchange for ETH
+2. Landlord CANNOT list property
+3. Landlord CAN list a property on market place
+4. Landlord can update property when there is no tenant applications
+5. Landlord can unlist property when there is no tenant applications
+6. Tenant can apply for rental property
+7. Landlord cannot unlist property when there are applications
+8. Landlord cannot update property when there are applications
+9. Landlord cannot delete property when there are applications
+10. Tenant cancel tenant rental application
+11. Landlord accepts rental application
+12. Landlord reject tenant rental application
+13. Landlord accept payment for monthly rental fee from a tenant
+14. Tenant cannot move out from rental property when payment not made for entire lease period
+15. Tenant make payment for monthly rental fee
+16. Landlord accept payment for monthly rental fee from a tenant
+17. Tenant move out from rental property
+18. Landlord unlist rental property
+19. Landlord convert LeaseToken back to ETH
+*/
+
 // Require contracts to be deployed and assertion frameworks initialisation
 const _deploy_contracts = require("../migrations/2_deploy_contracts");
 const truffleAssert = require('truffle-assertions');
@@ -325,23 +359,21 @@ $$ |  $$ |\$$$$$$$\ $$ |  $$ | \$$$$  |\$$$$$$$ |$$ |      $$ |      $$ |      \
         }
     });
 
-    it("Test 10 (Success): Landlord reject tenant rental application", async () => {
-        // Get the tenant's balance before the cancellation
-        let t1balancebefore = await leaseTokenInstance.checkLeaseToken(tenant1);
-        console.log(`Balance Before: ${t1balancebefore.toString()}`);
-        // Landlord reject tenant 1 application
-        const result = await rentalMarketplaceInstance.cancelOrRejectRentalApplication(2, 0, {from: landlord});
+    it("Test 10 (Success): Tenant cancel tenant rental application", async () => {
+        // Check tenant 3 balance before cancellation
+        let t3balanceBefore = await leaseTokenInstance.checkLeaseToken(tenant3);
+        console.log(`Balance Before: ${t3balanceBefore.toString()}`);
+        // Tenant 3 cancel the application
+        const result = await rentalMarketplaceInstance.cancelOrRejectRentalApplication(2, 2, {from: tenant3});
         // Check if the event is emitted
         truffleAssert.eventEmitted(result, 'RentalApplicationCancelOrRejected');
-        // Get the tenant's balance after the cancellation
-        let t1balance = await leaseTokenInstance.checkLeaseToken(tenant1);
-
+        // Check tenant 3 balance after the cancellation
+        let t3balanceAfter = await leaseTokenInstance.checkLeaseToken(tenant3);
+        let expectedBalanceAfter = new web3.utils.BN(t3balanceBefore).add(new web3.utils.BN(depositFee));
         // Check if the deposit fee is refunded to the tenant's wallet
-        let expectedBalanceAfter = new web3.utils.BN(t1balancebefore).add(new web3.utils.BN(depositFee));
-        assert.equal(t1balance.toString(), expectedBalanceAfter.toString(), "Deposit Fee not refunded correctly");
+        assert.equal(t3balanceAfter.toString(), expectedBalanceAfter.toString(), "Deposit Fee not refunded correctly");
 
-        console.log(`Balance After: ${t1balance.toString()}`);
-
+        console.log(`Balance After: ${t3balanceAfter.toString()}`);
     });
 
     it("Test 11 (Success): Landlord accepts rental application", async () => {
@@ -364,21 +396,23 @@ $$ |  $$ |\$$$$$$$\ $$ |  $$ | \$$$$  |\$$$$$$$ |$$ |      $$ |      $$ |      \
 
     });
 
-    it("Test 12 (Success): Tenant cancel tenant rental application", async () => {
-        // Check tenant 3 balance before cancellation
-        let t3balanceBefore = await leaseTokenInstance.checkLeaseToken(tenant3);
-        console.log(`Balance Before: ${t3balanceBefore.toString()}`);
-        // Tenant 3 cancel the application
-        const result = await rentalMarketplaceInstance.cancelOrRejectRentalApplication(2, 2, {from: tenant3});
+    it("Test 12 (Success): Landlord reject tenant rental application", async () => {
+        // Get the tenant's balance before the cancellation
+        let t1balancebefore = await leaseTokenInstance.checkLeaseToken(tenant1);
+        console.log(`Balance Before: ${t1balancebefore.toString()}`);
+        // Landlord reject tenant 1 application
+        const result = await rentalMarketplaceInstance.cancelOrRejectRentalApplication(2, 0, {from: landlord});
         // Check if the event is emitted
         truffleAssert.eventEmitted(result, 'RentalApplicationCancelOrRejected');
-        // Check tenant 3 balance after the cancellation
-        let t3balanceAfter = await leaseTokenInstance.checkLeaseToken(tenant3);
-        let expectedBalanceAfter = new web3.utils.BN(t3balanceBefore).add(new web3.utils.BN(depositFee));
-        // Check if the deposit fee is refunded to the tenant's wallet
-        assert.equal(t3balanceAfter.toString(), expectedBalanceAfter.toString(), "Deposit Fee not refunded correctly");
+        // Get the tenant's balance after the cancellation
+        let t1balance = await leaseTokenInstance.checkLeaseToken(tenant1);
 
-        console.log(`Balance After: ${t3balanceAfter.toString()}`);
+        // Check if the deposit fee is refunded to the tenant's wallet
+        let expectedBalanceAfter = new web3.utils.BN(t1balancebefore).add(new web3.utils.BN(depositFee));
+        assert.equal(t1balance.toString(), expectedBalanceAfter.toString(), "Deposit Fee not refunded correctly");
+
+        console.log(`Balance After: ${t1balance.toString()}`);
+
     });
 
     it("Test 13 (Failure): Landlord cannot accept payment from rental application when tenant has not made payment", async () => {
