@@ -66,7 +66,6 @@ BlockLease is a decentralized rental ecosystem built on blockchain technology, r
   * Refund the voter reward back to the tenant
   * Refund all original stake amounts (Vote Price) to every voter.
 
-
 ## Technical Specifications and Other Assumptions
 * Contracts: The primary contracts include RentalProperty, RentalMarketplace, PaymentEscrow, RentDisputeDAO, LeaseToken (for payments and rewards).
 * Trust and Security: Transactions and interactions are secured by blockchain technology, ensuring integrity and trust.
@@ -80,6 +79,18 @@ BlockLease is a decentralized rental ecosystem built on blockchain technology, r
 * Voters Participation: Each Real Estate Validators can only vote once for a particular dispute.
 * Non-Profit Platform: Our platform does not charge any commission fee for any transactions. It is totally free of charge for all users to utilize.
 * Transaction Flow: Our platform uses LeaseToken for all transactions. All users have to exchange their ETH to LeaseToken prior to any transaction. Users can exchange LeaseToken to ETH at any point in time.
+
+## Main User Interfaces
+### Home Page
+<img src="./client/public/Homepage.png" alt="Homepage" width="1050" height="500"> <br />
+### My Properties
+<img src="./client/public/MyProperties.png" alt="My Properties" width="1050" height="500"> <br />
+### Browse Marketplace
+<img src="./client/public/BrowseMarketplace.png" alt="Browse Marketplace" width="1050" height="500"> <br />
+### My Applications
+<img src="./client/public/MyApplications.png" alt="My Applications" width="1050" height="500"> <br />
+### Disputes
+<img src="./client/public/ResolvedDisputed.png" alt="Disputes" width="1050" height="500"> <br />
 
 ## Test Case Documentation
 ### 1. Test Cases for Rental Property Management and Rental Property Marketplace
