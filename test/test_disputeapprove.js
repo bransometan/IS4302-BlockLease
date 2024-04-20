@@ -140,7 +140,7 @@ contract('Dispute APPROVED for Rental', function (accounts) {
         
         console.log("Validator 1 current wallet balance : " + amtv1Before.toString())
         console.log("Validator 2 current wallet balance : " + amtv2Before.toString())
-        console.log("Validator 2 current wallet balance : " + amtv3Before.toString())
+        console.log("Validator 3 current wallet balance : " + amtv3Before.toString())
         
         /* 0 is void, 1 is approve, 2 is reject
         Note: disputeId starts from 1 (0 is used to indicate no dispute)
@@ -179,7 +179,7 @@ contract('Dispute APPROVED for Rental', function (accounts) {
 
         console.log("Validator 1 new wallet balance : " + amtv1After.toString())
         console.log("Validator 2 new wallet balance : " + amtv2After.toString())
-        console.log("Validator 2 new wallet balance : " + amtv3After.toString())
+        console.log("Validator 3 new wallet balance : " + amtv3After.toString())
     });
 
     it('Test 4 (Success): Validators can only vote once for a dispute once for a rental property', async () => {

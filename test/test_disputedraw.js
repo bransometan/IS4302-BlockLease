@@ -1,3 +1,23 @@
+/*
+Description: Test cases for dispute DRAW for rental property (No Winner)
+Roles: 1 Tenant, 1 Landlord, 2 Validator
+Run Command: truffle test ./test/test_disputedraw.js
+Test Cases (12):
+----------------------Draw outcome with voters-----------------------
+1. Tenant can file for a dispute for a rental property
+2. Tenant cannot move out of rental property in a dispute
+3. Validators can vote for a dispute for a rental property (3 VALIDATORS)
+4. Validators can only vote once for a dispute once for a rental property
+5. Check Dispute DRAW outcome with voters
+6. Tenant can only file for 1 dispute in the same rental property
+7. Tenant move out of rental property (after dispute)
+8. Landlord unlist the property
+----------------------Draw outcome with NO VOTERS-----------------------
+9. Tenant can file for a dispute for a rental property
+10. Check Dispute Draw outcome with NO VOTERS
+11. Tenant move out of rental property (after dispute)
+12. Landlord unlist the property
+*/
 
 // Require contracts to be deployed and assertion frameworks initialisation
 const _deploy_contracts = require("../migrations/2_deploy_contracts");
@@ -15,7 +35,6 @@ var RentDisputeDAO = artifacts.require("../contracts/RentDisputeDAO.sol");
 contract('Dispute DRAW for Rental', function (accounts) {
     let leaseTokenInstance, paymentEscrowInstance, rentalMarketplaceInstance, rentalPropertyInstance, rentDisputeDAOInstance;
 
-    // const owner = accounts[0];
     const landlord = accounts[1];
     const tenant = accounts[2];
     const validator1 = accounts[3];
@@ -29,41 +48,38 @@ contract('Dispute DRAW for Rental', function (accounts) {
         rentalMarketplaceInstance = await RentalMarketplace.deployed();
         rentalPropertyInstance = await RentalProperty.deployed();
         rentDisputeDAOInstance = await RentDisputeDAO.deployed();
-
     });
 
-    it('Test Case 1: Tenant can file for a dispute for a rental property', async () => {
-        // Amount of ETH the landlord will send to the contract to get LeaseTokens.
-        // For example, 0.1 ETH will give them 10 LeaseTokens if the rate is 0.01 ETH per LeaseToken.
+    it('Test 1 (Success): Tenant can file for a dispute for a rental property', async () => {
 
-        // ======== For testing, to be removed afters ========
+        /* ------------------------Start of Initial Setup----------------------- */
+
+        // Amount of ETH to send to the contract
         let amountOfEthToSend = web3.utils.toWei('5', 'ether');
 
-        // Call the getLeaseToken function and send ETH along with the transaction.
-        let result = await leaseTokenInstance.getLeaseToken({
+        // Get lease token for landlord and tenant
+        await leaseTokenInstance.getLeaseToken({
             from: landlord,
             value: amountOfEthToSend
         });
 
-        let result2 = await leaseTokenInstance.getLeaseToken({
+        await leaseTokenInstance.getLeaseToken({
             from: tenant,
             value: amountOfEthToSend
         });
-        let tenantTokens = await leaseTokenInstance.checkLeaseToken(tenant);
 
-        let landlordBalance = await leaseTokenInstance.checkLeaseToken(landlord);
+        // Create a rental property
+        await rentalPropertyInstance.addRentalProperty("123 Main St", "s123456", "1", 0, "Nice place", "2", "30", "3", { from: landlord });
 
-        let hdb1 = await rentalPropertyInstance.addRentalProperty("123 Main St", "s123456", "1", 0, "Nice place", "2", "30", "3", { from: landlord });
-
-        const rentalProperty = await rentalMarketplaceInstance.listARentalProperty(0, depositFee, { from: landlord });
-        landlordBalance = await leaseTokenInstance.checkLeaseToken(landlord);
+        // List the rental property
+        await rentalMarketplaceInstance.listARentalProperty(0, depositFee, { from: landlord });
 
         // Tenant apply for rental property
-        const tenantApply = await rentalMarketplaceInstance.applyRentalProperty(0, "Tan Ah Kao", "tanahkao@gmail.com", "91231234", "I wish to stay in Main St with Nice place", { from: tenant });
-        // Landlord accepts
-        const landlordAccept = await rentalMarketplaceInstance.acceptRentalApplication(0, 0, { from: landlord });
+        await rentalMarketplaceInstance.applyRentalProperty(0, "Tan Ah Kao", "tanahkao@gmail.com", "91231234", "I wish to stay in Main St with Nice place", { from: tenant });
+        // Landlord accepts the rental application
+        await rentalMarketplaceInstance.acceptRentalApplication(0, 0, { from: landlord });
 
-        // repeat based on the duration
+        // Tenant make payment to landlord and landlord accept payment for 3 months (until end of lease period)
         for (let i = 0; i < 3; i++) {
             // Tenant make payment to landlord
             await rentalMarketplaceInstance.makePayment(0, 0, { from: tenant });
@@ -71,20 +87,33 @@ contract('Dispute DRAW for Rental', function (accounts) {
             await rentalMarketplaceInstance.acceptPayment(0, 0, { from: landlord });
         }
 
-        // before dispute
+        /* ------------------------End of Initial Setup----------------------- */
+
+        /* ------------------------Start of Create Dispute----------------------- */
+        // Check the balance of the tenant wallet
+        const tenantTokens = await leaseTokenInstance.checkLeaseToken(tenant);
         console.log("Amount tenant have BEFORE dispute : " + tenantTokens)
-        // Dispute type is health and safety
+
+        // Tenant file for a dispute
         const tenantDispute1 = await rentDisputeDAOInstance.createRentDispute(0, 0, 1, "Landlord threatens to light house on fire", { from: tenant });
+        // Check if the event was emitted
         truffleAssert.eventEmitted(tenantDispute1, 'RentDisputeCreated');
 
-        const tokenafter = await leaseTokenInstance.checkLeaseToken(tenant);
         // check balance of the token of tenant
+        const tokenafter = await leaseTokenInstance.checkLeaseToken(tenant);
         console.log("Amount tenant have AFTER dispute : " + tokenafter.toString())
 
-        // ======== End ========
+        // Get the voter reward that the tenant needs to stake for the dispute
+        const voterReward = await paymentEscrowInstance.getVoterReward();
+        // Check if token balance is deducted correctly
+        let expectedBalanceAfter = new web3.utils.BN(tenantTokens).sub(new web3.utils.BN(voterReward));
+        assert.equal(tokenafter.toString(), expectedBalanceAfter.toString(), "Token balance not deducted correctly");
+
+        /* ------------------------End of Create Dispute----------------------- */
     });
 
-    it('Test Case 2 FAILURE: Tenant cannot move out of rental property in a dispute', async () => {
+    it('Test 2 (Failure): Tenant cannot move out of rental property in a dispute', async () => {
+        // Tenant move out of rental property in a dispute (should fail)
         try {
             await rentalMarketplaceInstance.moveOut(0, 0, {from: tenant});
         } catch (error) {
@@ -93,41 +122,65 @@ contract('Dispute DRAW for Rental', function (accounts) {
         }
     });
 
-
-    it('Test Case 3: Validators can vote for a dispute for a rental property (WITH VOTES)', async () => {
-        // Call the getLeaseToken function and send ETH along with the transaction.
+    it('Test 3 (Success): Validators can vote for a dispute for a rental property (3 VALIDATORS)', async () => {
+        // Get lease token for validators
         let amountOfEthToSend = web3.utils.toWei('5', 'ether');
-        let result = await leaseTokenInstance.getLeaseToken({
+        await leaseTokenInstance.getLeaseToken({
             from: validator1,
             value: amountOfEthToSend
         });
-        let result2 = await leaseTokenInstance.getLeaseToken({
+        await leaseTokenInstance.getLeaseToken({
             from: validator2,
             value: amountOfEthToSend
         });
-        // 0 is void, 1 is approve, 2 is reject
-        // The dispute id is 1 instead of 0, small bug but its ok :D
+
+        // Get current balance of the validators wallet
+        let amtv1Before = await leaseTokenInstance.checkLeaseToken(validator1);
+        let amtv2Before = await leaseTokenInstance.checkLeaseToken(validator2);
+        
+        console.log("Validator 1 current wallet balance : " + amtv1Before.toString())
+        console.log("Validator 2 current wallet balance : " + amtv2Before.toString())
+        
+        /* 0 is void, 1 is approve, 2 is reject
+        Note: disputeId starts from 1 (0 is used to indicate no dispute)
+        Note: 1 validators approve, 1 validator reject.*/
+        // Validator 1 approve
         let validator1VoteAccept = await rentDisputeDAOInstance.voteOnRentDispute(1, 1, { from: validator1 });
+        // Check if the event was emitted
         truffleAssert.eventEmitted(validator1VoteAccept, 'VoteOnRentDispute');
 
+        // Validator 2 reject
         let validator2VoteAccept = await rentDisputeDAOInstance.voteOnRentDispute(1, 2, { from: validator2 });
+        // Check if the event was emitted
         truffleAssert.eventEmitted(validator2VoteAccept, 'VoteOnRentDispute');
 
-        let amtv1 = await leaseTokenInstance.checkLeaseToken(validator1);
-        let amtv2 = await leaseTokenInstance.checkLeaseToken(validator2);
+        // Check the new balance of the validators wallet
+        let amtv1After = await leaseTokenInstance.checkLeaseToken(validator1);
+        let amtv2After = await leaseTokenInstance.checkLeaseToken(validator2);
 
-        console.log("Validator 1 new wallet balance : " + amtv1.toString())
-        console.log("Validator 2 new wallet balance : " + amtv2.toString())
-        // ======== End ========
+        // Get Vote Price from Payment Escrow for validators to participate in voting
+        let votePrice = await paymentEscrowInstance.getVotePrice();
+        // Get the expected balance after deducting the vote price
+        let expectedBalanceAfter1 = new web3.utils.BN(amtv1Before).sub(new web3.utils.BN(votePrice));
+        let expectedBalanceAfter2 = new web3.utils.BN(amtv2Before).sub(new web3.utils.BN(votePrice));
+
+        // Check if token balance is deducted correctly
+        assert.equal(amtv1After.toString(), expectedBalanceAfter1.toString(), "Token balance not deducted correctly for validator 1");
+        assert.equal(amtv2After.toString(), expectedBalanceAfter2.toString(), "Token balance not deducted correctly for validator 2");
+
+        console.log("Validator 1 new wallet balance : " + amtv1After.toString());
+        console.log("Validator 2 new wallet balance : " + amtv2After.toString());
     });
 
-    it('Test Case 4 FAILURE: Validators can only vote once for a dispute once for a rental property', async () => {
-        try {
-            let validator1VoteAccept = await rentDisputeDAOInstance.voteOnRentDispute(1, 1, { from: validator1 });
-            truffleAssert.eventEmitted(validator1VoteAccept, 'VoteOnRentDispute');
+    it('Test 4 (Success): Validators can only vote once for a dispute once for a rental property', async () => {
 
-            let validator2VoteAccept = await rentDisputeDAOInstance.voteOnRentDispute(1, 2, { from: validator2 });
-            truffleAssert.eventEmitted(validator2VoteAccept, 'VoteOnRentDispute');
+        // Validator 1, 2 and 3 vote again (should fail)
+        try {
+            let validator1Vote = await rentDisputeDAOInstance.voteOnRentDispute(1, 1, { from: validator1 });
+            truffleAssert.eventEmitted(validator1Vote, 'VoteOnRentDispute');
+
+            let validator2Vote = await rentDisputeDAOInstance.voteOnRentDispute(1, 1, { from: validator2 });
+            truffleAssert.eventEmitted(validator2Vote, 'VoteOnRentDispute');
 
         } catch (error) {
             console.log("Caught error:", error.message);
@@ -135,26 +188,60 @@ contract('Dispute DRAW for Rental', function (accounts) {
         }
     });
 
-    it('Test Case 5: Check Dispute Draw outcome with voters', async () => {  
+    it('Test 5 (Success): Check Dispute DRAW outcome with voters', async () => {  
 
+        // Get vote price from Payment Escrow
+        let votePriceRefund = await paymentEscrowInstance.getVotePrice();
+        // Get the voter reward refund that the tenant stake
+        let voterRewardRefund = await paymentEscrowInstance.getVoterReward();
+    
+        // Get tenant balance before dispute
+        let tenantTokensBefore = await leaseTokenInstance.checkLeaseToken(tenant);
+        // Get landlord balance before dispute
+        let landlordTokensBefore = await leaseTokenInstance.checkLeaseToken(landlord);
+        // Get validator 1 balance before dispute
+        let validator1TokensBefore = await leaseTokenInstance.checkLeaseToken(validator1);
+        // Get validator 2 balance before dispute
+        let validator2TokensBefore = await leaseTokenInstance.checkLeaseToken(validator2);
+
+        console.log("Tenant Balance BEFORE dispute : " + tenantTokensBefore.toString());
+        console.log("Landlord Balance BEFORE dispute : " + landlordTokensBefore.toString());
+        console.log("Validator 1 Balance BEFORE dispute : " + validator1TokensBefore.toString());
+        console.log("Validator 2 Balance BEFORE dispute : " + validator2TokensBefore.toString());
+
+        // Resolve the dispute (Triggered manually for testing purposes)
         let resolve = await rentDisputeDAOInstance.triggerResolveRentDispute(1);
         truffleAssert.eventEmitted(resolve, 'RentDisputeResolved');
-        
-        let tenanttoken = await leaseTokenInstance.checkLeaseToken(tenant);
-        console.log("Tenant New Balance AFTER added token reward : " + tenanttoken.toString())
 
-        let result = await leaseTokenInstance.checkLeaseToken(validator1);
-        let result2 = await leaseTokenInstance.checkLeaseToken(validator2);
+        // Check the new balance of the tenant wallet
+        let tenantTokensafter = await leaseTokenInstance.checkLeaseToken(tenant);
+        // Check the new balance of the landlord wallet
+        let landlordTokensafter = await leaseTokenInstance.checkLeaseToken(landlord);
+        // Check the new balance of the winning validator 1 wallet
+        let validator1Tokensafter = await leaseTokenInstance.checkLeaseToken(validator1);
+        // Check the new balance of the winning validator 2 wallet
+        let validator2Tokensafter = await leaseTokenInstance.checkLeaseToken(validator2);
 
-        console.log("Validator 1 New Balance AFTER added VOTE price : " + result.toString())
-        console.log("Validator 2 New Balance AFTER added Vote reward : " + result2.toString())
+        console.log("Tenant New Balance AFTER dispute : " + tenantTokensafter.toString());
+        console.log("Landlord New Balance AFTER dispute : " + landlordTokensafter.toString());
+        console.log("Validator 1 New Balance BEFORE added VOTE commision : " + validator1Tokensafter.toString());
+        console.log("Validator 2 New Balance BEFORE added Vote commison : " + validator2Tokensafter.toString());
 
-        let landlordB = await leaseTokenInstance.checkLeaseToken(landlord);
-        console.log("Landlord Balance AFTER UNCHANGED : " + landlordB.toString())
-        // ======== End ========
+        // Get the expected balance after adding the rewards
+        let expectedBalanceAfterTenant = new web3.utils.BN(tenantTokensBefore).add(new web3.utils.BN(voterRewardRefund));
+        let expectedBalanceAfterLandlord = new web3.utils.BN(landlordTokensBefore);
+        let expectedBalanceAfterValidator1 = new web3.utils.BN(validator1TokensBefore).add(new web3.utils.BN(votePriceRefund));
+        let expectedBalanceAfterValidator2 = new web3.utils.BN(validator2TokensBefore).add(new web3.utils.BN(votePriceRefund));
+
+        // Check if token balance is deducted correctly
+        assert.equal(tenantTokensafter.toString(), expectedBalanceAfterTenant.toString(), "Token balance not added correctly for tenant");
+        assert.equal(landlordTokensafter.toString(), expectedBalanceAfterLandlord.toString(), "Token balance not deducted correctly for landlord");
+        assert.equal(validator1Tokensafter.toString(), expectedBalanceAfterValidator1.toString(), "Token balance not added correctly for validator 1");
+        assert.equal(validator2Tokensafter.toString(), expectedBalanceAfterValidator2.toString(), "Token balance not added correctly for validator 2");
     });
 
-    it('Test Case 6 FAILURE: Tenant can only file for 1 dispute in the same rental property', async () => {
+    it('Test 6 (Failure): Tenant can only file for 1 dispute in the same rental property', async () => {
+        // Tenant file for a dispute again (should fail)
         try {
             await rentDisputeDAOInstance.createRentDispute(0, 0, 1, "Landlord threatens to light house on fire second time", { from: tenant });
         } catch (error) {
@@ -164,111 +251,208 @@ contract('Dispute DRAW for Rental', function (accounts) {
     });
 
 
-    it('Test Case 7: Tenant move out of rental property (after dispute)', async () => {     
+    it('Test 7 (Success): Tenant move out of rental property (after dispute)', async () => {  
+        // Get the current balance of the tenant wallet
+        let t2current = await leaseTokenInstance.checkLeaseToken(tenant);
+        // Get the current balance of the landlord wallet
+        let landlordbefore = await leaseTokenInstance.checkLeaseToken(landlord);
+        // Get rental application details
         let application = await rentalMarketplaceInstance.getRentalApplication(0,0);
+        // Check that application status is COMPLETED to allow tenant to move out
         assert.equal(application.status, 3, "Application status not COMPLETED");
+
+        console.log("Tenant Balance : Before Move Out : " + t2current.toString())
+        console.log("Landlord Balance : Before Move Out : " + landlordbefore.toString())
+
+        // Tenant move out of rental property
         await rentalMarketplaceInstance.moveOut(0, 0, {from: tenant});
 
-        let t2end = await leaseTokenInstance.checkLeaseToken(tenant);
-        console.log("Tenant Balance : After Move Out + Deposit Fee : " + t2end.toString())
+        // Check the new balance of the tenant wallet
+        let t2after = await leaseTokenInstance.checkLeaseToken(tenant);
+        // Check the new balance of the landlord wallet
+        let landlordAfter = await leaseTokenInstance.checkLeaseToken(landlord);
 
-        let landlordB = await leaseTokenInstance.checkLeaseToken(landlord);
-        console.log("Landlord Balance AFTER refund deposit fee : " + landlordB.toString())
-        // ======== End ========
+        // Get the expected balance after moving out
+        let expectedTenantBalanceAfter = new web3.utils.BN(t2current).add(new web3.utils.BN(depositFee));
+        let expectedLandlordBalanceAfter = new web3.utils.BN(landlordbefore).sub(new web3.utils.BN(depositFee));
+        assert.equal(t2after.toString(), expectedTenantBalanceAfter.toString(), "Deposit Fee not refunded correctly to Tenant");
+        assert.equal(landlordAfter.toString(), expectedLandlordBalanceAfter.toString(), "Deposit Fee not refunded correctly From Landlord");
+        
+        console.log("Tenant Balance : After Move Out + Deposit Fee : " + t2after.toString())
+        console.log("Landlord Balance : After Move Out : " + landlordAfter.toString())
     });
 
-    it('Test Case 8: Landlord unlist the property', async () => {     
+    it('Test 8 (Success): Landlord unlist the property', async () => {
+        // Get the remaining protection fee (remain unchanged since dispute draw)
+        let remainingProtectionFee = await paymentEscrowInstance.getProtectionFee();
+
+        // Get the current balance of the landlord wallet
+        const landlordWalletBefore = await leaseTokenInstance.checkLeaseToken(landlord);
+        console.log("Before Unlist Property Token Balance:" + landlordWalletBefore.toString());
+
+        // Unlist the rental property
         const result = await rentalMarketplaceInstance.unlistARentalProperty(0, {from: landlord});
+        // Check if the event was emitted
         truffleAssert.eventEmitted(result, 'RentalPropertyUnlisted');
 
-        let landlordB = await leaseTokenInstance.checkLeaseToken(landlord);
-        console.log("After Unlist (Refund + full protection fee) :" + landlordB.toString())
-        // ======== End ========
+        // Get the new balance of the landlord wallet
+        let landlordWalletAfter = await leaseTokenInstance.checkLeaseToken(landlord);
+        console.log("After Unlist Property Token Balance (Get remaining protection fee)) :" + landlordWalletAfter.toString());
+
+        // Get the expected balance after unlisting the property
+        let expectedLandlordBalanceAfter = new web3.utils.BN(landlordWalletBefore).add(new web3.utils.BN(remainingProtectionFee));
+
+        // Check if token balance is added correctly
+        assert.equal(landlordWalletAfter.toString(), expectedLandlordBalanceAfter.toString(), "Protection Fee not refunded correctly to Landlord");
     });
 
-    it('Test Case 9: Tenant can file for a dispute for a rental property', async () => {
-      
-        let tenantTokens = await leaseTokenInstance.checkLeaseToken(tenant);
+    it('Test 9 (Success): Tenant can file for a dispute for a rental property', async () => {
+        /* ------------------------Start of Initial Setup----------------------- */
 
-        let landlordBalance = await leaseTokenInstance.checkLeaseToken(landlord);
+        // Amount of ETH to send to the contract
+        let amountOfEthToSend = web3.utils.toWei('5', 'ether');
+
+        // Get lease token for landlord and tenant
+        await leaseTokenInstance.getLeaseToken({
+            from: landlord,
+            value: amountOfEthToSend
+        });
+
+        await leaseTokenInstance.getLeaseToken({
+            from: tenant,
+            value: amountOfEthToSend
+        });
+
+        // Create a rental property
         await rentalPropertyInstance.addRentalProperty("545 Main St", "s144456", "1", 0, "Dope place", "2", "20", "3", { from: landlord });
+
+        // List the rental property
         await rentalMarketplaceInstance.listARentalProperty(1, depositFee, { from: landlord });
-        landlordBalance = await leaseTokenInstance.checkLeaseToken(landlord);
 
         // Tenant apply for rental property
-        const tenantApply = await rentalMarketplaceInstance.applyRentalProperty(1, "Tan Ah Kao", "tanahkao@gmail.com", "91231234", "I wish to stay in Main St with Nice place", { from: tenant });
-        // Landlord accepts
-        const landlordAccept = await rentalMarketplaceInstance.acceptRentalApplication(1, 0, { from: landlord });
-        
+        await rentalMarketplaceInstance.applyRentalProperty(1, "Tan Ah Kao", "tanahkao@gmail.com", "91231234", "I wish to stay in Main St with Nice place", { from: tenant });
+        // Landlord accepts the rental application
+        await rentalMarketplaceInstance.acceptRentalApplication(1, 0, { from: landlord });
+
+        // Tenant make payment to landlord and landlord accept payment for 3 months (until end of lease period)
         for (let i = 0; i < 3; i++) {
             // Tenant make payment to landlord
             await rentalMarketplaceInstance.makePayment(1, 0, { from: tenant });
             // Landlord accept payment
             await rentalMarketplaceInstance.acceptPayment(1, 0, { from: landlord });
-        }    
+        }
 
-        // before dispute
+        /* ------------------------End of Initial Setup----------------------- */
+
+        /* ------------------------Start of Create Dispute----------------------- */
+        // Check the balance of the tenant wallet
+        const tenantTokens = await leaseTokenInstance.checkLeaseToken(tenant);
         console.log("Amount tenant have BEFORE dispute : " + tenantTokens)
-        // Dispute type is health and safety
+
+        // Tenant file for a dispute
         const tenantDispute1 = await rentDisputeDAOInstance.createRentDispute(1, 0, 1, "Landlord threatens to light house on fire", { from: tenant });
+        // Check if the event was emitted
         truffleAssert.eventEmitted(tenantDispute1, 'RentDisputeCreated');
-        
-        const tokenafter = await leaseTokenInstance.checkLeaseToken(tenant);
+
         // check balance of the token of tenant
+        const tokenafter = await leaseTokenInstance.checkLeaseToken(tenant);
         console.log("Amount tenant have AFTER dispute : " + tokenafter.toString())
 
-        // ======== End ========
+        // Get the voter reward that the tenant needs to stake for the dispute
+        const voterReward = await paymentEscrowInstance.getVoterReward();
+        // Check if token balance is deducted correctly
+        let expectedBalanceAfter = new web3.utils.BN(tenantTokens).sub(new web3.utils.BN(voterReward));
+        assert.equal(tokenafter.toString(), expectedBalanceAfter.toString(), "Token balance not deducted correctly");
+
+        /* ------------------------End of Create Dispute----------------------- */
     });
 
-    it('Test Case 10: Check Dispute Draw outcome with NO VOTERS', async () => {  
-        let tenantTokens = await leaseTokenInstance.checkLeaseToken(tenant);
-        console.log("Tenant New Balance BEFORE added token reward : " + tenantTokens.toString())
+    it('Test 10 (Success): Check Dispute Draw outcome with NO VOTERS', async () => {  
+        // Get the voter reward refund that the tenant stake
+        let voterRewardRefund = await paymentEscrowInstance.getVoterReward();
+    
+        // Get tenant balance before dispute
+        let tenantTokensBefore = await leaseTokenInstance.checkLeaseToken(tenant);
+        // Get landlord balance before dispute
+        let landlordTokensBefore = await leaseTokenInstance.checkLeaseToken(landlord);
 
-        await rentDisputeDAOInstance.triggerResolveRentDispute(2);
+        console.log("Tenant Balance BEFORE dispute : " + tenantTokensBefore.toString());
+        console.log("Landlord Balance BEFORE dispute : " + landlordTokensBefore.toString());
 
+        // Resolve the dispute (Triggered manually for testing purposes)
+        let resolve = await rentDisputeDAOInstance.triggerResolveRentDispute(2);
+        truffleAssert.eventEmitted(resolve, 'RentDisputeResolved');
+
+        // Check the new balance of the tenant wallet
         let tenantTokensafter = await leaseTokenInstance.checkLeaseToken(tenant);
-        console.log("Tenant New Balance AFTER added token reward" + tenantTokensafter.toString())
+        // Check the new balance of the landlord wallet
+        let landlordTokensafter = await leaseTokenInstance.checkLeaseToken(landlord);
 
-        let landlordB = await leaseTokenInstance.checkLeaseToken(landlord);
-        console.log("Landlord Balance AFTER UNCHANGED : " + landlordB.toString())
-        // ======== End ========
+        console.log("Tenant New Balance AFTER dispute : " + tenantTokensafter.toString());
+        console.log("Landlord New Balance AFTER dispute : " + landlordTokensafter.toString());
+
+        // Get the expected balance after adding the rewards
+        let expectedBalanceAfterTenant = new web3.utils.BN(tenantTokensBefore).add(new web3.utils.BN(voterRewardRefund));
+        let expectedBalanceAfterLandlord = new web3.utils.BN(landlordTokensBefore);
+
+        // Check if token balance is deducted correctly
+        assert.equal(tenantTokensafter.toString(), expectedBalanceAfterTenant.toString(), "Token balance not added correctly for tenant");
+        assert.equal(landlordTokensafter.toString(), expectedBalanceAfterLandlord.toString(), "Token balance not deducted correctly for landlord");
     });
 
-    it('Test Case 11: Tenant move out of rental property (after dispute)', async () => {     
+    it('Test 11 (Success): Tenant move out of rental property (after dispute)', async () => {  
+        // Get the current balance of the tenant wallet
+        let t2current = await leaseTokenInstance.checkLeaseToken(tenant);
+        // Get the current balance of the landlord wallet
+        let landlordbefore = await leaseTokenInstance.checkLeaseToken(landlord);
+        // Get rental application details
+        let application = await rentalMarketplaceInstance.getRentalApplication(1,0);
+        // Check that application status is COMPLETED to allow tenant to move out
+        assert.equal(application.status, 3, "Application status not COMPLETED");
+
+        console.log("Tenant Balance : Before Move Out : " + t2current.toString())
+        console.log("Landlord Balance : Before Move Out : " + landlordbefore.toString())
+
+        // Tenant move out of rental property
         await rentalMarketplaceInstance.moveOut(1, 0, {from: tenant});
 
-        let tend = await leaseTokenInstance.checkLeaseToken(tenant);
-        console.log("Tenant Balance : After Move Out + Deposit Fee:" + tend.toString())
+        // Check the new balance of the tenant wallet
+        let t2after = await leaseTokenInstance.checkLeaseToken(tenant);
+        // Check the new balance of the landlord wallet
+        let landlordAfter = await leaseTokenInstance.checkLeaseToken(landlord);
 
-        let landlordB = await leaseTokenInstance.checkLeaseToken(landlord);
-        console.log("Landlord Balance AFTER refund deposit fee" + landlordB.toString())
-        // ======== End ========
+        // Get the expected balance after moving out
+        let expectedTenantBalanceAfter = new web3.utils.BN(t2current).add(new web3.utils.BN(depositFee));
+        let expectedLandlordBalanceAfter = new web3.utils.BN(landlordbefore).sub(new web3.utils.BN(depositFee));
+        assert.equal(t2after.toString(), expectedTenantBalanceAfter.toString(), "Deposit Fee not refunded correctly to Tenant");
+        assert.equal(landlordAfter.toString(), expectedLandlordBalanceAfter.toString(), "Deposit Fee not refunded correctly From Landlord");
+        
+        console.log("Tenant Balance : After Move Out + Deposit Fee : " + t2after.toString())
+        console.log("Landlord Balance : After Move Out : " + landlordAfter.toString())
     });
 
-    it('Test Case 12: Landlord unlist the property', async () => {
-        const landlordwallet = await leaseTokenInstance.checkLeaseToken(landlord);
-        console.log("Before Unlist Property:" + landlordwallet.toString())
+    it('Test 12 (Success): Landlord unlist the property', async () => {
+        // Get the remaining protection fee (remain unchanged since dispute draw)
+        let remainingProtectionFee = await paymentEscrowInstance.getProtectionFee();
 
+        // Get the current balance of the landlord wallet
+        const landlordWalletBefore = await leaseTokenInstance.checkLeaseToken(landlord);
+        console.log("Before Unlist Property Token Balance:" + landlordWalletBefore.toString());
+
+        // Unlist the rental property
         const result = await rentalMarketplaceInstance.unlistARentalProperty(1, {from: landlord});
+        // Check if the event was emitted
         truffleAssert.eventEmitted(result, 'RentalPropertyUnlisted');
 
-        let landlordB = await leaseTokenInstance.checkLeaseToken(landlord);
-        console.log("After Unlist (Refund + full protection fee) :" + landlordB.toString())
-        // ======== End ========
+        // Get the new balance of the landlord wallet
+        let landlordWalletAfter = await leaseTokenInstance.checkLeaseToken(landlord);
+        console.log("After Unlist Property Token Balance (Get remaining protection fee)) :" + landlordWalletAfter.toString());
+
+        // Get the expected balance after unlisting the property
+        let expectedLandlordBalanceAfter = new web3.utils.BN(landlordWalletBefore).add(new web3.utils.BN(remainingProtectionFee));
+
+        // Check if token balance is added correctly
+        assert.equal(landlordWalletAfter.toString(), expectedLandlordBalanceAfter.toString(), "Protection Fee not refunded correctly to Landlord");
     });
 
-
-    // it('Validators 3 can vote reject', async () => {
-    //     // Call the getLeaseToken function and send ETH along with the transaction.
-    //     let amountOfEthToSend = web3.utils.toWei('5', 'ether');
-    //     let result = await leaseTokenInstance.getLeaseToken({
-    //         from: validator3,
-    //         value: amountOfEthToSend
-    //     });
-
-    //     // idk why validator 3 cnt vote reject, damn weird
-    //     let validator3VoteReject = await rentDisputeDAOInstance.voteOnRentDispute(1, 1, { from: validator3 });
-    //     truffleAssert.eventEmitted(validator3VoteReject, 'VoteOnRentDispute');
-    //     // ======== End ========
-    // });
 });

@@ -139,7 +139,7 @@ contract('Dispute REJECTED for Rental', function (accounts) {
         
         console.log("Validator 1 current wallet balance : " + amtv1Before.toString())
         console.log("Validator 2 current wallet balance : " + amtv2Before.toString())
-        console.log("Validator 2 current wallet balance : " + amtv3Before.toString())
+        console.log("Validator 3 current wallet balance : " + amtv3Before.toString())
         
         /* 0 is void, 1 is approve, 2 is reject
         Note: disputeId starts from 1 (0 is used to indicate no dispute)
@@ -178,7 +178,7 @@ contract('Dispute REJECTED for Rental', function (accounts) {
 
         console.log("Validator 1 new wallet balance : " + amtv1After.toString())
         console.log("Validator 2 new wallet balance : " + amtv2After.toString())
-        console.log("Validator 2 new wallet balance : " + amtv3After.toString())
+        console.log("Validator 3 new wallet balance : " + amtv3After.toString())
     });
 
     it('Test 4 (Success): Validators can only vote once for a dispute once for a rental property', async () => {
@@ -279,7 +279,6 @@ contract('Dispute REJECTED for Rental', function (accounts) {
         // Get the tenant deposit loss which is 50% of the deposit amount
         // <Formula: Deposit Amount * 0.5>
         let tenantDepositLoss = depositFee * 0.5;
-        console.log("SDDSSD", tenantDepositLoss.toString())
 
         // Get the current balance of the tenant wallet
         let t2current = await leaseTokenInstance.checkLeaseToken(tenant);
@@ -313,7 +312,7 @@ contract('Dispute REJECTED for Rental', function (accounts) {
 
     it('Test 8 (Success): Landlord unlist the property', async () => {
         // Get the remaining protection fee (remain unchanged since landlord won the dispute)
-        let remainingProtectionFee = (Number(await paymentEscrowInstance.getProtectionFee())) 
+        let remainingProtectionFee = await paymentEscrowInstance.getProtectionFee();
 
         // Get the current balance of the landlord wallet
         const landlordWalletBefore = await leaseTokenInstance.checkLeaseToken(landlord);
