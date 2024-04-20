@@ -33,6 +33,7 @@ contract LeaseToken {
         uint256 credit
     );
     event approveCredit(address sender, address spender, uint256 credit);
+    event refundCredit(address sender, uint256 amount);
 
     // ################################################### FUNCTIONS ################################################### //
     
@@ -43,8 +44,8 @@ contract LeaseToken {
             erc20Contract.totalSupply() + leaseToken < supplyLimit,
             "LeaseToken supply is not enough"
         );
-        emit getCredit(leaseToken);
         erc20Contract.mint(msg.sender, leaseToken);
+        emit getCredit(leaseToken);
     }
 
     // Check LeaseToken balance
@@ -112,5 +113,6 @@ contract LeaseToken {
 
         erc20Contract.burn(sender, leaseTokenAmount);
         payable(sender).transfer(ethAmount);
+        emit refundCredit(sender, ethAmount);
     }
 }

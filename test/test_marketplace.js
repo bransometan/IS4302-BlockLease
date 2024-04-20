@@ -14,7 +14,6 @@ var RentDisputeDAO = artifacts.require("../contracts/RentDisputeDAO.sol");
 contract('Rental Property + Rental Marketplace Test Cases', function(accounts) {
     let leaseTokenInstance, paymentEscrowInstance, rentalMarketplaceInstance, rentalPropertyInstance, rentDisputeDAOInstance;
 
-    // const owner = accounts[0];
     const landlord = accounts[1];
     const tenant1 = accounts[2];
     const tenant2 = accounts[3];
@@ -29,29 +28,6 @@ contract('Rental Property + Rental Marketplace Test Cases', function(accounts) {
         rentalPropertyInstance = await RentalProperty.deployed();
         rentDisputeDAOInstance = await RentDisputeDAO.deployed();
     });
-
-    it('Tenant gets LeaseTokens in exchange for ETH', async () => {
-        // Amount of ETH the landlord will send to the contract to get LeaseTokens.
-        // For example, 0.1 ETH will give them 10 LeaseTokens if the rate is 0.01 ETH per LeaseToken.
-        let amountOfEthToSend = web3.utils.toWei('10', 'ether');
-
-        let result = await leaseTokenInstance.getLeaseToken({
-            from: tenant1, 
-            value: amountOfEthToSend
-        });
-
-        let result1 = await leaseTokenInstance.getLeaseToken({
-            from: tenant2, 
-            value: amountOfEthToSend
-        });
-
-        let result2 = await leaseTokenInstance.getLeaseToken({
-            from: tenant3, 
-            value: amountOfEthToSend
-        });
-
-    });
-
 
 /* 
     $$$$$$$\                       $$\               $$\       $$$$$$$\                                                     $$\               
@@ -118,7 +94,6 @@ $$ |  $$ |\$$$$$$$\ $$ |  $$ | \$$$$  |\$$$$$$$ |$$ |      $$ |      $$ |      \
     });
 
 
-
     it('Test 3 (Success): Landlord deletes their property listing', async () => {
         // Landlord deletes the property. As an example, we will use property 6
         let deleteResult = await rentalPropertyInstance.deleteRentalProperty(6, {from: landlord});
@@ -127,6 +102,7 @@ $$ |  $$ |\$$$$$$$\ $$ |  $$ | \$$$$  |\$$$$$$$ |$$ |      $$ |      $$ |      \
         // Check if the property is deleted correctly using the postal code
         assert.equal(await rentalPropertyInstance.getPostalCode(6), "", "Property 6 not deleted");        
     });
+
     /* 
         888b     d888                  888               888             888                           
     8888b   d8888                  888               888             888                           
@@ -141,8 +117,55 @@ $$ |  $$ |\$$$$$$$\ $$ |  $$ | \$$$$  |\$$$$$$$ |$$ |      $$ |      $$ |      \
                                                             888
     */
 
-                                                            
-    it('Test Case 1: Landlord CANNOT list property', async () => {
+    it('Test 1 (Success): Tenant gets LeaseTokens in exchange for ETH', async () => {
+        // Amount of ETH a user will send to the contract to get LeaseTokens.
+        // For example, 0.1 ETH will give them 10 LeaseTokens if the rate is 0.01 ETH per LeaseToken.
+        // For this test, we will use 10 ETH to get 1000 LeaseTokens.
+
+        // Get current balance of tenants
+        let tenant1BalanceBefore = await leaseTokenInstance.checkLeaseToken(tenant1);
+        let tenant2BalanceBefore = await leaseTokenInstance.checkLeaseToken(tenant2);
+        let tenant3BalanceBefore = await leaseTokenInstance.checkLeaseToken(tenant3);
+
+        // Convert 10 ETH to Wei
+        let amountOfEthToSend = web3.utils.toWei('10', 'ether');
+
+        // Get LeaseTokens in exchange for ETH for tenant1
+        let result0 = await leaseTokenInstance.getLeaseToken({
+            from: tenant1, 
+            value: amountOfEthToSend
+        });
+
+        // Get LeaseTokens in exchange for ETH for tenant2
+        let result1 = await leaseTokenInstance.getLeaseToken({
+            from: tenant2, 
+            value: amountOfEthToSend
+        });
+
+        // Get LeaseTokens in exchange for ETH for tenant3
+        let result2 = await leaseTokenInstance.getLeaseToken({
+            from: tenant3, 
+            value: amountOfEthToSend
+        });
+
+        // Check if the events are emitted
+        truffleAssert.eventEmitted(result0, 'getCredit');
+        truffleAssert.eventEmitted(result1, 'getCredit');
+        truffleAssert.eventEmitted(result2, 'getCredit');
+
+        // Get current balance of tenants after getting LeaseTokens
+        let tenant1BalanceAfter = await leaseTokenInstance.checkLeaseToken(tenant1);
+        let tenant2BalanceAfter = await leaseTokenInstance.checkLeaseToken(tenant2);
+        let tenant3BalanceAfter = await leaseTokenInstance.checkLeaseToken(tenant3);
+
+        // Check if the LeaseTokens are received correctly
+        assert.equal(tenant1BalanceAfter.toString(), (BigInt(tenant1BalanceBefore) + BigInt(1000)).toString(), "Tenant1 LeaseToken balance is incorrect");
+        assert.equal(tenant2BalanceAfter.toString(), (BigInt(tenant2BalanceBefore) + BigInt(1000)).toString(), "Tenant2 LeaseToken balance is incorrect");
+        assert.equal(tenant3BalanceAfter.toString(), (BigInt(tenant3BalanceBefore) + BigInt(1000)).toString(), "Tenant3 LeaseToken balance is incorrect");
+        
+    });
+
+    it('Test 2 (Failure): Landlord CANNOT list property', async () => {
         let amountOfEthToSend = web3.utils.toWei('0.4', 'ether');
 
         await leaseTokenInstance.getLeaseToken({
@@ -167,7 +190,7 @@ $$ |  $$ |\$$$$$$$\ $$ |  $$ | \$$$$  |\$$$$$$$ |$$ |      $$ |      $$ |      \
                                                                                                                    
 
     // will only be using property id 1 as example
-    it('Test Case 2: Landlord CAN list a property on market place', async () => {
+    it('Test 3 (Success): Landlord CAN list a property on market place', async () => {
         let amountOfEthToSend = web3.utils.toWei('10', 'ether');
         let result = await leaseTokenInstance.getLeaseToken({
             from: landlord, 
@@ -183,7 +206,7 @@ $$ |  $$ |\$$$$$$$\ $$ |  $$ | \$$$$  |\$$$$$$$ |$$ |      $$ |      $$ |      \
         assert.equal(isListed, true, "Property should be listed");
     });
 
-    it("Test Case 3: Landlord can update property when there is no tenant applications", async () => {
+    it("Test 4 (Success): Landlord can update property when there is no tenant applications", async () => {
         // take from the listing above which is property id 1
         const ifAnyoneApplied = await rentalMarketplaceInstance.getRentalApplicationCount(1);
         assert.equal(ifAnyoneApplied, false, "Property has tenant applications")
@@ -204,7 +227,7 @@ $$ |  $$ |\$$$$$$$\ $$ |  $$ | \$$$$  |\$$$$$$$ |$$ |      $$ |      $$ |      \
 
     
 
-    it("Test Case 4: Landlord can unlist property when there is no tenant applications", async () => {
+    it("Test 5 (Success): Landlord can unlist property when there is no tenant applications", async () => {
         const ifAnyoneApplied = await rentalMarketplaceInstance.getRentalApplicationCount(1);
         assert.equal(ifAnyoneApplied, false, "Property has tenant applications")
         const unlistResult = await rentalMarketplaceInstance.unlistARentalProperty(1, {from: landlord});
@@ -213,7 +236,7 @@ $$ |  $$ |\$$$$$$$\ $$ |  $$ | \$$$$  |\$$$$$$$ |$$ |      $$ |      $$ |      \
         assert.equal(isListed, false, "Property should be unlisted");
     });
 
-    it("Test Case 5: Tenant can apply for rental property", async () => {
+    it("Test 6 (Success): Tenant can apply for rental property", async () => {
         await rentalMarketplaceInstance.listARentalProperty(2, depositFee, {from: landlord});
         // token already exchange at the start
         // 3 tenants apply for Property 2
@@ -235,7 +258,7 @@ $$ |  $$ |\$$$$$$$\ $$ |  $$ | \$$$$  |\$$$$$$$ |$$ |      $$ |      $$ |      \
 
     });
 
-    it("Test Case 6 FAILURE: Landlord cannot unlist property when there are applications", async () => {
+    it("Test 7 (Failure): Landlord cannot unlist property when there are applications", async () => {
         try {
             // Attempt to unlist the property which should fail due to existing applications
             await rentalMarketplaceInstance.unlistARentalProperty(2, {from: landlord});
@@ -246,7 +269,7 @@ $$ |  $$ |\$$$$$$$\ $$ |  $$ | \$$$$  |\$$$$$$$ |$$ |      $$ |      $$ |      \
         }
     });
 
-    it("Test Case 7 FAILURE: Landlord cannot update property when there are applications", async () => {
+    it("Test 8 (Failure): Landlord cannot update property when there are applications", async () => {
         try {
             let updatedTitle = "123 Failure St";
             let updatedDescription = "Nicest place";
@@ -260,7 +283,7 @@ $$ |  $$ |\$$$$$$$\ $$ |  $$ | \$$$$  |\$$$$$$$ |$$ |      $$ |      $$ |      \
         }
     });
 
-    it("Test Case 8 FAILURE: Landlord cannot delete property when there are applications", async () => {
+    it("Test 9 (Failure): Landlord cannot delete property when there are applications", async () => {
         try {
             await rentalPropertyInstance.deleteRentalProperty(2, {from: landlord});
         } catch (error) {
@@ -269,7 +292,7 @@ $$ |  $$ |\$$$$$$$\ $$ |  $$ | \$$$$  |\$$$$$$$ |$$ |      $$ |      $$ |      \
         }
     });
 
-    it("Test Case 9: Landlord cancel tenant rental application", async () => {
+    it("Test 10 (Success): Landlord cancel tenant rental application", async () => {
         // cancel tenat 1 application
         let t1balancebefore = await leaseTokenInstance.checkLeaseToken(tenant1);
         console.log(`Balance Before: ${t1balancebefore.toString()}`);
@@ -286,7 +309,7 @@ $$ |  $$ |\$$$$$$$\ $$ |  $$ | \$$$$  |\$$$$$$$ |$$ |      $$ |      $$ |      \
 
     });
 
-    it("Test Case 10: Landlord accepts rental application", async () => {
+    it("Test 11 (Success): Landlord accepts rental application", async () => {
         // accept tenant 2 application
         let landlordBBefore = await leaseTokenInstance.checkLeaseToken(landlord);
         console.log("Landlord wallet balance BEFORE accept applicaton : " + landlordBBefore.toString())
@@ -303,7 +326,7 @@ $$ |  $$ |\$$$$$$$\ $$ |  $$ | \$$$$  |\$$$$$$$ |$$ |      $$ |      $$ |      \
 
     });
 
-    it("Test Case 11: Tenant cancel tenant rental application", async () => {
+    it("Test 12 (Success): Tenant cancel tenant rental application", async () => {
         // cancel tenat 3 application
         let t3balanceBefore = await leaseTokenInstance.checkLeaseToken(tenant3);
         console.log(`Balance Before: ${t3balanceBefore.toString()}`);
@@ -319,7 +342,7 @@ $$ |  $$ |\$$$$$$$\ $$ |  $$ | \$$$$  |\$$$$$$$ |$$ |      $$ |      $$ |      \
         console.log(`Balance After: ${t3balanceAfter.toString()}`);
     });
 
-    it("Test Case 12 FAILURE: : Landlord cannot accept payment from rental application when the rental application is not yet accepted", async () => {
+    it("Test 13 (Failure): Landlord cannot accept payment from rental application when the rental application is not yet accepted", async () => {
         try {
             await rentalMarketplaceInstance.acceptPayment(2, 1, {from: landlord});
         } catch (error) {
@@ -329,7 +352,7 @@ $$ |  $$ |\$$$$$$$\ $$ |  $$ | \$$$$  |\$$$$$$$ |$$ |      $$ |      $$ |      \
 
     });
 
-    it("Test Case 13: Tenant make payment for monthly rental fee", async () => {
+    it("Test 14 (Success): Tenant make payment for monthly rental fee", async () => {
         //check whether application status change
         let application = await rentalMarketplaceInstance.getRentalApplication(2,1);
         assert.equal(application.status, 1, "Application status not ongoing");
@@ -347,7 +370,7 @@ $$ |  $$ |\$$$$$$$\ $$ |  $$ | \$$$$  |\$$$$$$$ |$$ |      $$ |      $$ |      \
         console.log("After Payment Made :" + tenant2after.toString())
     });
 
-    it("Test Case 14: Landlord accept payment for monthly rental fee from a tenant", async () => {
+    it("Test 15 (Success): Landlord accept payment for monthly rental fee from a tenant", async () => {
         let application = await rentalMarketplaceInstance.getRentalApplication(2,1);
         assert.equal(application.status, 2, "Application status not MAKE PAYMENT");
 
@@ -364,7 +387,7 @@ $$ |  $$ |\$$$$$$$\ $$ |  $$ | \$$$$  |\$$$$$$$ |$$ |      $$ |      $$ |      \
         console.log("After Monthly Rental Receive:" + landlordafter.toString())
     });
 
-    it("Test Case 15 FAILURE: : Tenant cannot move out from rental property when payment not made for entire lease period", async () => {
+    it("Test 16 (Failure): Tenant cannot move out from rental property when payment not made for entire lease period", async () => {
         try {
             await rentalMarketplaceInstance.moveOut(2, 1, {from: tenant2});
         } catch (error) {
@@ -374,7 +397,7 @@ $$ |  $$ |\$$$$$$$\ $$ |  $$ | \$$$$  |\$$$$$$$ |$$ |      $$ |      $$ |      \
 
     });
 
-    it("Test Case 16: Tenant move out from rental property", async () => {
+    it("Test 17 (Success): Tenant move out from rental property", async () => {
         // based on the example propertyid 2 has lease of 12
         for (let i = 0; i < 11; i++) {
             let t2before = await leaseTokenInstance.checkLeaseToken(tenant2);
@@ -401,7 +424,7 @@ $$ |  $$ |\$$$$$$$\ $$ |  $$ | \$$$$  |\$$$$$$$ |$$ |      $$ |      $$ |      \
         
     });
 
-    it("Test Case 17: Landlord unlist rental property", async () => {
+    it("Test 18 (Success): Landlord unlist rental property", async () => {
         const landlordwallet = await leaseTokenInstance.checkLeaseToken(landlord);
         console.log("Before Unlist Property:" + landlordwallet.toString())
 
@@ -413,6 +436,18 @@ $$ |  $$ |\$$$$$$$\ $$ |  $$ | \$$$$  |\$$$$$$$ |$$ |      $$ |      $$ |      \
         let expectedBalanceAfter = new web3.utils.BN(landlordwallet).add(new web3.utils.BN(50));
         assert.equal(landlordwalletA.toString(), expectedBalanceAfter.toString(), "Protection Fee not refunded correctly");
         console.log("After Unlist (Refund + full protection fee) :" + landlordwalletA.toString())
+    });
+
+    it("Test 19 (Success): Landlord convert LeaseToken to ETH", async () => {
+        const landlordwallet = await leaseTokenInstance.checkLeaseToken(landlord);
+        console.log("Before Convert LeaseToken to ETH:" + landlordwallet.toString())
+
+        const result = await leaseTokenInstance.convertLeaseTokenToETH(landlord, landlordwallet, {from: landlord});
+        truffleAssert.eventEmitted(result, 'refundCredit');
+
+        const landlordwalletA = await leaseTokenInstance.checkLeaseToken(landlord);
+        assert.equal(landlordwalletA.toString(), "0", "LeaseToken not converted to ETH correctly");
+        console.log("After Convert LeaseToken to ETH:" + landlordwalletA.toString())
     });
 
 
