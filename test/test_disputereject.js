@@ -1,5 +1,5 @@
 /*
-Description: Test cases for dispute REJECTED for rental property (tenant wins)
+Description: Test cases for dispute REJECTED for rental property (landlord wins)
 Roles: 1 Tenant, 1 Landlord, 3 Validator
 Run Command: truffle test ./test/test_disputereject.js
 Test Cases (8):
