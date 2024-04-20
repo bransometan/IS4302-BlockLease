@@ -1,4 +1,18 @@
-// dispute approve , rejected and draw
+/*
+Description: Test cases for dispute APPROVED for rental property (tenant wins)
+Roles: 1 Tenant, 1 Landlord, 3 Validator
+Run Command: truffle test ./test/test_disputeapprove.js
+Test Cases (8):
+1. Tenant can file for a dispute for a rental property
+2. Tenant cannot move out of rental property in a dispute
+3. Validators can vote for a dispute for a rental property (3 VALIDATORS)
+4. Validators can only vote once for a dispute once for a rental property
+5. Check Dispute APPROVAL outcome with voters
+6. Tenant can only file for 1 dispute in the same rental property
+7. Tenant move out of rental property (after dispute)
+8. Landlord unlist the property
+*/
+
 const _deploy_contracts = require("../migrations/2_deploy_contracts");
 const truffleAssert = require('truffle-assertions');
 var assert = require('assert');
@@ -14,7 +28,6 @@ var RentDisputeDAO = artifacts.require("../contracts/RentDisputeDAO.sol");
 contract('Dispute APPROVED for Rental', function (accounts) {
     let leaseTokenInstance, paymentEscrowInstance, rentalMarketplaceInstance, rentalPropertyInstance, rentDisputeDAOInstance;
 
-    // const owner = accounts[0];
     const landlord = accounts[1];
     const tenant = accounts[2];
     const validator1 = accounts[3];
@@ -28,7 +41,6 @@ contract('Dispute APPROVED for Rental', function (accounts) {
         rentalMarketplaceInstance = await RentalMarketplace.deployed();
         rentalPropertyInstance = await RentalProperty.deployed();
         rentDisputeDAOInstance = await RentDisputeDAO.deployed();
-
     });
 
     it('Test 1 (Success): Tenant can file for a dispute for a rental property', async () => {
@@ -128,10 +140,9 @@ contract('Dispute APPROVED for Rental', function (accounts) {
         console.log("Validator 2 current wallet balance : " + amtv2Before.toString())
         console.log("Validator 2 current wallet balance : " + amtv3Before.toString())
         
-        // 0 is void, 1 is approve, 2 is reject
-        // Note: disputeId starts from 1 (0 is used to indicate no dispute)
-        // 2 validators approve, 1 validator reject.
-
+        /* 0 is void, 1 is approve, 2 is reject
+        Note: disputeId starts from 1 (0 is used to indicate no dispute)
+        Note: 2 validators approve, 1 validator reject.*/
         // Validator 1 approve
         let validator1VoteAccept = await rentDisputeDAOInstance.voteOnRentDispute(1, 1, { from: validator1 });
         // Check if the event was emitted
@@ -301,14 +312,13 @@ contract('Dispute APPROVED for Rental', function (accounts) {
 
     it('Test 8 (Success): Landlord unlist the property', async () => {
 
-        let numberOfVotes = await rentDisputeDAOInstance.getNumVotersInDispute(1);
-        // Get vote price from Payment Escrow
-        let votePrice = await paymentEscrowInstance.getVotePrice();
-        // Get the validator reward that the winning validators will receive 
-        // <Formula: (Voter Reward + (Number of Votes * Vote Price)) / Number of Winning Validators)>
-        let validatorReward = ((Number(await paymentEscrowInstance.getVoterReward())) + (numberOfVotes * Number(votePrice))) / 2;
+        // Get number of tenants in the rental property
+        let numberOfTenants = await rentalPropertyInstance.getNumOfTenants(0);
+        // Get the tenant reward that the tenant will receive
+        // <Formula: (1 / Number of Tenants) * Protection Fee>
+        let tenantReward = (1 / numberOfTenants)*(await paymentEscrowInstance.getProtectionFee());
         // Get remaining protection fee balance for landlord
-        let remainingProtectionFee = (Number(await paymentEscrowInstance.getProtectionFee())) - Number(validatorReward);
+        let remainingProtectionFee = (Number(await paymentEscrowInstance.getProtectionFee())) - Number(tenantReward);
 
         // Get the current balance of the landlord wallet
         const landlordWalletBefore = await leaseTokenInstance.checkLeaseToken(landlord);
