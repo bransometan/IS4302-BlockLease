@@ -68,20 +68,23 @@ $$ |  $$ |\$$$$$$$\ $$ |  $$ | \$$$$  |\$$$$$$$ |$$ |      $$ |      $$ |      \
  */
 
 
-    it('Test : Landlord add rental property', async () => {
-        // Landlord lists a property
-        let hdb1 = await rentalPropertyInstance.addRentalProperty("123 Main St", "s123456", "1", 0 , "Nice place", "2", "30", "12", {from: landlord});
-        let hdb2 = await rentalPropertyInstance.addRentalProperty("123 Bishan Street 10", "s321323", "2", 0 , "Amazing vibe", "5", "50", "12", {from: landlord});
+    it('Test 1 (Success): Landlord add rental property', async () => {
+        // Landlord lists 2 property of hdb type
+        let hdb1 = await rentalPropertyInstance.addRentalProperty("123 Main St", "s123456", "01-01", 0 , "Nice place", 2, 30, 12, {from: landlord});
+        let hdb2 = await rentalPropertyInstance.addRentalProperty("123 Bishan Street 10", "s321323", "02-02", 0 , "Amazing vibe", 5, 50, 12, {from: landlord});
 
-        // use as example at the bottom
-        let condo1 = await rentalPropertyInstance.addRentalProperty("123 Jurong East ", "s423443", "3", 1 , "Nice place amazing", "3", "20", "12", {from: landlord});
-        let condo2 = await rentalPropertyInstance.addRentalProperty("12 Mandai Avenue", "s534534", "2", 1 , "cool place", "1", "50", "12", {from: landlord});
+        // Landlord lists 2 property of condo type
+        let condo1 = await rentalPropertyInstance.addRentalProperty("123 Jurong East ", "s423443", "03-03", 1 , "Nice place amazing", 3, 20, 12, {from: landlord});
+        let condo2 = await rentalPropertyInstance.addRentalProperty("12 Mandai Avenue", "s534534", "04-04", 1 , "cool place", 1, 50, 12, {from: landlord});
 
-        let landed1 = await rentalPropertyInstance.addRentalProperty("76 Sengkang Drive", "s534533", "5", 2 , "Bright place", "6", "20", "12", {from: landlord});
-        let landed2 = await rentalPropertyInstance.addRentalProperty("11 Bukit Timah Hill", "s532666", "5", 2 , "Windy place", "5", "20", "12", {from: landlord});
+        // Landlord lists 2 property of landed type
+        let landed1 = await rentalPropertyInstance.addRentalProperty("76 Sengkang Drive", "s534533", "05-05", 2 , "Bright place", 6, 20, 12, {from: landlord});
+        let landed2 = await rentalPropertyInstance.addRentalProperty("11 Bukit Timah Hill", "s532666", "06-06", 2 , "Windy place", 5, 20, 12, {from: landlord});
 
-        let other1 = await rentalPropertyInstance.addRentalProperty("123 Industrial St", "s5435443", "2", 3 , "Cool place", "10", "40", "12", {from: landlord});
+        // Landlord lists 1 property of other type
+        let other1 = await rentalPropertyInstance.addRentalProperty("123 Industrial St", "s5435443", "07-07", 3 , "Cool place", 10, 40, 12, {from: landlord});
 
+        // Check if the events are emitted
         truffleAssert.eventEmitted(hdb1, 'RentalPropertyCreated');
         truffleAssert.eventEmitted(hdb2, 'RentalPropertyCreated');
         truffleAssert.eventEmitted(condo1, 'RentalPropertyCreated');
@@ -90,21 +93,39 @@ $$ |  $$ |\$$$$$$$\ $$ |  $$ | \$$$$  |\$$$$$$$ |$$ |      $$ |      $$ |      \
         truffleAssert.eventEmitted(landed2, 'RentalPropertyCreated');
         truffleAssert.eventEmitted(other1, 'RentalPropertyCreated');
 
-        // test using postal code, for 1 2 and 5
-        assert.equal(await rentalPropertyInstance.getPostalCode(0), "s123456", "Property 1 not added");
-        assert.equal(await rentalPropertyInstance.getPostalCode(1), "s321323", "Property 2 not added");
-        assert.equal(await rentalPropertyInstance.getPostalCode(4), "s534533", "Property 5 not added");
+        // Test using postal code
+        assert.equal(await rentalPropertyInstance.getPostalCode(0), "s123456", "Property 0 not added");
+        assert.equal(await rentalPropertyInstance.getPostalCode(1), "s321323", "Property 1 not added");
+        assert.equal(await rentalPropertyInstance.getPostalCode(2), "s423443", "Property 2 not added");
+        assert.equal(await rentalPropertyInstance.getPostalCode(3), "s534534", "Property 3 not added");
+        assert.equal(await rentalPropertyInstance.getPostalCode(4), "s534533", "Property 4 not added");
+        assert.equal(await rentalPropertyInstance.getPostalCode(5), "s532666", "Property 5 not added");
+        assert.equal(await rentalPropertyInstance.getPostalCode(6), "s5435443", "Property 6 not added");
+
+    });
+
+    it('Test 2 (Success): Landlord updates rental property', async () => {
+        // Landlord updates a rental property. As an example, we will use property 6
+        let updateResult = await rentalPropertyInstance.updateRentalProperty(
+            6, "239 Main St", "s123457", "11-11", 0, "Even nicer place", 3, 35, 12, {from: landlord}
+        );
+
+        // Check if the event is emitted
+        truffleAssert.eventEmitted(updateResult, 'RentalPropertyUpdateDetails');
+        
+        // Check if the property is updated correctly using the postal code
+        assert.equal(await rentalPropertyInstance.getPostalCode(6), "s123457", "Property 6 not updated");
     });
 
 
-    it('Test : Landlord deletes their property listing', async () => {
-        // Landlord deletes the property -> we use 6
+
+    it('Test 3 (Success): Landlord deletes their property listing', async () => {
+        // Landlord deletes the property. As an example, we will use property 6
         let deleteResult = await rentalPropertyInstance.deleteRentalProperty(6, {from: landlord});
         truffleAssert.eventEmitted(deleteResult, 'RentalPropertyDeleted');
-    
-        // let property = await rentalPropertyInstance.getRentalProperty(6);
-        // assert.equal(property.exists, false, "Property should be marked as non-existent.");
         
+        // Check if the property is deleted correctly using the postal code
+        assert.equal(await rentalPropertyInstance.getPostalCode(6), "", "Property 6 not deleted");        
     });
     /* 
         888b     d888                  888               888             888                           
