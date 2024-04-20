@@ -117,15 +117,19 @@ $$ |  $$ |\$$$$$$$\ $$ |  $$ | \$$$$  |\$$$$$$$ |$$ |      $$ |      $$ |      \
                                                             888
     */
 
-    it('Test 1 (Success): Tenant gets LeaseTokens in exchange for ETH', async () => {
+    it('Test 1 (Success): Tenants get LeaseTokens in exchange for ETH', async () => {
         // Amount of ETH a user will send to the contract to get LeaseTokens.
         // For example, 0.1 ETH will give them 10 LeaseTokens if the rate is 0.01 ETH per LeaseToken.
         // For this test, we will use 10 ETH to get 1000 LeaseTokens.
 
-        // Get current balance of tenants
-        let tenant1BalanceBefore = await leaseTokenInstance.checkLeaseToken(tenant1);
-        let tenant2BalanceBefore = await leaseTokenInstance.checkLeaseToken(tenant2);
-        let tenant3BalanceBefore = await leaseTokenInstance.checkLeaseToken(tenant3);
+        // Get current ETH balance of tenants
+        let tenant1EthBalanceBefore = await web3.eth.getBalance(tenant1);
+        let tenant2EthBalanceBefore = await web3.eth.getBalance(tenant2);
+        let tenant3EthBalanceBefore = await web3.eth.getBalance(tenant3);
+        // Get current token balance of tenants
+        let tenant1TokenBalanceBefore = await leaseTokenInstance.checkLeaseToken(tenant1);
+        let tenant2TokenBalanceBefore = await leaseTokenInstance.checkLeaseToken(tenant2);
+        let tenant3TokenBalanceBefore = await leaseTokenInstance.checkLeaseToken(tenant3);
 
         // Convert 10 ETH to Wei
         let amountOfEthToSend = web3.utils.toWei('10', 'ether');
@@ -153,15 +157,23 @@ $$ |  $$ |\$$$$$$$\ $$ |  $$ | \$$$$  |\$$$$$$$ |$$ |      $$ |      $$ |      \
         truffleAssert.eventEmitted(result1, 'getCredit');
         truffleAssert.eventEmitted(result2, 'getCredit');
 
-        // Get current balance of tenants after getting LeaseTokens
-        let tenant1BalanceAfter = await leaseTokenInstance.checkLeaseToken(tenant1);
-        let tenant2BalanceAfter = await leaseTokenInstance.checkLeaseToken(tenant2);
-        let tenant3BalanceAfter = await leaseTokenInstance.checkLeaseToken(tenant3);
+        // Get current ETH balance of tenants after getting LeaseTokens
+        let tenant1EthBalanceAfter = await web3.eth.getBalance(tenant1);
+        let tenant2EthBalanceAfter = await web3.eth.getBalance(tenant2);
+        let tenant3EthBalanceAfter = await web3.eth.getBalance(tenant3);
+        // Get current token balance of tenants after getting LeaseTokens
+        let tenant1TokenBalanceAfter = await leaseTokenInstance.checkLeaseToken(tenant1);
+        let tenant2TokenBalanceAfter = await leaseTokenInstance.checkLeaseToken(tenant2);
+        let tenant3TokenBalanceAfter = await leaseTokenInstance.checkLeaseToken(tenant3);
 
+        // Check if the ETH is less after getting LeaseTokens
+        assert(tenant1EthBalanceAfter < tenant1EthBalanceBefore, "Tenant1 ETH balance is incorrect");
+        assert(tenant2EthBalanceAfter < tenant2EthBalanceBefore, "Tenant2 ETH balance is incorrect");
+        assert(tenant3EthBalanceAfter < tenant3EthBalanceBefore, "Tenant3 ETH balance is incorrect");
         // Check if the LeaseTokens are received correctly
-        assert.equal(tenant1BalanceAfter.toString(), (BigInt(tenant1BalanceBefore) + BigInt(1000)).toString(), "Tenant1 LeaseToken balance is incorrect");
-        assert.equal(tenant2BalanceAfter.toString(), (BigInt(tenant2BalanceBefore) + BigInt(1000)).toString(), "Tenant2 LeaseToken balance is incorrect");
-        assert.equal(tenant3BalanceAfter.toString(), (BigInt(tenant3BalanceBefore) + BigInt(1000)).toString(), "Tenant3 LeaseToken balance is incorrect");
+        assert.equal(tenant1TokenBalanceAfter.toString(), (BigInt(tenant1TokenBalanceBefore) + BigInt(1000)).toString(), "Tenant1 LeaseToken balance is incorrect");
+        assert.equal(tenant2TokenBalanceAfter.toString(), (BigInt(tenant2TokenBalanceBefore) + BigInt(1000)).toString(), "Tenant2 LeaseToken balance is incorrect");
+        assert.equal(tenant3TokenBalanceAfter.toString(), (BigInt(tenant3TokenBalanceBefore) + BigInt(1000)).toString(), "Tenant3 LeaseToken balance is incorrect");
         
     });
 
@@ -438,16 +450,29 @@ $$ |  $$ |\$$$$$$$\ $$ |  $$ | \$$$$  |\$$$$$$$ |$$ |      $$ |      $$ |      \
         console.log("After Unlist (Refund + full protection fee) :" + landlordwalletA.toString())
     });
 
-    it("Test 19 (Success): Landlord convert LeaseToken to ETH", async () => {
-        const landlordwallet = await leaseTokenInstance.checkLeaseToken(landlord);
-        console.log("Before Convert LeaseToken to ETH:" + landlordwallet.toString())
+    it("Test 19 (Success): Landlord convert LeaseToken back to ETH", async () => {
 
-        const result = await leaseTokenInstance.convertLeaseTokenToETH(landlord, landlordwallet, {from: landlord});
+        // Get current ETH balance of landlord
+        let landlordEthBalanceBefore = await web3.eth.getBalance(landlord);
+        // Get current token balance of landlord
+        const landlordWalletBefore = await leaseTokenInstance.checkLeaseToken(landlord);
+        console.log("Before Convert LeaseToken to ETH:" + landlordWalletBefore.toString())
+
+        // Convert LeaseToken to ETH
+        const result = await leaseTokenInstance.convertLeaseTokenToETH(landlord, landlordWalletBefore, {from: landlord});
+        // Check if the event is emitted
         truffleAssert.eventEmitted(result, 'refundCredit');
 
-        const landlordwalletA = await leaseTokenInstance.checkLeaseToken(landlord);
-        assert.equal(landlordwalletA.toString(), "0", "LeaseToken not converted to ETH correctly");
-        console.log("After Convert LeaseToken to ETH:" + landlordwalletA.toString())
+        // Get current ETH balance of landlord after converting LeaseToken to ETH
+        let landlordEthBalanceAfter = await web3.eth.getBalance(landlord);
+        // Get current token balance of landlord after converting LeaseToken to ETH
+        const landlordWalletAfter = await leaseTokenInstance.checkLeaseToken(landlord);
+
+        // Check if the ETH is more after converting LeaseToken to ETH
+        assert(landlordEthBalanceAfter > landlordEthBalanceBefore, "Landlord ETH balance is incorrect");
+        // Check if the LeaseTokens are converted to ETH correctly
+        assert.equal(landlordWalletAfter.toString(), "0", "LeaseToken not converted to ETH correctly");
+        console.log("After Convert LeaseToken to ETH:" + landlordWalletAfter.toString())
     });
 
 
