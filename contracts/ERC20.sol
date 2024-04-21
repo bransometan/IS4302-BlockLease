@@ -62,8 +62,8 @@ contract ERC20 {
     mapping(address => uint256) balances;
     
     
-    string public constant name = "DiceToken";
-    string public constant symbol = "DT";
+    string public constant name = "LeaseToken";
+    string public constant symbol = "LT";
     uint8 public constant decimals = 18;
     uint256 totalSupply_;
   
