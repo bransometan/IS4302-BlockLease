@@ -41,7 +41,7 @@ BlockLease is a decentralized rental ecosystem built on blockchain technology, r
 * Rental Completion: Once a tenant complete payment for the entire lease period, he/she can choose to:
   * Move out: The tenant will move out from the rental property. Any remaining balance of deposit fee is transferred back to the tenant.
   * File a dispute: The tenant files a dispute and must stake voter rewards to incentives the Real Estate Validators/Reviewers. Tenants can only move out once the dispute is settled.
-### 6. Dispute Resolution (RentDispute.sol)
+### 6. Dispute Resolution (RentDisputeDAO.sol)
 * Dispute Initiation: In the event of disputes, such as property-related disputes or violations of lease terms, tenants submit a dispute claim at the end of the lease period (final month). Dispute claim includes the dispute type, dispute reason, start time, end time (start time + 7), etc.
 * Dispute Resolution Process: A decentralized autonomous organization (DAO) handles disputes:
   * Real Estate Validators (a.k.a Guru or experts) assess the dispute based on provided evidence. Each of the Validators must stake Lease Token (a.k.a vote price) to participate in the dispute resolution process.
@@ -192,8 +192,8 @@ Test Cases (12):
 4. Install all node dependencies
 
    ```bash
-   cd sprout
-   npm i
+   cd IS4302-BlockLease
+   npm install
    ```
 
 5. Start up Ganache locally (Ensure that the server is running on port 7545 AND compiler version is `0.8.19`)
