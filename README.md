@@ -7,7 +7,7 @@ BlockLease is a decentralized rental ecosystem built on blockchain technology, r
 **Authentication**: Clerk  <br />
 **Extension**: Metamask  <br />
 **Backend**: Solidity (Truffle, Ganache)  <br />
-**Libraries**: Web3.js
+**Libraries**: Ethers
 
 ## Functional Workflow
 ### 1. User Registration (Handled in Front-End)
